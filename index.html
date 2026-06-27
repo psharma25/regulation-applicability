@@ -269,7 +269,7 @@ table.ptab tr:nth-child(even) td{background:var(--off)}
 <section class="section" id="regs">
   <div class="section-label">Source coverage</div>
   <h2>Regulation Database</h2>
-  <p class="sub">Existing and emerging regulations, each with an official source link and downloadable roadmap. Tap multiple chips to combine domains (e.g. Privacy + Hardware); tap All to clear.</p>
+  <p class="sub">Existing and emerging regulations, each with an official source link and downloadable roadmap.</p>
   <div class="row" id="regChips">
     <input class="in" style="width:220px" placeholder="Search…" oninput="regSearch=this.value;renderRegs()">
     <span class="chip active" data-d="all" onclick="setRegFilter(this)">All</span>
@@ -531,25 +531,13 @@ function loadExample(i){applyProfile(EXAMPLES[+i]);}
 
 // ---------- regulations ----------
 const SECURITY_CATS=new Set(["cybersecurity","assurance","payments","hardware-security"]);
-let regFilters=new Set();   // empty = show all; otherwise union of selected domains/categories
-function regMatchesOne(r,f){return f==="security"?SECURITY_CATS.has(r.category):r.domain===f;}
-function setRegFilter(el){
-  const d=el.dataset.d;
-  if(d==="all"){regFilters.clear();}
-  else{ if(regFilters.has(d))regFilters.delete(d); else regFilters.add(d); }
-  // sync chip highlighting
-  document.querySelectorAll('#regChips .chip').forEach(c=>{
-    const cd=c.dataset.d;
-    c.classList.toggle('active', cd==="all" ? regFilters.size===0 : regFilters.has(cd));
-  });
-  renderRegs();
-}
+function setRegFilter(el){document.querySelectorAll('#regChips .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');regFilter=el.dataset.d;renderRegs();}
 function renderRegs(){
-  let list=REGS.filter(r=>regFilters.size===0 || [...regFilters].some(f=>regMatchesOne(r,f)));
+  let list=REGS.filter(r=>regFilter==="all"||(regFilter==="security"?SECURITY_CATS.has(r.category):r.domain===regFilter));
   if(regSearch){const q=regSearch.toLowerCase();list=list.filter(r=>(r.name+r.summary+r.id).toLowerCase().includes(q));}
   $("#regGrid").innerHTML=list.map(r=>'<div class="card" onclick="showReg(\''+r.id+'\')"><h4>'+r.id+'</h4><div class="title">'+esc(r.name)+'</div><div class="desc">'+esc((r.summary||'').slice(0,120))+'…</div><div class="foot"><span class="muted">'+(r.jurisdictions||[]).slice(0,2).join(', ')+'</span><span>'+(r.emerging?'<span class="badge b-emerging">Emerging</span> ':'')+'<span class="badge b-'+r.change+'">'+r.change+'</span></span></div></div>').join("");
 }
-function resetRegs(){regFilters.clear();regSearch="";const s=document.querySelector('#regChips input');if(s)s.value="";document.querySelectorAll('#regChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.d==="all"));renderRegs();}
+function resetRegs(){regFilter="all";regSearch="";const s=document.querySelector('#regChips input');if(s)s.value="";document.querySelectorAll('#regChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.d==="all"));renderRegs();}
 function regControls(id){return CONTROLS.filter(c=>(c.regulations||[]).includes(id)).sort((a,b)=>b.score-a.score);}
 function showReg(id){
   const r=REGS.find(x=>x.id===id); const rc=regControls(id);
