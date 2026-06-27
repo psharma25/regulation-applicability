@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RegPulse Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{--white:#fff;--off:#f7f6f3;--subtle:#f0efe9;--border:#e2e0d8;--text:#1a1917;--text-2:#5c5a52;--text-3:#9c9a8e;
+--accent:#1a3a5c;--accent-light:#e8f0f8;--accent-mid:#2d5f8a;--green:#1a5c3a;--green-light:#e8f5ee;--amber:#7a4a00;--amber-light:#fff3d6;--red:#7a1a1a;--red-light:#fdeaea;--r:6px;--r-lg:12px;
+--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);--shadow-md:0 2px 8px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.06);}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--text);line-height:1.6}
+h1,h2,h3,h4{font-family:'DM Serif Display',serif;font-weight:400;line-height:1.2}
+input,select,button,textarea{font-family:'DM Sans',sans-serif}
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:32px;height:32px;background:var(--accent);border-radius:var(--r);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'DM Mono',monospace;font-weight:600}
+.brand-text{font-family:'DM Serif Display',serif;font-size:18px}
+.nav-links{display:flex;gap:1.4rem}
+.nav-links a{font-size:13px;font-weight:500;color:var(--text-2);text-decoration:none}
+.nav-links a:hover{color:var(--accent)}
+.nav-right{display:flex;align-items:center;gap:12px}
+.btn{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer}
+.btn:hover{background:var(--accent-mid)}
+.btn.ghost{background:#fff;color:var(--accent);border:1px solid var(--border)}
+.btn.ghost:hover{background:var(--subtle)}
+.btn.sm{padding:6px 12px;font-size:12px}
+.hero{max-width:1100px;margin:0 auto;padding:64px 2rem 46px;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:var(--accent-light);padding:4px 10px;border-radius:100px;display:inline-block;margin-bottom:18px}
+.hero h1{font-size:44px;margin-bottom:18px}.hero h1 em{color:var(--accent-mid)}
+.hero p{font-size:16px;color:var(--text-2);margin-bottom:24px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stat{border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
+.stat .n{font-family:'DM Serif Display',serif;font-size:30px;color:var(--accent)}
+.stat .l{font-size:12px;color:var(--text-2)}
+.divider{border:none;border-top:1px solid var(--border);max-width:1100px;margin:0 auto}
+.section{max-width:1100px;margin:0 auto;padding:48px 2rem}
+.section-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.section h2{font-size:28px;margin-bottom:8px}
+.section .sub{font-size:14px;color:var(--text-2);margin-bottom:22px;max-width:740px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.chip{padding:5px 14px;border:1px solid var(--border);border-radius:100px;font-size:13px;color:var(--text-2);cursor:pointer;background:#fff;user-select:none}
+.chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pill{padding:5px 12px;border:1px solid var(--border);border-radius:100px;font-size:13px;cursor:pointer;color:var(--text-2);user-select:none}
+.pill.on{background:var(--accent-light);border-color:var(--accent);color:var(--accent);font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;background:#fff;transition:.2s;cursor:pointer}
+.card:hover{border-color:var(--accent);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.card h4{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:4px}
+.card .title{font-size:15px;font-weight:600;margin-bottom:6px;line-height:1.3}
+.card .desc{font-size:13px;color:var(--text-2)}
+.card .foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+.badge{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:3px 8px;border-radius:100px}
+.b-new{background:var(--green-light);color:var(--green)}.b-updated{background:var(--amber-light);color:var(--amber)}.b-unchanged{background:var(--subtle);color:var(--text-3)}
+.b-emerging{background:var(--accent-light);color:var(--accent)}
+.muted{font-size:11px;color:var(--text-3)}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.fg{display:flex;flex-direction:column;gap:6px}.fg.full{grid-column:1/-1}
+label.lbl{font-size:13px;font-weight:500}
+input.in,select.in{border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;font-size:14px;width:100%}
+input.in:focus,select.in:focus{outline:none;border-color:var(--accent)}
+.preset{background:var(--off);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:18px}
+.ob{border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:10px;overflow:hidden;background:#fff}
+.ob-h{padding:14px 18px;display:flex;align-items:center;gap:14px;cursor:pointer}
+.ob-h:hover{background:var(--off)}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.p-Critical{background:#e24b4b}.p-High{background:#e09020}.p-Medium{background:#4b9ee2}.p-Low{background:#4baa6e}.p-Moderate{background:#e09020}
+.ob-id{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-3);min-width:92px}
+.ob-t{font-size:14px;font-weight:500;flex:1}
+.tag{font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px}
+.t-Critical{background:var(--red-light);color:var(--red)}.t-High{background:var(--amber-light);color:var(--amber)}.t-Medium{background:var(--accent-light);color:var(--accent)}.t-Low{background:var(--green-light);color:var(--green)}.t-Moderate{background:var(--amber-light);color:var(--amber)}
+.ob-b{display:none;padding:0 18px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--text-2);line-height:1.6}
+.ob.open .ob-b{display:block}
+.ob-b ul{margin:6px 0 0 18px}
+.delta-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.ds{border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;text-align:center}
+.ds .n{font-family:'DM Serif Display',serif;font-size:26px}.ds.new .n{color:var(--green)}.ds.up .n{color:var(--amber)}.ds.hi .n{color:var(--red)}
+.run-bar{border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px;background:var(--off)}
+.overlay{position:fixed;inset:0;background:rgba(255,255,255,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:999}
+.overlay.on{display:flex}.spinner{width:38px;height:38px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.modal-ov{position:fixed;inset:0;background:rgba(20,20,18,.45);display:none;align-items:flex-start;justify-content:center;z-index:1000;padding:40px 20px;overflow-y:auto}
+.modal-ov.on{display:flex}
+.modal{background:#fff;border-radius:var(--r-lg);max-width:620px;width:100%;box-shadow:var(--shadow-md);overflow:hidden}
+.modal-head{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.modal-head h3{font-size:20px}
+.modal-x{background:var(--subtle);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;flex-shrink:0}
+.modal-body{padding:20px 24px;max-height:60vh;overflow-y:auto}
+.mlabel{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin:16px 0 6px}
+.modal-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--off);flex-wrap:wrap}
+.helpgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.helpcard{border:1px solid var(--border);border-radius:var(--r-lg);padding:20px}
+.helpcard .ht{font-size:15px;font-weight:600;margin-bottom:6px}
+.helpcard .hd{font-size:13px;color:var(--text-2)}
+footer{background:var(--off);border-top:1px solid var(--border);padding:36px 2rem;text-align:center;margin-top:40px}
+.footer-t{font-family:'DM Serif Display',serif;font-size:20px}.footer-s{font-size:13px;color:var(--text-2);margin:8px 0 16px}
+.tech{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.tb{font-size:11px;padding:4px 12px;border-radius:100px;background:#fff;border:1px solid var(--border);color:var(--text-2);font-family:'DM Mono',monospace}
+.legal{font-size:12px;color:var(--text-3);margin:18px auto 0;max-width:780px}
+@media(max-width:768px){.hero{grid-template-columns:1fr}.formgrid,.helpgrid{grid-template-columns:1fr}.delta-summary{grid-template-columns:1fr 1fr}.nav-links{display:none}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="brand"><div class="brand-icon">R&middot;</div><span class="brand-text">RegPulse Intelligence</span></div>
+  <div class="nav-links">
+    <a href="#apply">Applicability</a><a href="#regs">Regulations</a><a href="#roadmap">Roadmap</a>
+    <a href="#controls">Controls</a><a href="#weekly">Weekly Delta</a><a href="#help">Help</a>
+  </div>
+  <div class="nav-right" id="navRight"><button class="btn ghost sm" onclick="openAuth()">Log in</button></div>
+</nav>
+
+<div class="overlay" id="overlay"><div class="spinner"></div><div id="ovText" class="muted">Working…</div></div>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">Enter your product · See your regulations · Local AI</div>
+    <h1>Find the Regulations That Apply to <em>Your Product</em></h1>
+    <p>Tell RegPulse your tool or product, where you deploy it and the data it handles — it returns the regulations that apply and why, across medical-device, manufacturing, IT/OT, privacy and AI rules worldwide, with a prioritized roadmap in HTML or Excel.</p>
+    <div class="hero-actions">
+      <button class="btn" onclick="go('apply')">Enter your product →</button>
+      <button class="btn ghost" onclick="go('regs')">Browse all regulations</button>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="n" id="sRegs">—</div><div class="l">Regulations tracked</div></div>
+    <div class="stat"><div class="n">Weekly</div><div class="l">Scan &amp; delta cadence</div></div>
+    <div class="stat"><div class="n" id="sCtrls">—</div><div class="l">Actionable controls</div></div>
+    <div class="stat"><div class="n">100%</div><div class="l">Open-source &amp; local</div></div>
+  </div>
+</section>
+<hr class="divider">
+
+<section class="section" id="apply">
+  <div class="section-label">Capability · Applicability</div>
+  <h2>Which Regulations Apply To You?</h2>
+  <p class="sub">Describe your product, deployment locations and data — or load a known company/product or example. The applicability agent returns what applies and why.</p>
+  <div class="preset">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
+      <div style="flex:1;min-width:240px">
+        <label class="lbl">Load a known company / product (or enter your own below)</label>
+        <select class="in" id="companyPreset" onchange="loadCompany(this.value)"><option value="">Select an example company / product…</option></select>
+      </div>
+      <div style="flex:2;min-width:240px">
+        <label class="lbl">Or load an example scenario</label>
+        <div id="exampleBtns" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"></div>
+      </div>
+    </div>
+    <div class="muted" style="margin-top:10px">Presets are illustrative starting points — every field stays editable so you can enter your own.</div>
+  </div>
+  <div class="formgrid">
+    <div class="fg"><label class="lbl">Profile name</label><input class="in" id="pName" placeholder="e.g. Helix Health Cloud"></div>
+    <div class="fg"><label class="lbl">Product type</label>
+      <div class="row" id="ptypes" style="margin:0">
+        <span class="pill" data-v="medical_device" onclick="tog(this)">Medical device</span>
+        <span class="pill" data-v="samd" onclick="tog(this)">SaMD</span>
+        <span class="pill" data-v="ivd" onclick="tog(this)">IVD</span>
+        <span class="pill" data-v="healthcare_saas" onclick="tog(this)">Healthcare SaaS</span>
+        <span class="pill" data-v="saas" onclick="tog(this)">B2B SaaS</span>
+        <span class="pill" data-v="fintech" onclick="tog(this)">Fintech / payments</span>
+        <span class="pill" data-v="edtech" onclick="tog(this)">EdTech</span>
+        <span class="pill" data-v="consumer" onclick="tog(this)">Consumer app</span>
+      </div></div>
+    <div class="fg full"><label class="lbl">Deployment markets</label>
+      <div class="row" id="markets" style="margin:0">
+        <span class="pill" data-v="United States" onclick="tog(this)">United States</span>
+        <span class="pill" data-v="EU" onclick="tog(this)">EU / EEA</span>
+        <span class="pill" data-v="United Kingdom" onclick="tog(this)">UK</span>
+        <span class="pill" data-v="Japan" onclick="tog(this)">Japan</span>
+        <span class="pill" data-v="China" onclick="tog(this)">China</span>
+        <span class="pill" data-v="Canada" onclick="tog(this)">Canada</span>
+        <span class="pill" data-v="Australia" onclick="tog(this)">Australia</span>
+        <span class="pill" data-v="Brazil" onclick="tog(this)">Brazil</span>
+        <span class="pill" data-v="South Korea" onclick="tog(this)">South Korea</span>
+        <span class="pill" data-v="India" onclick="tog(this)">India</span>
+        <span class="pill" data-v="Singapore" onclick="tog(this)">Singapore</span>
+        <span class="pill" data-v="Switzerland" onclick="tog(this)">Switzerland</span>
+      </div></div>
+    <div class="fg full"><label class="lbl">Data processed</label>
+      <div class="row" id="datatypes" style="margin:0">
+        <span class="pill" data-v="phi" onclick="tog(this)">PHI / ePHI (US)</span>
+        <span class="pill" data-v="eu_personal" onclick="tog(this)">EU personal/health</span>
+        <span class="pill" data-v="pii" onclick="tog(this)">General PII</span>
+        <span class="pill" data-v="payment" onclick="tog(this)">Payment/card</span>
+        <span class="pill" data-v="financial" onclick="tog(this)">Financial / account</span>
+        <span class="pill" data-v="children" onclick="tog(this)">Children's data</span>
+      </div></div>
+    <div class="fg full"><label class="lbl">Characteristics</label>
+      <div class="row" id="flags" style="margin:0">
+        <span class="pill" data-v="software" onclick="tog(this)">Contains software</span>
+        <span class="pill" data-v="connected" onclick="tog(this)">Network-connected</span>
+        <span class="pill" data-v="ai" onclick="tog(this)">AI / ML</span>
+        <span class="pill" data-v="ot" onclick="tog(this)">OT / ICS</span>
+        <span class="pill" data-v="manufactures" onclick="tog(this)">Manufactures</span>
+        <span class="pill" data-v="us_gov" onclick="tog(this)">Sells to US government</span>
+        <span class="pill" data-v="public_company" onclick="tog(this)">Publicly traded</span>
+      </div></div>
+  </div>
+  <div class="hero-actions">
+    <button class="btn" onclick="runApply()">Run applicability →</button>
+    <button class="btn ghost" id="saveBtn" onclick="saveAnalysis()" style="display:none">Save to my account</button>
+  </div>
+  <div id="applyResults" style="margin-top:24px"></div>
+</section>
+<hr class="divider">
+<section class="section" id="regs">
+  <div class="section-label">Source coverage</div>
+  <h2>Regulation Database</h2>
+  <p class="sub">Medical device, manufacturing and IT/OT regulations — existing and emerging — each with an official source link and downloadable roadmap.</p>
+  <div class="row" id="regChips">
+    <input class="in" style="width:220px" placeholder="Search…" oninput="regSearch=this.value;renderRegs()">
+    <span class="chip active" data-d="all" onclick="setRegFilter(this)">All</span>
+    <span class="chip" data-d="device" onclick="setRegFilter(this)">Device</span>
+    <span class="chip" data-d="manufacturing" onclick="setRegFilter(this)">Manufacturing</span>
+    <span class="chip" data-d="itot" onclick="setRegFilter(this)">IT/OT</span>
+    <span class="chip" data-d="saas" onclick="setRegFilter(this)">SaaS / Cloud</span>
+    <span class="chip" data-d="privacy" onclick="setRegFilter(this)">Privacy</span>
+    <span class="chip" data-d="ai" onclick="setRegFilter(this)">AI</span>
+  </div>
+  <div class="grid" id="regGrid"></div>
+</section>
+<hr class="divider">
+<section class="section" id="roadmap" style="padding-top:0"><div id="roadmapBox"></div></section>
+<hr class="divider">
+<section class="section" id="controls">
+  <div class="section-label">Capability · Control library</div>
+  <h2>Explainable, Actionable Controls</h2>
+  <p class="sub">Every control has a plain-language explanation, action steps, priority and severity, and the regulations it satisfies. Download one or the full library.</p>
+  <div class="row" id="ctrlChips">
+    <input class="in" style="width:220px" placeholder="Search controls…" oninput="ctrlSearch=this.value;renderCtrls()">
+    <span class="chip active" data-d="all" onclick="setCtrlFilter(this)">All</span>
+    <span class="chip" data-d="Critical" onclick="setCtrlFilter(this)">Critical</span>
+    <span class="chip" data-d="High" onclick="setCtrlFilter(this)">High</span>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn ghost sm" onclick="downloadControls('html')">Library (HTML)</button>
+      <button class="btn sm" onclick="downloadControls('xlsx')">Library (Excel)</button>
+    </div>
+  </div>
+  <div class="muted" id="ctrlCount" style="margin-bottom:12px"></div>
+  <div class="grid" id="ctrlGrid"></div>
+</section>
+<hr class="divider">
+<section class="section" id="weekly">
+  <div class="section-label">Capability · Weekly cadence</div>
+  <h2>Weekly Regulatory Delta</h2>
+  <p class="sub">Each week the agent pipeline re-reads every source, regenerates details and diffs against last week's snapshot.</p>
+  <div class="run-bar">
+    <div class="muted" id="scanStatus">Last scan: loading…</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn ghost sm" onclick="downloadDelta('html')">Delta (HTML)</button>
+      <button class="btn ghost sm" onclick="downloadDelta('xlsx')">Delta (Excel)</button>
+      <button class="btn sm" onclick="runScan()">Run scan now</button>
+    </div>
+  </div>
+  <div class="delta-summary" id="deltaSummary"></div>
+  <div id="deltaFeed"></div>
+</section>
+<hr class="divider">
+<section class="section" id="help">
+  <div class="section-label">Help me</div>
+  <h2>How To Use RegPulse</h2>
+  <p class="sub">Five capabilities, one workflow. Start by loading an example or entering your own product.</p>
+  <div class="helpgrid">
+    <div class="helpcard"><div class="ht">1 · Find what applies</div><div class="hd">Go to <b>Applicability</b>. Pick a company/product or example, or enter your own markets and data, then run it to see what applies and why, with priorities.</div></div>
+    <div class="helpcard"><div class="ht">2 · Read each regulation + source</div><div class="hd">In <b>Regulations</b>, open any card for the summary, the <b>official source link</b>, the latest change, and a roadmap download (HTML or Excel).</div></div>
+    <div class="helpcard"><div class="ht">3 · Track weekly change</div><div class="hd">In <b>Weekly Delta</b>, run a scan to see new / updated / unchanged regulations with impact, and download the delta report (HTML or Excel).</div></div>
+    <div class="helpcard"><div class="ht">4 · Build the roadmap</div><div class="hd">After applicability, download a single <b>combined, de-duplicated roadmap</b> across all applicable regulations (HTML or Excel).</div></div>
+    <div class="helpcard"><div class="ht">5 · Get the controls</div><div class="hd">In <b>Controls</b>, each control has an explanation, action steps, priority and severity. Download one or the full library.</div></div>
+    <div class="helpcard" style="background:var(--off)"><div class="ht">Accounts</div><div class="hd">Log in to save profiles and analyses across sessions. Your data stays in your own deployment.</div></div>
+  </div>
+</section>
+<footer>
+  <div class="footer-t">RegPulse Intelligence</div>
+  <div class="footer-s">Weekly cadence · Local open-source AI · Your data stays in your environment</div>
+  <div class="tech"><span class="tb">Ollama</span><span class="tb">Llama 3</span><span class="tb">RAG</span><span class="tb">pgvector</span><span class="tb">Postgres</span><span class="tb">FastAPI</span><span class="tb">APScheduler</span></div>
+  <div class="legal">RegPulse provides regulatory and control intelligence for planning only and is not legal, regulatory or audit advice. Summaries and deltas are model-assisted and must be validated against the official source linked on each entry.</div>
+</footer>
+
+<div class="modal-ov" id="modal" onclick="if(event.target===this)closeModal()"><div class="modal" id="modalInner"></div></div>
+
+<div class="modal-ov" id="authModal" onclick="if(event.target===this)closeAuth()">
+  <div class="modal" style="max-width:440px"><div class="modal-head"><h3 id="authTitle">Log in</h3><button class="modal-x" onclick="closeAuth()">✕</button></div>
+    <div class="modal-body">
+      <div class="fg" style="margin-bottom:12px"><label class="lbl">Email</label><input class="in" id="authEmail" type="email" placeholder="you@company.com"></div>
+      <div class="fg"><label class="lbl">Password</label><input class="in" id="authPass" type="password" placeholder="••••••••"></div>
+      <div class="muted" id="authErr" style="color:var(--red);margin-top:10px"></div>
+    </div>
+    <div class="modal-foot"><button class="btn ghost" onclick="toggleAuthMode()" id="authToggle">Create account</button><button class="btn" id="authSubmit" onclick="doAuth()">Log in</button></div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

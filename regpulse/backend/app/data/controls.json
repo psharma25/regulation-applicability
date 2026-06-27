@@ -1,0 +1,1372 @@
+[
+  {
+    "id": "GOV-01",
+    "domain": "Governance",
+    "title": "Appoint accountable owners (security, quality, privacy)",
+    "explanation": "Regulators and auditors expect named, accountable owners before any technical control is credited.",
+    "actions": [
+      "Designate a security officer, a management representative for the QMS, and a data-protection lead.",
+      "Document responsibilities, escalation paths and management-review cadence.",
+      "Record executive sign-off and review at least annually."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 1,
+    "effort": "S",
+    "regulations": [
+      "ISO-13485",
+      "FDA-QMSR",
+      "HIPAA",
+      "ISO-27001",
+      "EU-NIS2",
+      "ISO-9001",
+      "CMMC"
+    ]
+  },
+  {
+    "id": "GOV-02",
+    "domain": "Governance",
+    "title": "Establish a quality management system (QMS)",
+    "explanation": "A QMS with design controls, CAPA and document control is a precondition for nearly every device market.",
+    "actions": [
+      "Implement ISO 13485 (and QMSR-aligned) procedures: design controls, CAPA, complaints, document control.",
+      "Run internal audits and management reviews on a defined schedule.",
+      "Maintain the Device Master Record and Design History File."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 1,
+    "effort": "L",
+    "regulations": [
+      "ISO-13485",
+      "FDA-QMSR",
+      "MDSAP",
+      "ISO-9001"
+    ]
+  },
+  {
+    "id": "GOV-03",
+    "domain": "Governance",
+    "title": "Maintain a unified control catalogue (crosswalk)",
+    "explanation": "One control set mapped to many regimes lets you implement and evidence once, then comply many.",
+    "actions": [
+      "Adopt a common control catalogue and map each control to applicable regulations.",
+      "Maintain the crosswalk and review when regulations change.",
+      "Operate a test-once/comply-many evidence model."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 1,
+    "effort": "M",
+    "regulations": [
+      "ISO-27001",
+      "NIST-CSF",
+      "SOC2",
+      "HIPAA",
+      "EU-GDPR",
+      "NIST-80171",
+      "CMMC",
+      "HITRUST",
+      "ISO-27701",
+      "NIST-AI-RMF",
+      "SOX",
+      "DORA",
+      "ISO-20000"
+    ]
+  },
+  {
+    "id": "RISK-01",
+    "domain": "Risk",
+    "title": "Conduct lifecycle risk management (ISO 14971)",
+    "explanation": "Risk analysis, control and residual-risk acceptance are mandatory before market placement and recurring thereafter.",
+    "actions": [
+      "Define a risk management plan and hazard analysis (FMEA/FTA).",
+      "Implement and verify risk controls; evaluate residual risk vs benefit.",
+      "Feed post-market data back into the risk file."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 1,
+    "effort": "M",
+    "regulations": [
+      "ISO-14971",
+      "EU-MDR",
+      "FDA-QMSR",
+      "IEC-60601",
+      "ISO-80001",
+      "ISO-10993"
+    ]
+  },
+  {
+    "id": "RISK-02",
+    "domain": "Risk",
+    "title": "Security risk assessment (data + cyber)",
+    "explanation": "Security risk analysis is explicitly required (HIPAA, GDPR Art 35, IEC 62443, MDCG 2019-16) and drives prioritisation.",
+    "actions": [
+      "Inventory data flows and assets; identify threats and vulnerabilities.",
+      "Score likelihood and impact; record in a risk register.",
+      "Define a remediation roadmap with owners and dates."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 1,
+    "effort": "M",
+    "regulations": [
+      "HIPAA",
+      "EU-GDPR",
+      "ISO-27001",
+      "MDCG-CYBER",
+      "IEC-62443",
+      "NIST-80082",
+      "IEC-81001",
+      "AAMI-TIR57",
+      "ISO-80001",
+      "CN-CSL",
+      "CMMC",
+      "PCI-DSS"
+    ]
+  },
+  {
+    "id": "SW-01",
+    "domain": "Software",
+    "title": "Software lifecycle process (IEC 62304)",
+    "explanation": "A defined software lifecycle with classification and verification is referenced by FDA and EU MDR submissions.",
+    "actions": [
+      "Classify software (Class A/B/C) and document the development plan.",
+      "Maintain requirements, architecture, unit/integration/system test records.",
+      "Track SOUP/third-party components with versions."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 2,
+    "effort": "L",
+    "regulations": [
+      "IEC-62304",
+      "EU-MDR",
+      "FDA-510K",
+      "FDA-QMSR",
+      "IEC-81001",
+      "FDA-DENOVO",
+      "FDA-PMA"
+    ]
+  },
+  {
+    "id": "SW-02",
+    "domain": "Software",
+    "title": "Generate and maintain an SBOM",
+    "explanation": "An SBOM is now mandatory for US cyber devices (524B) and expected under the EU CRA and MDCG guidance.",
+    "actions": [
+      "Produce an SBOM (CycloneDX or SPDX) in the build pipeline.",
+      "Monitor components for new vulnerabilities continuously.",
+      "Publish/share the SBOM as required by each market."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "FDA-CYBER",
+      "EU-CRA",
+      "MDCG-CYBER",
+      "IMDRF-CYBER",
+      "IEC-81001",
+      "UL-2900",
+      "AAMI-TIR57"
+    ]
+  },
+  {
+    "id": "SW-03",
+    "domain": "Software",
+    "title": "Secure development lifecycle & code scanning",
+    "explanation": "Secure-by-design and SAST/DAST/SCA gates satisfy CRA, 62443 SDL and SOC 2 change management.",
+    "actions": [
+      "Add SAST, DAST and dependency (SCA) scanning to CI/CD.",
+      "Enforce code review and secrets scanning on the main branch.",
+      "Gate releases on security findings."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "EU-CRA",
+      "IEC-62443",
+      "SOC2",
+      "ISO-27001",
+      "IEC-81001",
+      "UL-2900",
+      "NIST-80171",
+      "PCI-DSS"
+    ]
+  },
+  {
+    "id": "CYB-01",
+    "domain": "Cyber",
+    "title": "Coordinated vulnerability disclosure (CVD)",
+    "explanation": "A published CVD policy and response process is a minimum artefact for FDA 524B, CRA and NIS2.",
+    "actions": [
+      "Publish a vulnerability disclosure policy and intake channel.",
+      "Define triage, remediation SLAs and advisories.",
+      "Report actively-exploited vulnerabilities where required (CRA/NIS2)."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "FDA-CYBER",
+      "EU-CRA",
+      "EU-NIS2",
+      "IMDRF-CYBER",
+      "IEC-81001",
+      "AAMI-TIR57",
+      "UL-2900"
+    ]
+  },
+  {
+    "id": "IAM-01",
+    "domain": "Cyber",
+    "title": "Identity, MFA and least-privilege access",
+    "explanation": "Access control is the most-cited safeguard across frameworks and the leading breach root-cause.",
+    "actions": [
+      "Enforce SSO + MFA on all accounts; remove long-lived keys.",
+      "Implement least-privilege RBAC and periodic access reviews.",
+      "Log and retain access events."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 1,
+    "effort": "M",
+    "regulations": [
+      "HIPAA",
+      "EU-GDPR",
+      "ISO-27001",
+      "SOC2",
+      "NIST-80053",
+      "PCI-DSS",
+      "NIST-80171",
+      "CMMC",
+      "HITRUST",
+      "ISO-27017",
+      "CN-CSL",
+      "FEDRAMP",
+      "CSA-STAR",
+      "PSD2",
+      "GLBA",
+      "DORA"
+    ]
+  },
+  {
+    "id": "DATA-01",
+    "domain": "Data",
+    "title": "Encrypt data at rest and in transit",
+    "explanation": "Encryption/pseudonymisation satisfies HIPAA technical safeguards, GDPR Art 32 and PCI requirements.",
+    "actions": [
+      "Enable encryption for all stores and transport (TLS, KMS-managed keys).",
+      "Manage keys with rotation and least-privilege access.",
+      "Document the approach for audit."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 1,
+    "effort": "M",
+    "regulations": [
+      "HIPAA",
+      "EU-GDPR",
+      "ISO-27001",
+      "PCI-DSS",
+      "NIST-80053",
+      "ISO-27017",
+      "ISO-27018",
+      "CN-DSL",
+      "HITRUST",
+      "NIST-80171",
+      "SOC2",
+      "FEDRAMP",
+      "CSA-STAR",
+      "DORA",
+      "PSD2",
+      "GLBA"
+    ]
+  },
+  {
+    "id": "DATA-02",
+    "domain": "Data",
+    "title": "Data classification, retention and deletion",
+    "explanation": "Knowing where regulated data lives and applying retention/deletion is foundational to privacy regimes.",
+    "actions": [
+      "Classify data and map flows (incl. special-category/health).",
+      "Define retention schedules and secure deletion.",
+      "Apply DLP and access monitoring on sensitive stores."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "EU-GDPR",
+      "HIPAA",
+      "ISO-27001",
+      "US-CCPA",
+      "CA-PIPEDA",
+      "BR-LGPD",
+      "CN-PIPL",
+      "JP-APPI",
+      "UK-GDPR",
+      "SG-PDPA",
+      "KR-PIPA",
+      "ISO-27701",
+      "ISO-27018",
+      "CN-DSL",
+      "GLBA",
+      "COPPA",
+      "FERPA",
+      "EU-EPRIVACY",
+      "US-STATE-PRIV",
+      "SOC2",
+      "PCI-DSS"
+    ]
+  },
+  {
+    "id": "PRIV-01",
+    "domain": "Privacy",
+    "title": "Records of Processing & data-subject rights",
+    "explanation": "GDPR-specific obligations (RoPA, DSAR, DPIA) carry direct supervisory-authority enforcement.",
+    "actions": [
+      "Maintain Records of Processing Activities (Art 30).",
+      "Operate a data-subject-rights workflow (access/erasure/portability).",
+      "Run DPIAs for high-risk processing (Art 35)."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "EU-GDPR",
+      "US-CCPA",
+      "CA-PIPEDA",
+      "BR-LGPD",
+      "CN-PIPL",
+      "JP-APPI",
+      "UK-GDPR",
+      "SG-PDPA",
+      "KR-PIPA",
+      "ISO-27701",
+      "ISO-27018",
+      "GLBA",
+      "COPPA",
+      "FERPA",
+      "EU-EPRIVACY",
+      "US-STATE-PRIV"
+    ]
+  },
+  {
+    "id": "PRIV-02",
+    "domain": "Privacy",
+    "title": "Processor agreements (BAA / DPA)",
+    "explanation": "You are accountable for processors: HIPAA BAAs and GDPR Art 28 DPAs are mandatory and audited.",
+    "actions": [
+      "Execute BAAs (US/PHI) and DPAs (EU) with all processors.",
+      "Maintain a sub-processor register and due-diligence records.",
+      "Review vendors on a defined cycle."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "HIPAA",
+      "EU-GDPR",
+      "SOC2",
+      "UK-GDPR",
+      "ISO-27701",
+      "EU-EPRIVACY",
+      "TCPA",
+      "CAN-SPAM",
+      "US-STATE-PRIV",
+      "COPPA"
+    ]
+  },
+  {
+    "id": "MON-01",
+    "domain": "Cyber",
+    "title": "Centralised logging and monitoring",
+    "explanation": "Continuous monitoring and anomaly detection are required by SOC 2 CC7, HIPAA audit controls and NIS2.",
+    "actions": [
+      "Aggregate logs into a SIEM with anomaly alerting.",
+      "Define alert triage SLAs and on-call.",
+      "Retain logs per regulatory minimums."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "SOC2",
+      "HIPAA",
+      "EU-NIS2",
+      "ISO-27001",
+      "NIST-80082",
+      "CN-CSL",
+      "NIST-80171",
+      "HITRUST",
+      "ISO-27017",
+      "FEDRAMP",
+      "DORA",
+      "CSA-STAR",
+      "ISO-20000",
+      "CMMC",
+      "PCI-DSS"
+    ]
+  },
+  {
+    "id": "IR-01",
+    "domain": "Cyber",
+    "title": "Incident response & breach notification",
+    "explanation": "A tested IR capability with HIPAA 60-day, GDPR 72-hour and NIS2 reporting paths is mandatory.",
+    "actions": [
+      "Document an IR plan with a breach classification matrix.",
+      "Build notification workflows (HIPAA 60-day, GDPR 72-hour, NIS2).",
+      "Run an annual tabletop and keep regulator contacts ready."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "HIPAA",
+      "EU-GDPR",
+      "EU-NIS2",
+      "SOC2",
+      "FDA-CYBER",
+      "US-CCPA",
+      "CA-PIPEDA",
+      "BR-LGPD",
+      "UK-GDPR",
+      "SG-PDPA",
+      "KR-PIPA",
+      "CN-CSL",
+      "DORA",
+      "FEDRAMP",
+      "GLBA",
+      "US-STATE-PRIV",
+      "CMMC",
+      "PCI-DSS"
+    ]
+  },
+  {
+    "id": "VULN-01",
+    "domain": "Cyber",
+    "title": "Vulnerability & patch management",
+    "explanation": "Timely detection and patching is required by SOC 2 CC7.1, CRA and post-market cyber obligations.",
+    "actions": [
+      "Scan infrastructure and container images on a schedule.",
+      "Set patch SLAs (e.g. critical 48h / high 14d).",
+      "Track in ticketing and run periodic penetration tests."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "EU-CRA",
+      "FDA-CYBER",
+      "SOC2",
+      "ISO-27001",
+      "NIST-80082",
+      "UL-2900",
+      "IEC-81001",
+      "AAMI-TIR57",
+      "NIST-80171",
+      "FEDRAMP",
+      "DORA",
+      "CSA-STAR",
+      "CMMC",
+      "PCI-DSS"
+    ]
+  },
+  {
+    "id": "BCP-01",
+    "domain": "Resilience",
+    "title": "Backup, continuity and disaster recovery",
+    "explanation": "Availability and recoverability are HIPAA contingency, GDPR Art 32 resilience and SOC 2 Availability requirements.",
+    "actions": [
+      "Define RTO/RPO; automate and test backups (immutable where possible).",
+      "Design multi-AZ/region and document a DR runbook.",
+      "Run an annual DR test."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "HIPAA",
+      "EU-GDPR",
+      "SOC2",
+      "ISO-27001",
+      "ISO-27017",
+      "HITRUST",
+      "ISO-22301",
+      "DORA",
+      "FEDRAMP",
+      "ISO-20000",
+      "CMMC"
+    ]
+  },
+  {
+    "id": "OT-01",
+    "domain": "OT",
+    "title": "Segment OT/ICS networks (zones & conduits)",
+    "explanation": "IEC 62443 and NIST 800-82 require segmentation between IT and OT to limit blast radius.",
+    "actions": [
+      "Define zones and conduits; segment OT from IT and the internet.",
+      "Apply least-privilege firewalling and unidirectional gateways where needed.",
+      "Inventory OT assets and protocols."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 2,
+    "effort": "L",
+    "regulations": [
+      "IEC-62443",
+      "NIST-80082",
+      "EU-NIS2",
+      "NERC-CIP",
+      "IEC-61508"
+    ]
+  },
+  {
+    "id": "OT-02",
+    "domain": "OT",
+    "title": "OT monitoring and secure remote access",
+    "explanation": "Continuous OT monitoring and brokered remote access reduce ICS compromise risk.",
+    "actions": [
+      "Deploy OT-aware monitoring/IDS.",
+      "Broker and MFA all remote OT access.",
+      "Patch OT with tested maintenance windows."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "IEC-62443",
+      "NIST-80082",
+      "EU-NIS2",
+      "NERC-CIP",
+      "IEC-61508"
+    ]
+  },
+  {
+    "id": "MFG-01",
+    "domain": "Manufacturing",
+    "title": "Process & production controls",
+    "explanation": "Validated, controlled production processes are required by QMS and manufacturing standards.",
+    "actions": [
+      "Validate critical processes and maintain process controls.",
+      "Implement traceability and nonconformance handling.",
+      "Calibrate and maintain equipment on schedule."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "ISO-13485",
+      "FDA-QMSR",
+      "ISO-9001",
+      "ANVISA-BR",
+      "ISO-11135",
+      "ISO-10993"
+    ]
+  },
+  {
+    "id": "MFG-02",
+    "domain": "Manufacturing",
+    "title": "Worker safety & environmental controls",
+    "explanation": "OSHA, ISO 45001 and ISO 14001 require documented safety and environmental management on the shop floor.",
+    "actions": [
+      "Conduct hazard assessments; implement machine guarding and PPE.",
+      "Maintain hazard communication and incident reporting.",
+      "Track environmental aspects and compliance obligations."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 4,
+    "effort": "M",
+    "regulations": [
+      "OSHA",
+      "ISO-45001",
+      "ISO-14001"
+    ]
+  },
+  {
+    "id": "AI-01",
+    "domain": "AI",
+    "title": "AI governance and data governance",
+    "explanation": "AI as a device safety component is high-risk under the EU AI Act; ISO 42001 and FDA expect lifecycle governance.",
+    "actions": [
+      "Inventory AI use; define an AI risk-management process.",
+      "Govern training/validation/test datasets and document model cards.",
+      "Implement human oversight and output audit trails."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 4,
+    "effort": "M",
+    "regulations": [
+      "EU-AI-ACT",
+      "ISO-42001",
+      "FDA-PCCP",
+      "FDA-GMLP",
+      "NIST-AI-RMF",
+      "OECD-AI"
+    ]
+  },
+  {
+    "id": "AI-02",
+    "domain": "AI",
+    "title": "AI security: no regulated data in prompts; testing",
+    "explanation": "Prevent leakage of PHI/personal data into models and test for prompt-injection.",
+    "actions": [
+      "Set a data-handling policy (no PHI/PII in prompts without controls).",
+      "Test for prompt injection and unsafe outputs.",
+      "Log model access and retain evidence."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 4,
+    "effort": "S",
+    "regulations": [
+      "EU-AI-ACT",
+      "ISO-42001",
+      "HIPAA",
+      "EU-GDPR",
+      "NIST-AI-RMF",
+      "OECD-AI",
+      "CN-PIPL"
+    ]
+  },
+  {
+    "id": "LBL-01",
+    "domain": "Labelling",
+    "title": "Unique device identification (UDI)",
+    "explanation": "UDI labelling and database submission are required in the US (GUDID) and EU (EUDAMED).",
+    "actions": [
+      "Assign UDI-DI/UDI-PI and apply to labels.",
+      "Submit to GUDID (US) and EUDAMED (EU).",
+      "Keep UDI records current through changes."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 3,
+    "effort": "S",
+    "regulations": [
+      "FDA-UDI",
+      "EU-MDR"
+    ]
+  },
+  {
+    "id": "REC-01",
+    "domain": "Records",
+    "title": "Electronic records & audit trails (Part 11)",
+    "explanation": "Trustworthy e-records with audit trails and validation are required for FDA-regulated software.",
+    "actions": [
+      "Implement tamper-evident audit trails and access controls.",
+      "Validate systems (IQ/OQ/PQ) and manage e-signatures.",
+      "Retain records per requirements."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "FDA-21CFR11",
+      "FDA-QMSR",
+      "US-CURES",
+      "SOC1",
+      "SOX",
+      "GLBA"
+    ]
+  },
+  {
+    "id": "AUD-01",
+    "domain": "Assurance",
+    "title": "SOC 2 Type II readiness",
+    "explanation": "Customers increasingly require a SOC 2 Type II report; it operationalises the Trust Services Criteria over a period.",
+    "actions": [
+      "Scope Trust Services Criteria and the observation period.",
+      "Automate evidence collection and monitor operating effectiveness.",
+      "Engage an independent auditor and prepare the system description."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 4,
+    "effort": "M",
+    "regulations": [
+      "SOC2",
+      "ISO-27001",
+      "HITRUST",
+      "ISO-27017",
+      "SOC1",
+      "CSA-STAR",
+      "FEDRAMP",
+      "SOX",
+      "ISO-20000"
+    ]
+  },
+  {
+    "id": "PMS-01",
+    "domain": "Post-market",
+    "title": "Post-market surveillance & vigilance",
+    "explanation": "PMS, PMCF and adverse-event reporting are required by MDR, UK MDR and most device regimes.",
+    "actions": [
+      "Operate a PMS system and PMCF plan.",
+      "Report incidents/vigilance to the relevant authority.",
+      "Feed findings into risk and design updates."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "EU-MDR",
+      "UK-MDR",
+      "FDA-QMSR",
+      "TGA-AU",
+      "HC-CA",
+      "ANVISA-BR",
+      "MFDS-KR",
+      "HSA-SG",
+      "SWISSMEDIC-CH"
+    ]
+  },
+  {
+    "id": "QMS-01",
+    "domain": "Governance",
+    "title": "Design controls & Design History File",
+    "explanation": "Design inputs/outputs, verification, validation and a DHF are mandatory QMS evidence for device approval.",
+    "actions": [
+      "Define design inputs and trace to outputs and V&V.",
+      "Hold and document design reviews at each stage.",
+      "Maintain the Design History File and Device Master Record."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 1,
+    "effort": "L",
+    "regulations": [
+      "ISO-13485",
+      "FDA-QMSR",
+      "EU-MDR",
+      "HC-CA",
+      "ANVISA-BR",
+      "MFDS-KR",
+      "CDSCO-IN",
+      "HSA-SG",
+      "SWISSMEDIC-CH",
+      "FDA-PMA",
+      "FDA-DENOVO"
+    ]
+  },
+  {
+    "id": "QMS-02",
+    "domain": "Governance",
+    "title": "CAPA & complaint handling",
+    "explanation": "Corrective/preventive action and complaint handling are core QMS processes auditors always examine.",
+    "actions": [
+      "Operate a CAPA process with root-cause analysis and effectiveness checks.",
+      "Log, triage and investigate complaints within defined timelines.",
+      "Link complaints to vigilance and risk where applicable."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "ISO-13485",
+      "FDA-QMSR",
+      "MDSAP",
+      "ISO-9001",
+      "ANVISA-BR",
+      "MFDS-KR",
+      "CDSCO-IN",
+      "HSA-SG",
+      "SWISSMEDIC-CH"
+    ]
+  },
+  {
+    "id": "QMS-03",
+    "domain": "Governance",
+    "title": "Document & record control",
+    "explanation": "Controlled documents and retained records underpin every QMS and electronic-records requirement.",
+    "actions": [
+      "Implement version-controlled SOPs with approval workflows.",
+      "Define record retention and protect against loss/alteration.",
+      "Control distribution and obsolescence of documents."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "ISO-13485",
+      "FDA-QMSR",
+      "FDA-21CFR11",
+      "ISO-9001"
+    ]
+  },
+  {
+    "id": "QMS-04",
+    "domain": "Governance",
+    "title": "Internal audit & management review",
+    "explanation": "Scheduled internal audits and management reviews are explicit QMS clauses and MDSAP audit areas.",
+    "actions": [
+      "Run a risk-based internal audit programme.",
+      "Hold management reviews covering quality objectives and metrics.",
+      "Track findings to closure."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "ISO-13485",
+      "ISO-9001",
+      "ISO-27001",
+      "MDSAP"
+    ]
+  },
+  {
+    "id": "CLIN-01",
+    "domain": "Clinical",
+    "title": "Clinical evaluation & evidence",
+    "explanation": "Clinical evaluation and (for high-risk) clinical investigation evidence are required by MDR/IVDR and FDA.",
+    "actions": [
+      "Plan and document a clinical evaluation per MEDDEV/MDR.",
+      "Maintain a clinical evaluation report and update it from PMCF.",
+      "Justify equivalence or generate clinical data as needed."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "L",
+    "regulations": [
+      "EU-MDR",
+      "EU-IVDR",
+      "FDA-510K",
+      "PMDA-JP",
+      "NMPA-CN",
+      "FDA-PMA",
+      "FDA-DENOVO",
+      "ANVISA-BR",
+      "MFDS-KR",
+      "CDSCO-IN",
+      "SWISSMEDIC-CH"
+    ]
+  },
+  {
+    "id": "LBL-02",
+    "domain": "Labelling",
+    "title": "Labelling, IFU & EUDAMED/GUDID registration",
+    "explanation": "Compliant labelling, instructions-for-use and database registration are market-access prerequisites.",
+    "actions": [
+      "Produce labelling and IFU meeting each market's requirements.",
+      "Register devices in GUDID (US) and EUDAMED (EU).",
+      "Control label changes through the QMS."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "FDA-UDI",
+      "EU-MDR",
+      "EU-IVDR",
+      "UK-MDR",
+      "TGA-AU",
+      "SWISSMEDIC-CH",
+      "ISO-15223",
+      "ANVISA-BR",
+      "HSA-SG"
+    ]
+  },
+  {
+    "id": "SUP-01",
+    "domain": "Vendor",
+    "title": "Supplier qualification & purchasing controls",
+    "explanation": "Qualified suppliers and purchasing controls are required by device QMS and manufacturing standards.",
+    "actions": [
+      "Qualify and risk-tier suppliers; keep an approved supplier list.",
+      "Define purchasing controls and incoming inspection.",
+      "Monitor supplier performance and re-evaluate periodically."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "ISO-13485",
+      "FDA-QMSR",
+      "ISO-9001",
+      "MDSAP",
+      "DORA",
+      "SOC2",
+      "CSA-STAR"
+    ]
+  },
+  {
+    "id": "PROC-01",
+    "domain": "Manufacturing",
+    "title": "Process validation & sterilization",
+    "explanation": "Validated processes (incl. sterilization where relevant) are mandatory where output cannot be fully verified.",
+    "actions": [
+      "Validate special processes (IQ/OQ/PQ); revalidate on change.",
+      "Validate sterilization and packaging where applicable.",
+      "Maintain process monitoring and statistical controls."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "L",
+    "regulations": [
+      "ISO-13485",
+      "FDA-QMSR",
+      "ISO-9001",
+      "ISO-11135"
+    ]
+  },
+  {
+    "id": "TRACE-01",
+    "domain": "Manufacturing",
+    "title": "Traceability, lot control & recall readiness",
+    "explanation": "Lot traceability and a field-safety/recall process are required for timely corrective actions in the field.",
+    "actions": [
+      "Implement lot/serial traceability through production and distribution.",
+      "Define a recall / field safety corrective action procedure.",
+      "Test recall effectiveness periodically."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "ISO-13485",
+      "FDA-QMSR",
+      "EU-MDR",
+      "UK-MDR"
+    ]
+  },
+  {
+    "id": "HF-01",
+    "domain": "Usability",
+    "title": "Human factors & usability engineering",
+    "explanation": "Use-related risk must be controlled via usability engineering (IEC 62366) and is reviewed by FDA and Notified Bodies.",
+    "actions": [
+      "Conduct formative and summative usability evaluations.",
+      "Identify use errors and mitigate via design.",
+      "Document the usability engineering file."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "IEC-62366",
+      "EU-MDR",
+      "FDA-510K"
+    ]
+  },
+  {
+    "id": "SAFE-01",
+    "domain": "Safety",
+    "title": "Electrical safety, EMC & essential performance",
+    "explanation": "Type-testing to IEC 60601 (safety, EMC, essential performance) is required for medical electrical equipment.",
+    "actions": [
+      "Plan and conduct IEC 60601 type testing.",
+      "Address EMC and environmental collateral standards.",
+      "Maintain test reports in the technical file."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 3,
+    "effort": "L",
+    "regulations": [
+      "IEC-60601",
+      "EU-MDR",
+      "FDA-510K",
+      "ISO-10993"
+    ]
+  },
+  {
+    "id": "CYB-02",
+    "domain": "Cyber",
+    "title": "Secure boot, firmware integrity & cryptography",
+    "explanation": "Device integrity (secure boot, signed firmware, strong crypto) is central to FDA 524B, CRA and IEC 62443.",
+    "actions": [
+      "Implement secure boot and signed firmware updates.",
+      "Use vetted cryptography and managed keys/certificates.",
+      "Protect debug/maintenance interfaces."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "FDA-CYBER",
+      "EU-CRA",
+      "IEC-62443",
+      "MDCG-CYBER",
+      "IMDRF-CYBER",
+      "IEC-81001",
+      "UL-2900",
+      "AAMI-TIR57"
+    ]
+  },
+  {
+    "id": "OT-03",
+    "domain": "OT",
+    "title": "OT asset inventory & vulnerability management",
+    "explanation": "An accurate OT asset inventory and tailored patching are foundational to NIST 800-82 and IEC 62443.",
+    "actions": [
+      "Maintain a live OT/ICS asset and software inventory.",
+      "Assess vulnerabilities with OT-safe methods.",
+      "Patch within tested maintenance windows; compensate where patching is infeasible."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "IEC-62443",
+      "NIST-80082",
+      "EU-NIS2",
+      "NERC-CIP",
+      "IEC-61508"
+    ]
+  },
+  {
+    "id": "AI-03",
+    "domain": "AI",
+    "title": "AI model validation, bias & performance monitoring",
+    "explanation": "High-risk AI requires validated performance, bias evaluation and ongoing monitoring under the EU AI Act and FDA guidance.",
+    "actions": [
+      "Validate model performance on representative data; evaluate bias.",
+      "Document intended use, limits and a model card.",
+      "Monitor live performance and drift; define update governance."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 4,
+    "effort": "M",
+    "regulations": [
+      "EU-AI-ACT",
+      "ISO-42001",
+      "FDA-PCCP",
+      "FDA-GMLP",
+      "NIST-AI-RMF",
+      "OECD-AI"
+    ]
+  },
+  {
+    "id": "TRN-01",
+    "domain": "Governance",
+    "title": "Security, privacy & quality training",
+    "explanation": "Workforce training and awareness are explicit requirements across HIPAA, GDPR, ISO 27001 and device QMS.",
+    "actions": [
+      "Deliver role-based security, privacy and GxP/QMS training.",
+      "Track completion and competency.",
+      "Refresh training on policy or regulatory change."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 2,
+    "effort": "S",
+    "regulations": [
+      "HIPAA",
+      "EU-GDPR",
+      "ISO-27001",
+      "ISO-13485",
+      "SOC2",
+      "UK-GDPR",
+      "HITRUST",
+      "ISO-27701",
+      "GLBA",
+      "COPPA",
+      "FERPA",
+      "CAN-SPAM",
+      "CMMC",
+      "PCI-DSS"
+    ]
+  },
+  {
+    "id": "TRANS-01",
+    "domain": "Privacy",
+    "title": "International data transfers & residency",
+    "explanation": "Cross-border transfer mechanisms (SCCs, adequacy) and residency controls are required for EU personal data.",
+    "actions": [
+      "Map cross-border data flows and apply transfer mechanisms (SCCs/adequacy).",
+      "Complete transfer impact assessments where needed.",
+      "Apply data-residency controls where required by market."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "EU-GDPR",
+      "UK-GDPR",
+      "CN-PIPL",
+      "CN-DSL",
+      "KR-PIPA",
+      "JP-APPI",
+      "EU-EPRIVACY",
+      "US-STATE-PRIV"
+    ]
+  },
+  {
+    "id": "SAAS-01",
+    "domain": "Cyber",
+    "title": "Multi-tenant isolation & data segregation",
+    "explanation": "SaaS platforms must guarantee that one customer (tenant) cannot access another's data; isolation is a top concern in security reviews, SOC 2 and FedRAMP.",
+    "actions": [
+      "Enforce tenant isolation at the data, application and network layers.",
+      "Scope every query and authorization check to the tenant; test for cross-tenant access.",
+      "Segregate or encrypt tenant data with per-tenant keys where feasible."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "SOC2",
+      "FEDRAMP",
+      "ISO-27017",
+      "CSA-STAR",
+      "HIPAA",
+      "ISO-27001"
+    ]
+  },
+  {
+    "id": "ACC-01",
+    "domain": "Usability",
+    "title": "Accessibility conformance (WCAG / EN 301 549)",
+    "explanation": "Digital products increasingly must meet accessibility standards; the EU Accessibility Act and US ADA web guidance make WCAG conformance a legal expectation.",
+    "actions": [
+      "Adopt a WCAG 2.1/2.2 AA conformance target across the product.",
+      "Test with assistive technologies and automated + manual audits.",
+      "Publish an accessibility statement and remediate findings on a schedule."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 4,
+    "effort": "M",
+    "regulations": [
+      "EAA",
+      "ADA-WCAG"
+    ]
+  },
+  {
+    "id": "CUI-01",
+    "domain": "Defense",
+    "title": "Scope CUI and define the assessment boundary",
+    "explanation": "CMMC and NIST 800-171 only credit controls inside a correctly drawn CUI boundary; a vague scope is the most common assessment failure.",
+    "actions": [
+      "Identify every system, person and flow that stores, processes or transmits CUI.",
+      "Draw and diagram the assessment boundary (CUI enclave) and isolate it from the rest of the network.",
+      "Document the System Security Plan (SSP) describing the boundary and how each control is met."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 1,
+    "effort": "M",
+    "regulations": [
+      "CMMC",
+      "NIST-80171"
+    ]
+  },
+  {
+    "id": "CUI-02",
+    "domain": "Defense",
+    "title": "FIPS-validated cryptography for CUI",
+    "explanation": "NIST 800-171 (3.13.11) and CMMC require FIPS 140-validated modules to protect CUI - ordinary TLS is not sufficient evidence on its own.",
+    "actions": [
+      "Use FIPS 140-2/3 validated cryptographic modules for CUI at rest and in transit.",
+      "Record the CMVP certificate numbers for each module in the SSP.",
+      "Disable non-validated cipher suites and legacy protocols."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "CMMC",
+      "NIST-80171"
+    ]
+  },
+  {
+    "id": "CUI-03",
+    "domain": "Defense",
+    "title": "SPRS score, POA&M and assessment readiness",
+    "explanation": "DoD contracts require a current self-assessment score in SPRS and a managed POA&M; CMMC Level 2 adds a third-party (C3PAO) assessment.",
+    "actions": [
+      "Run the NIST 800-171 self-assessment and post the score to SPRS.",
+      "Maintain a Plan of Action & Milestones (POA&M) for any unmet controls with owners and dates.",
+      "Prepare evidence and schedule the required C3PAO assessment for the contract's CMMC level."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "CMMC",
+      "NIST-80171"
+    ]
+  },
+  {
+    "id": "CUI-04",
+    "domain": "Defense",
+    "title": "Defense incident reporting & media protection",
+    "explanation": "DFARS requires reporting cyber incidents affecting CUI to DoD within 72 hours; media handling and sanitisation are explicit 800-171 control families.",
+    "actions": [
+      "Build a 72-hour DoD/DC3 incident-reporting workflow for incidents touching CUI.",
+      "Mark, store and transport CUI media under the media-protection controls; sanitise before reuse or disposal.",
+      "Preserve and protect incident images and malware artefacts as required by DFARS."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "CMMC",
+      "NIST-80171"
+    ]
+  },
+  {
+    "id": "PCI-01",
+    "domain": "Payments",
+    "title": "Scope and segment the cardholder data environment (CDE)",
+    "explanation": "PCI DSS applies to everything in or connected to the CDE; network segmentation is the single biggest lever for reducing scope, cost and risk.",
+    "actions": [
+      "Map all cardholder data flows, storage and processing to define the CDE.",
+      "Segment the CDE from the rest of the network and validate segmentation at least annually (six-monthly for service providers).",
+      "Minimise stored cardholder data and never store sensitive authentication data after authorisation."
+    ],
+    "priority": "Critical",
+    "severity": "Critical",
+    "score": 9.0,
+    "phase": 2,
+    "effort": "M",
+    "regulations": [
+      "PCI-DSS",
+      "PSD2"
+    ]
+  },
+  {
+    "id": "PCI-02",
+    "domain": "Payments",
+    "title": "External (ASV) scanning & penetration testing",
+    "explanation": "PCI DSS requires quarterly external vulnerability scans by an Approved Scanning Vendor and annual segmentation-aware penetration testing.",
+    "actions": [
+      "Run quarterly ASV scans and remediate to a passing scan.",
+      "Perform internal and external penetration tests at least annually and after significant change.",
+      "Test segmentation controls as part of the penetration test."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "PCI-DSS"
+    ]
+  },
+  {
+    "id": "PCI-03",
+    "domain": "Payments",
+    "title": "Anti-malware, change-detection & secure payment pages",
+    "explanation": "PCI DSS v4.0 strengthened protection of payment pages (e.g. script and change-/tamper-detection) and requires anti-malware on at-risk systems.",
+    "actions": [
+      "Deploy and maintain anti-malware on systems commonly affected by malware.",
+      "Manage and monitor all scripts on payment pages and detect unauthorised changes to page headers/content.",
+      "Use change- and file-integrity monitoring to alert on unexpected modifications in the CDE."
+    ],
+    "priority": "High",
+    "severity": "High",
+    "score": 7.0,
+    "phase": 3,
+    "effort": "M",
+    "regulations": [
+      "PCI-DSS"
+    ]
+  },
+  {
+    "id": "PCI-04",
+    "domain": "Payments",
+    "title": "Targeted risk analyses & customised approach (v4.0.1)",
+    "explanation": "PCI DSS v4.0 lets entities tailor how some requirements are met via a documented targeted risk analysis - now a mandatory, future-dated activity.",
+    "actions": [
+      "Perform a documented targeted risk analysis for each requirement that allows one (e.g. frequency-based tasks).",
+      "Document any customised-approach controls and the assurance evidence supporting them.",
+      "Review and refresh targeted risk analyses at least every 12 months."
+    ],
+    "priority": "Medium",
+    "severity": "Moderate",
+    "score": 5.0,
+    "phase": 4,
+    "effort": "S",
+    "regulations": [
+      "PCI-DSS"
+    ]
+  }
+]

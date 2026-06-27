@@ -1,0 +1,54 @@
+services:
+  # --- open-source database: Postgres + pgvector --------------------------
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: regpulse
+      POSTGRES_PASSWORD: regpulse
+      POSTGRES_DB: regpulse
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U regpulse"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # --- open-source local LLM + embeddings runtime -------------------------
+  # Optional: enable with `docker compose --profile ai up`. Without it the app
+  # runs on deterministic templates + hash embeddings (USE_LLM=false) at $0.
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ai"]
+    volumes:
+      - ollama:/root/.ollama
+    ports: ["11434:11434"]
+    # GPU (optional): uncomment to use NVIDIA acceleration
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices: [{driver: nvidia, count: 1, capabilities: [gpu]}]
+
+  # --- application --------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://regpulse:regpulse@db:5432/regpulse
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      USE_LLM: ${USE_LLM:-false}
+      OLLAMA_URL: http://ollama:11434
+      LLM_MODEL: ${LLM_MODEL:-llama3.2:3b}
+      EMBED_MODEL: ${EMBED_MODEL:-nomic-embed-text}
+      ENABLE_SCHEDULER: "true"
+    ports: ["8000:8000"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  ollama:
