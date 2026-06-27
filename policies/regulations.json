@@ -1,0 +1,216 @@
+{
+  "baseline": "2026-01-31",
+  "regulations": [
+    {
+      "id": "iso27001",
+      "name": "ISO/IEC 27001",
+      "version": "2022 (+Amd 1:2024)",
+      "updated": "2024-02-01",
+      "note": "Amendment 1 (2024) adds climate-change consideration to clauses 4.1/4.2.",
+      "match": [
+        "27001"
+      ]
+    },
+    {
+      "id": "iso13485",
+      "name": "ISO 13485",
+      "version": "2016",
+      "updated": "2016-03-01",
+      "note": "QMS for medical devices; stable.",
+      "match": [
+        "13485"
+      ]
+    },
+    {
+      "id": "nist_csf",
+      "name": "NIST Cybersecurity Framework",
+      "version": "2.0",
+      "updated": "2024-02-26",
+      "note": "CSF 2.0 added the GOVERN function and broadened scope beyond critical infrastructure.",
+      "match": [
+        "csf 2.0",
+        "cybersecurity framework"
+      ]
+    },
+    {
+      "id": "nist_80053",
+      "name": "NIST SP 800-53",
+      "version": "Rev 5",
+      "updated": "2020-12-10",
+      "note": "Security & privacy controls catalog.",
+      "match": [
+        "800-53"
+      ]
+    },
+    {
+      "id": "nist_800218",
+      "name": "NIST SP 800-218 (SSDF)",
+      "version": "1.1",
+      "updated": "2022-02-01",
+      "note": "Secure Software Development Framework; basis for federal secure-software attestation.",
+      "match": [
+        "800-218",
+        "ssdf"
+      ]
+    },
+    {
+      "id": "nist_80063",
+      "name": "NIST SP 800-63B",
+      "version": "Rev 3 (Rev 4 in progress)",
+      "updated": "2017-06-01",
+      "note": "Authenticator assurance. Verify Rev 4 finalization on csrc.nist.gov.",
+      "match": [
+        "800-63"
+      ]
+    },
+    {
+      "id": "pci_dss",
+      "name": "PCI DSS",
+      "version": "4.0.1",
+      "updated": "2024-06-11",
+      "note": "Only active version since v4.0 retired 31 Dec 2024; future-dated requirements mandatory since 31 Mar 2025.",
+      "match": [
+        "pci dss",
+        "pci-dss"
+      ]
+    },
+    {
+      "id": "cvss",
+      "name": "CVSS",
+      "version": "4.0",
+      "updated": "2023-11-01",
+      "note": "v4.0 adds Attack Requirements and OT/ICS safety metrics; current.",
+      "match": [
+        "cvss"
+      ]
+    },
+    {
+      "id": "fda_524b",
+      "name": "FDA Premarket Cybersecurity / FD&C Act 524B",
+      "version": "Final guidance 2025-06-27",
+      "updated": "2025-06-27",
+      "note": "Final premarket cybersecurity guidance (supersedes 2023); mandatory SBOM, postmarket plan, CVD. Verify latest revision on fda.gov.",
+      "match": [
+        "524b",
+        "premarket cybersecurity",
+        "fda postmarket"
+      ]
+    },
+    {
+      "id": "fda_qmsr",
+      "name": "FDA QMSR (21 CFR 820)",
+      "version": "QMSR - effective 2026-02-02",
+      "updated": "2026-02-02",
+      "note": "QMSR aligns 21 CFR 820 with ISO 13485; effective 2 Feb 2026. Re-confirm QMS/record documents.",
+      "match": [
+        "21 cfr 820",
+        "qmsr"
+      ]
+    },
+    {
+      "id": "eu_ai_act",
+      "name": "EU AI Act",
+      "version": "Reg (EU) 2024/1689 (+Digital Omnibus 2026)",
+      "updated": "2026-05-07",
+      "note": "In force 1 Aug 2024; remainder applies 2 Aug 2026. Digital Omnibus (provisional agreement May 2026, adoption expected Jul 2026) defers high-risk obligations: Annex III to 2 Dec 2027, Annex I (incl. medical devices) to 2 Aug 2028.",
+      "match": [
+        "eu ai act",
+        "ai act"
+      ]
+    },
+    {
+      "id": "eu_cra",
+      "name": "EU Cyber Resilience Act",
+      "version": "Reg (EU) 2024/2847",
+      "updated": "2024-12-10",
+      "note": "In force; main obligations apply from ~Dec 2027. Verify phased dates.",
+      "match": [
+        "cyber resilience act",
+        "eu cra"
+      ]
+    },
+    {
+      "id": "iso_42001",
+      "name": "ISO/IEC 42001",
+      "version": "2023",
+      "updated": "2023-12-18",
+      "note": "AI management system standard.",
+      "match": [
+        "42001"
+      ]
+    },
+    {
+      "id": "nist_ai_rmf",
+      "name": "NIST AI RMF",
+      "version": "1.0",
+      "updated": "2023-01-26",
+      "note": "AI risk management framework.",
+      "match": [
+        "ai rmf"
+      ]
+    },
+    {
+      "id": "iso_27701",
+      "name": "ISO/IEC 27701",
+      "version": "2019",
+      "updated": "2019-08-01",
+      "note": "Privacy information management extension to 27001.",
+      "match": [
+        "27701"
+      ]
+    },
+    {
+      "id": "iec_62443",
+      "name": "IEC 62443",
+      "version": "series",
+      "updated": "2018-01-01",
+      "note": "Industrial automation & control systems (OT) security.",
+      "match": [
+        "62443"
+      ]
+    },
+    {
+      "id": "iec_62304",
+      "name": "IEC 62304",
+      "version": "2006 +Amd1:2015",
+      "updated": "2015-06-01",
+      "note": "Medical device software lifecycle.",
+      "match": [
+        "62304"
+      ]
+    },
+    {
+      "id": "iec_81001",
+      "name": "IEC 81001-5-1",
+      "version": "2021",
+      "updated": "2021-12-01",
+      "note": "Health software & health IT security activities in the lifecycle.",
+      "match": [
+        "81001-5-1",
+        "81001"
+      ]
+    },
+    {
+      "id": "sbom",
+      "name": "SBOM (NTIA min. elements / SPDX / CycloneDX)",
+      "version": "current",
+      "updated": "2021-07-12",
+      "note": "Component transparency; required by FDA 524B for cyber devices.",
+      "match": [
+        "sbom",
+        "spdx",
+        "cyclonedx"
+      ]
+    },
+    {
+      "id": "slsa",
+      "name": "SLSA",
+      "version": "1.0",
+      "updated": "2023-04-19",
+      "note": "Supply-chain levels for software artifacts (build provenance).",
+      "match": [
+        "slsa"
+      ]
+    }
+  ]
+}
