@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SecIntel — Agentic Security-Incident Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<div class="scanlines" aria-hidden="true"></div>
+
+<header class="masthead">
+  <div class="brand">
+    <div class="mark" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div>
+      <h1>SecIntel</h1>
+      <p class="tagline">Agentic security-incident intelligence · state&nbsp;AG&nbsp;+&nbsp;SEC disclosures</p>
+    </div>
+  </div>
+  <div class="head-right">
+    <div class="live-wrap">
+      <button class="live-btn" id="liveBtn" title="Run the multi-source tracker: SEC 8-K + 10-K (2025–2026), HHS OCR, state AG portals">
+        <span class="ring" aria-hidden="true"></span><span id="liveLabel">Run tracker</span>
+      </button>
+      <span class="synced" id="syncedText">not synced yet</span>
+    </div>
+    <div class="mode" id="modeBadge" title="Inference backend">
+      <span class="dot" id="modeDot"></span><span id="modeText">connecting…</span>
+    </div>
+  </div>
+</header>
+
+<!-- SIGNATURE: live stat band -->
+<section class="statband" id="statband" aria-label="Statistics for current selection">
+  <div class="stat clickable" data-act="all" title="Show all incidents"><div class="num" id="s_incidents">—</div><div class="lab">Incidents</div></div>
+  <div class="stat clickable" data-act="records" title="Sort by individuals impacted"><div class="num" id="s_records">—</div><div class="lab">Individuals impacted</div></div>
+  <div class="stat alert clickable" data-act="nation" title="Filter to nation-state"><div class="num" id="s_nation">—</div><div class="lab">Nation-state</div></div>
+  <div class="stat clickable" data-act="sec" title="Filter to SEC-reported"><div class="num" id="s_sec">—</div><div class="lab">Reported to SEC</div></div>
+  <div class="stat clickable" data-act="ag" title="Filter to state-AG-reported"><div class="num" id="s_ag">—</div><div class="lab">Reported to state AG</div></div>
+  <div class="stat wide">
+    <div class="lab">By domain</div>
+    <div class="bars" id="domainBars"></div>
+  </div>
+</section>
+
+<section class="controls" aria-label="Filters">
+  <div class="ctl"><label for="domainSel">Domain</label><select id="domainSel"></select></div>
+  <div class="ctl"><label for="sectorSel">Sector</label><select id="sectorSel"></select></div>
+  <div class="ctl"><label for="stateSel">State (AG)</label><select id="stateSel"></select></div>
+  <div class="ctl"><label for="productSel">Product / entity</label><select id="productSel"></select></div>
+  <div class="ctl"><label for="yearFrom">Year from</label><select id="yearFrom"></select></div>
+  <div class="ctl"><label for="yearTo">Year to</label><select id="yearTo"></select></div>
+  <button class="toggle sec" id="secToggle" aria-pressed="false">SEC-reported</button>
+  <button class="toggle" id="nationToggle" aria-pressed="false">Nation-state</button>
+  <button class="ghost" id="resetBtn">Reset</button>
+</section>
+
+<section class="prov" id="provenance" hidden aria-label="Data sources">
+  <div class="prov-head"><span>Where this data was obtained</span><span class="prov-win" id="provWindow"></span></div>
+  <div class="prov-grid" id="provGrid"></div>
+</section>
+
+<section class="stats-panel" id="agencyStats" aria-label="State and agency statistics">
+  <div class="prov-head"><span>State &amp; agency breach statistics (annual)</span><span class="prov-win">official sources</span></div>
+  <div class="sgrid" id="sgrid"></div>
+</section>
+
+<main class="grid">
+  <section class="panel feed" aria-label="Incident feed">
+    <div class="panel-head"><h2>Incident feed</h2><span class="count" id="feedCount"></span></div>
+    <div id="feed"></div>
+  </section>
+
+  <section class="panel analyst" aria-label="AI analyst">
+    <div class="panel-head"><h2>AI analyst</h2><span class="hint">open-source · local</span></div>
+    <div class="chat" id="chat">
+      <div class="msg bot">Ask about the current selection — e.g. <em>“how many nation-state incidents in Telecom and who's behind them?”</em> or <em>“summarize the Manufacturing risk.”</em></div>
+    </div>
+    <div class="suggest" id="suggest"></div>
+    <div class="composer">
+      <textarea id="prompt" rows="2" placeholder="Ask the analyst…"></textarea>
+      <button id="sendBtn">Send</button>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  Seed data is illustrative and source-linked where available — verify against primary sources before operational use. Planning intelligence only, not legal advice.
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>

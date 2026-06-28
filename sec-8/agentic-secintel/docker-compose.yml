@@ -1,0 +1,12 @@
+services:
+  secintel:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # set your contact so SEC EDGAR live refresh works
+      SEC_USER_AGENT: "Your Name your@email.com"
+      # LIVE_ON_START: "1"   # uncomment to auto-pull latest on boot
+    # To use a local open-source LLM, run Ollama on the host and point to it:
+    # extra_hosts: ["host.docker.internal:host-gateway"]
+    # environment: { OLLAMA_URL: "http://host.docker.internal:11434" }
