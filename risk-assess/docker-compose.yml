@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # point at the ollama service below for generative answers (optional)
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: llama3.2
+      USE_EMBEDDINGS: "false"   # set to auto if you add sentence-transformers
+    depends_on:
+      - ollama
+
+  # Optional local open-source LLM. Remove this service to run extractive-only.
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+
+volumes:
+  ollama:

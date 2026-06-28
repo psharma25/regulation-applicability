@@ -1,0 +1,16 @@
+# Core API (required)
+fastapi>=0.110
+uvicorn[standard]>=0.27
+pydantic>=2.5
+openpyxl>=3.1
+
+# Retrieval fallback (required - lightweight, fully offline)
+scikit-learn>=1.3
+numpy>=1.24
+
+# Optional: dense embeddings for better RAG (large download; remove to stay minimal)
+# sentence-transformers>=2.6
+
+# Tests
+pytest>=7.4
+httpx>=0.27

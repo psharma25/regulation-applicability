@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Risk Assessment AI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">◆</span>
+      <div>
+        <h1>Risk Assessment AI</h1>
+        <p>Agentic RAG over risk standards · downloadable Excel templates · 100% open source</p>
+      </div>
+    </div>
+    <div id="status" class="status">checking…</div>
+  </header>
+
+  <main>
+    <section class="panel chat-panel">
+      <h2>Ask the risk assistant</h2>
+      <div id="messages" class="messages">
+        <div class="msg bot">
+          Hi! Ask me about ISO 14971, ISO 31000, COSO ERM, NIST/FAIR, FDA submissions, or cyber/IP risk.
+          Or say “download the finance template”. Try the suggestions below.
+        </div>
+      </div>
+      <div class="suggestions" id="suggestions"></div>
+      <form id="chat-form" autocomplete="off">
+        <input id="chat-input" type="text" placeholder="e.g. How does ISO 14971 estimate probability of harm?" />
+        <button type="submit">Send</button>
+      </form>
+    </section>
+
+    <section class="panel forms-panel">
+      <h2>Risk assessment templates</h2>
+      <p class="muted">Excel workbooks with live formulas (Likelihood × Impact), risk matrix, controls and residual risk.</p>
+      <div id="forms" class="forms"></div>
+    </section>
+
+    <section class="panel mapping-panel">
+      <div class="mapping-head">
+        <h2>Hazard / risk mapping library</h2>
+        <select id="mapping-domain">
+          <option value="medical">Medical — Hazard mapping (ISO 14971)</option>
+          <option value="finance">Finance — Risk taxonomy</option>
+          <option value="technology">Technology — STRIDE threat catalog</option>
+        </select>
+      </div>
+      <p class="muted" id="mapping-title"></p>
+      <div class="table-wrap"><table id="mapping-table"></table></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Open-source stack: FastAPI · sentence-transformers / scikit-learn · Ollama · openpyxl · vanilla JS</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
