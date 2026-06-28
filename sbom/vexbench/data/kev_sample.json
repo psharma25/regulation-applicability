@@ -1,0 +1,5 @@
+{
+  "refreshed": "offline-seed",
+  "note": "Seed cache so the tool runs offline. Run `python intel.py --refresh` for the live CISA KEV catalog.",
+  "cves": ["CVE-2021-44228","CVE-2023-38545","CVE-2014-0160","CVE-2019-0708","CVE-2017-0144","CVE-2021-34527","CVE-2022-22965","CVE-2018-13379","CVE-2023-4863","CVE-2021-26855"]
+}

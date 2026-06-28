@@ -1,0 +1,11 @@
+services:
+  vexbench:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # point at a local Ollama if you have one; comment out to force deterministic
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=llama3.1:8b
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
