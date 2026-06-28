@@ -1,1 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatLoom — Agentic Threat Modeling Console</title>
+<!-- Export libs (client-side, optional; app works without them for SVG/PNG) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
+<style>
+:root{
+  --bg:#0a0e16; --bg2:#0e1421; --panel:#111a2b; --panel2:#0c1320;
+  --line:#1e2b42; --line2:#2b3a57; --ink:#e7eefc; --muted:#8aa0c4; --faint:#5c6f93;
+  --accent:#37e0c4;          /* signal teal — the instrument's pulse */
+  --accent2:#5b8cff;         /* data flow */
+  --proto:#c08bff;           /* protocols */
+  --auth:#ffcf5b;            /* access / auth */
+  --crit:#ff4d5e; --high:#ff8a3d; --med:#ffc24b; --low:#7cd16f; --info:#5b8cff;
+  --cve:#ff4d5e; --mit:#39d98a; --remediate:#ff4d5e; --accept:#8aa0c4;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --grad1:rgba(55,224,196,.06); --grad2:rgba(91,140,255,.06); --btn-ink:#062019;
+}
+:root[data-theme="light"]{
+  --bg:#eef1f7; --bg2:#ffffff; --panel:#ffffff; --panel2:#f3f6fc;
+  --line:#dbe2ef; --line2:#c3cee0; --ink:#16202e; --muted:#4f6079; --faint:#8395b0;
+  --accent:#0d9b86;          /* deeper teal for white bg legibility */
+  --accent2:#2f6bff;         /* data flow */
+  --proto:#8a4fdc;           /* protocols */
+  --auth:#b8860b;            /* access / auth */
+  --crit:#e02438; --high:#d4661a; --med:#b8860b; --low:#2e9e4f; --info:#2f6bff;
+  --cve:#e02438; --mit:#1aa56b; --remediate:#e02438; --accept:#5b6b85;
+  --grad1:rgba(13,155,134,.07); --grad2:rgba(47,107,255,.06); --btn-ink:#ffffff;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:13px;overflow:hidden;
+  background-image:radial-gradient(circle at 18% -10%,var(--grad1),transparent 40%),radial-gradient(circle at 90% 110%,var(--grad2),transparent 45%);
+  transition:background .25s,color .25s;}
+button{font-family:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
 
+/* ---- top bar ---- */
+.topbar{height:48px;display:flex;align-items:center;gap:14px;padding:0 14px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#0e1626,#0a121f)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:.3px}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.brand small{font-weight:500;color:var(--muted);letter-spacing:1.4px;font-size:9.5px;text-transform:uppercase}
+.scenario-pick{margin-left:6px;display:flex;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:3px}
+.scenario-pick button{border:none;background:transparent;color:var(--muted);padding:5px 11px;border-radius:7px;font-size:11.5px;font-weight:600}
+.scenario-pick button.on{background:var(--accent);color:var(--btn-ink);box-shadow:0 0 0 1px rgba(55,224,196,.3)}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.risk-chip{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:5px 11px}
+.risk-chip .lbl{font-size:9px;letter-spacing:1px;color:var(--faint);text-transform:uppercase}
+.risk-chip .val{font-family:var(--mono);font-weight:700;font-size:15px}
+.btn{background:var(--panel);border:1px solid var(--line2);border-radius:8px;padding:7px 12px;font-size:11.5px;font-weight:600;color:var(--ink)}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--btn-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+
+/* ---- main grid with resizable frames ---- */
+.shell{display:flex;height:calc(100vh - 48px)}
+.rail{width:288px;min-width:200px;background:var(--panel2);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.center{flex:1;display:flex;flex-direction:column;min-width:340px;overflow:hidden}
+.inspector{width:312px;min-width:220px;background:var(--panel2);border-left:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.gutter{width:6px;cursor:col-resize;background:transparent;position:relative;flex:0 0 6px}
+.gutter::after{content:"";position:absolute;inset:0 2px;border-radius:3px}
+.gutter:hover::after{background:var(--accent)}
+.gutter.row{height:6px;width:auto;cursor:row-resize;flex:0 0 6px}
+
+.sec{border-bottom:1px solid var(--line)}
+.sec h3{margin:0;padding:11px 13px 9px;font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:7px}
+.sec h3 .k{margin-left:auto;font-family:var(--mono);color:var(--accent);font-size:10px}
+.sec .body{padding:0 13px 13px}
+.rail-scroll{overflow-y:auto;flex:1}
+
+/* inputs / overlay toggles */
+.drop{border:1.5px dashed var(--line2);border-radius:10px;padding:14px;text-align:center;color:var(--muted);font-size:11.5px;transition:.15s}
+.drop:hover,.drop.hot{border-color:var(--accent);color:var(--accent);background:rgba(55,224,196,.04)}
+.drop b{color:var(--ink)}
+.chiprow{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chip{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid var(--line2);color:var(--muted);background:var(--panel)}
+.ovl{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;margin-bottom:5px;background:var(--panel);border:1px solid var(--line);cursor:pointer;user-select:none}
+.ovl:hover{border-color:var(--line2)}
+.ovl.on{border-color:currentColor}
+.ovl .sw{width:30px;height:17px;border-radius:20px;background:var(--line2);position:relative;flex:0 0 30px;transition:.15s}
+.ovl .sw::after{content:"";position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.15s}
+.ovl.on .sw{background:currentColor}
+.ovl.on .sw::after{left:15px}
+.ovl .nm{font-size:11.5px;font-weight:600;color:var(--ink)}
+.ovl .sub{font-size:9.5px;color:var(--faint)}
+.ovl .swatch{width:9px;height:9px;border-radius:2px;background:currentColor;margin-left:auto}
+
+.fw-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.fw-tabs button{flex:1;min-width:54px;background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 4px;font-size:10px;font-weight:700;color:var(--muted)}
+.fw-tabs button.on{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+
+.addmenu{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.addmenu button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 6px;font-size:10.5px;font-weight:600;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:3px}
+.addmenu button:hover{border-color:var(--accent);color:var(--accent)}
+.addmenu .ic{font-size:14px}
+
+/* canvas */
+.canvas-head{height:42px;display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--line);background:var(--bg2)}
+.canvas-head .title{font-weight:700;font-size:13px}
+.canvas-head .scn{font-size:10px;color:var(--faint);font-family:var(--mono)}
+.ctrls{margin-left:auto;display:flex;align-items:center;gap:5px}
+.icbtn{width:30px;height:28px;border-radius:7px;background:var(--panel);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted)}
+.icbtn:hover{color:var(--accent);border-color:var(--accent)}
+.zoomlbl{font-family:var(--mono);font-size:10px;color:var(--muted);width:42px;text-align:center}
+.canvas-wrap{flex:1;position:relative;overflow:hidden;background:
+  linear-gradient(var(--line) .5px,transparent .5px) 0 0/100% 26px,
+  linear-gradient(90deg,var(--line) .5px,transparent .5px) 0 0/26px 100%,var(--bg);background-blend-mode:soft-light}
+#stage{position:absolute;inset:0;width:100%;height:100%}
+.node-edit-hint{position:absolute;bottom:10px;left:12px;font-size:10px;color:var(--faint);font-family:var(--mono);background:rgba(10,14,22,.7);padding:4px 9px;border-radius:6px;border:1px solid var(--line)}
+
+/* lower analysis dock */
+.dock{height:248px;min-height:120px;border-top:1px solid var(--line);background:var(--panel2);display:flex;flex-direction:column;overflow:hidden}
+.dock-tabs{display:flex;gap:2px;padding:6px 8px 0;border-bottom:1px solid var(--line);align-items:flex-end}
+.dock-tabs button{background:transparent;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;padding:7px 13px;font-size:11px;font-weight:600;color:var(--muted)}
+.dock-tabs button.on{background:var(--panel);border-color:var(--line);color:var(--ink)}
+.dock-body{flex:1;overflow:auto;padding:12px 14px}
+.dock-pane{display:none}
+.dock-pane.on{display:block}
+
+/* generic */
+.row{display:flex;gap:8px;align-items:center}
+.lbl{font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--faint);margin:10px 0 4px;display:block}
+.in{width:100%;background:var(--panel);border:1px solid var(--line2);border-radius:7px;padding:7px 9px;color:var(--ink);font-size:12px}
+.in:focus{outline:none;border-color:var(--accent)}
+textarea.in{resize:vertical;min-height:54px;font-family:var(--mono);font-size:11px}
+.sev{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px}
+.sev .d{width:7px;height:7px;border-radius:50%}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:11px;margin-bottom:9px}
+.card .top{display:flex;align-items:center;gap:8px}
+.card .id{font-family:var(--mono);font-size:10px;color:var(--faint)}
+.card .nm{font-weight:600;font-size:12.5px}
+.tag{font-family:var(--mono);font-size:9.5px;padding:2px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--muted)}
+.mit-line{color:var(--mit)}
+.statuspill{font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.empty{color:var(--faint);font-size:11.5px;text-align:center;padding:20px}
+.bar{height:8px;border-radius:5px;background:var(--line);overflow:hidden}
+.bar > i{display:block;height:100%;border-radius:5px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-bottom:9px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.assist-msg{font-size:11.5px;line-height:1.5;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:8px;white-space:pre-wrap}
+.assist-msg.user{background:rgba(91,140,255,.08);border-color:var(--accent2)}
+.assist-msg.step{background:var(--panel2);border-color:var(--line);padding:6px 10px;margin-bottom:5px}
+.agent-step{color:var(--accent);font-family:var(--mono);font-size:10.5px}
+.rag-src{background:var(--panel2);border:1px dashed var(--line2);border-radius:8px;padding:7px 9px;margin-bottom:8px;white-space:normal}
+.rag-src-h{color:var(--muted);font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;margin-bottom:5px;text-transform:uppercase}
+.rag-src .src{display:inline-block;font-size:9.5px;font-family:var(--mono);background:var(--bg2);border:1px solid var(--line2);border-radius:5px;padding:2px 6px;margin:2px 4px 2px 0;color:var(--ink);cursor:help}
+.rag-src .src b{color:var(--accent)}
+.small{font-size:10.5px;color:var(--muted)}
+.kvs{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:11px}
+.kvs b{color:var(--faint);font-weight:600}
+.del{color:var(--crit);font-size:10px;background:none;border:none;margin-left:auto}
+.del:hover{text-decoration:underline}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--accent);color:var(--ink);padding:10px 16px;border-radius:9px;font-size:12px;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.dropdown{position:relative}
+.menu{position:absolute;right:0;top:34px;background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:5px;z-index:50;min-width:150px;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:7px 10px;border-radius:6px;font-size:11.5px;color:var(--ink)}
+.menu button:hover{background:var(--panel2);color:var(--accent)}
+.hide{display:none!important}
+svg text{user-select:none}
+.node-g{cursor:move}
+.whatif-item{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--line)}
+.whatif-item input{accent-color:var(--accent)}
+
+/* ---- what-if scenario walkthrough ---- */
+.wif-modes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.wif-modes button{background:var(--bg2);border:1px solid var(--line2);border-radius:999px;padding:6px 13px;font-size:11px;font-weight:600;color:var(--muted)}
+.wif-modes button.on{background:var(--accent);border-color:var(--accent);color:var(--btn-ink,#062019)}
+.wif-intro{display:flex;align-items:center;gap:10px;margin-bottom:12px;color:var(--muted)}
+.wif-intro .btn{padding:4px 11px}
+.wif-grid{display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap}
+.wif-col{flex:1;min-width:230px}
+.wif-intro2{margin-bottom:14px}
+.wif-blurb{font-size:12.5px;line-height:1.55;color:var(--ink)}
+.wif-ref{font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:6px;letter-spacing:.03em}
+.wif-summary{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.wif-stat{flex:1;min-width:150px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:13px 15px;display:flex;flex-direction:column;gap:8px}
+.wif-stat-l{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.wif-big{font-size:30px;font-weight:800;line-height:1}
+.wif-big small{font-size:12px;font-weight:600;color:var(--muted);margin-left:4px}
+.wif-ring{--p:0;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--line) 0)}
+.wif-ring span{width:42px;height:42px;border-radius:50%;background:var(--bg2);display:grid;place-items:center;font-weight:800;font-size:13px}
+.wif-steps{display:flex;flex-direction:column;gap:10px}
+.wif-step{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--line2);border-radius:11px;padding:12px 14px}
+.wif-step.covered{border-left-color:var(--mit)}
+.wif-step.partial{border-left-color:var(--med)}
+.wif-step.gap{border-left-color:var(--crit)}
+.wif-step-h{display:flex;align-items:center;gap:10px}
+.wif-step-n{width:21px;height:21px;border-radius:50%;background:var(--panel2);border:1px solid var(--line2);display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--muted);flex:0 0 auto}
+.wif-step-name{font-weight:700;font-size:13px;flex:1}
+.wif-step-req{font-size:12px;color:var(--muted);line-height:1.5;margin:7px 0 9px 31px}
+.wif-assume{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink);margin-left:31px;cursor:pointer}
+.wif-assume.done{color:var(--mit);cursor:default}
+.wif-assume input{accent-color:var(--accent)}
+
+/* ---- collapsible rail sections (less dense) ---- */
+.sec h3{cursor:pointer;user-select:none}
+.sec h3 .chev{margin-left:auto;transition:transform .18s;color:var(--faint);font-size:11px}
+.sec h3 .k+.chev{margin-left:8px}
+.sec.collapsed .body{display:none}
+.sec.collapsed h3 .chev{transform:rotate(-90deg)}
+
+/* ---- frame collapse / focus controls ---- */
+.frame-btn{background:transparent;border:1px solid var(--line2);border-radius:7px;width:26px;height:24px;display:grid;place-items:center;color:var(--muted);font-size:13px;line-height:1}
+.frame-btn:hover{border-color:var(--accent);color:var(--accent)}
+.rail.collapsed,.inspector.collapsed{width:46px!important;min-width:46px!important}
+.rail.collapsed .rail-scroll,.inspector.collapsed .insp-body,.inspector.collapsed .insp-tabs{display:none}
+.collapsed-tab{display:none;writing-mode:vertical-rl;transform:rotate(180deg);padding:14px 0;font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;cursor:pointer;text-align:center}
+.rail.collapsed .collapsed-tab,.inspector.collapsed .collapsed-tab{display:flex;align-items:center;justify-content:center;gap:8px;flex:1}
+.rail-head,.insp-head{display:flex;align-items:center;gap:8px;padding:9px 11px;border-bottom:1px solid var(--line);min-height:40px}
+.rail-head .ttl,.insp-head .ttl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700}
+.rail.collapsed .rail-head .ttl,.inspector.collapsed .insp-head .ttl{display:none}
+.dock.collapsed{height:42px!important;min-height:42px!important}
+.dock.collapsed .dock-body{display:none}
+.shell.focus-diagram .rail,.shell.focus-diagram .inspector,.shell.focus-diagram .dock,
+.shell.focus-diagram .gutter{display:none!important}
+.dock-tools{margin-left:auto;display:flex;gap:6px;padding-right:6px}
+.icbtn.on{background:var(--accent);color:var(--btn-ink);border-color:var(--accent)}
+#canvasWrap:fullscreen{background:var(--bg)}
+#canvasWrap:fullscreen .node-edit-hint{bottom:14px}
+/* density polish */
+.rail{width:300px}
+.canvas-head{height:46px}
+.sec .body{padding:2px 14px 15px}
+.ovl{margin-bottom:7px}
+.dock-body{padding:14px 16px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="dot"></span>ThreatLoom<small>agentic&nbsp;threat&nbsp;modeling</small></div>
+  <div class="scenario-pick" id="scenarioPick"></div>
+  <div class="top-actions">
+    <div class="risk-chip"><span class="lbl">Residual</span><span class="val" id="residualTop">—</span></div>
+    <div class="risk-chip"><span class="lbl">Inherent</span><span class="val" id="inherentTop" style="color:var(--muted)">—</span></div>
+    <div class="dropdown">
+      <button class="btn" id="exportBtn">Export ▾</button>
+      <div class="menu hide" id="exportMenu">
+        <button data-x="svg">Diagram → SVG</button>
+        <button data-x="png">Diagram → PNG</button>
+        <button data-x="pdf">Report → PDF</button>
+        <button data-x="pptx">Deck → PowerPoint</button>
+        <button data-x="doc">Report → Word</button>
+        <button data-x="json">Model → JSON</button>
+      </div>
+    </div>
+    <button class="btn" id="themeBtn" title="Toggle light / dark background">☾ Dark</button>
+    <button class="btn primary" id="agentBtn">⟳ Run agent</button>
+  </div>
+</div>
+
+<div class="shell" id="shell">
+  <!-- LEFT RAIL -->
+  <aside class="rail" id="rail">
+    <div class="rail-head">
+      <span class="ttl">Controls</span>
+      <button class="frame-btn" id="railCollapse" title="Collapse panel" style="margin-left:auto">‹</button>
+    </div>
+    <div class="collapsed-tab" id="railExpand">Controls ›</div>
+    <div class="rail-scroll">
+      <div class="sec">
+        <h3 data-acc>Inputs <span class="k">ingest</span><span class="chev">▾</span></h3>
+        <div class="body">
+          <div class="drop" id="drop">
+            <b>Drop or browse</b><br>code · repo link · diagram · pdf · docx · SBOM · libraries
+            <input type="file" id="file" multiple class="hide">
+          </div>
+          <input class="in" id="repo" placeholder="https://github.com/org/repo" style="margin-top:9px">
+          <div class="chiprow" id="ingested"></div>
+        </div>
+      </div>
+      <div class="sec">
+        <h3 data-acc>Overlays <span class="k">layer</span><span class="chev">▾</span></h3>
+        <div class="body" id="overlayBox"></div>
+      </div>
+      <div class="sec collapsed">
+        <h3 data-acc>Framework lens <span class="k">map</span><span class="chev">▾</span></h3>
+        <div class="body">
+          <div class="fw-tabs" id="fwTabs"></div>
+          <div class="small" id="fwHint" style="margin-top:8px"></div>
+        </div>
+      </div>
+      <div class="sec collapsed">
+        <h3 data-acc>Add element <span class="k">+</span><span class="chev">▾</span></h3>
+        <div class="body">
+          <div class="addmenu" id="addMenu"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="gutter" data-resize="rail"></div>
+
+  <!-- CENTER -->
+  <main class="center" id="center">
+    <div class="canvas-head">
+      <div>
+        <div class="title" id="canvasTitle">System Architecture</div>
+        <div class="scn" id="canvasScn"></div>
+      </div>
+      <div class="ctrls">
+        <button class="icbtn" id="zoomOut" title="Zoom out">−</button>
+        <span class="zoomlbl" id="zoomLbl">100%</span>
+        <button class="icbtn" id="zoomIn" title="Zoom in">+</button>
+        <button class="icbtn" id="zoomFit" title="Fit">⊡</button>
+        <button class="icbtn" id="bigger" title="Enlarge diagram">⤢</button>
+        <button class="icbtn" id="focusDiagram" title="Focus diagram (hide panels)">⤡</button>
+        <button class="icbtn" id="popoutDiagram" title="Pop out / full screen">⛶</button>
+      </div>
+    </div>
+    <div class="canvas-wrap" id="canvasWrap">
+      <svg id="stage" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="node-edit-hint">drag nodes · click to inspect · scroll to zoom · shift-drag to pan</div>
+    </div>
+    <div class="gutter row" data-resize="dock"></div>
+    <!-- LOWER DOCK -->
+    <section class="dock" id="dock">
+      <div class="dock-tabs" id="dockTabs">
+        <div class="dock-tools">
+          <button class="frame-btn" id="dockCollapse" title="Collapse analysis dock">▾</button>
+        </div>
+      </div>
+      <div class="dock-body">
+        <div class="dock-pane on" id="pane-attack"></div>
+        <div class="dock-pane" id="pane-frame"></div>
+        <div class="dock-pane" id="pane-risk"></div>
+        <div class="dock-pane" id="pane-whatif"></div>
+        <div class="dock-pane" id="pane-certs"></div>
+      </div>
+    </section>
+  </main>
+  <div class="gutter" data-resize="inspector"></div>
+
+  <!-- RIGHT INSPECTOR -->
+  <aside class="inspector" id="inspector">
+    <div class="insp-head">
+      <button class="frame-btn" id="inspCollapse" title="Collapse panel">›</button>
+      <span class="ttl">Inspector</span>
+    </div>
+    <div class="collapsed-tab" id="inspExpand">‹ Inspector</div>
+    <div class="dock-tabs insp-tabs" style="border-bottom:1px solid var(--line)">
+      <button class="on" data-itab="inspect">Inspect</button>
+      <button data-itab="threats">Threats</button>
+      <button data-itab="assist">Agent</button>
+    </div>
+    <div class="dock-body insp-body" style="flex:1">
+      <div class="dock-pane on" id="itab-inspect"><div class="empty">Select a node, flow, or threat to inspect & edit.</div></div>
+      <div class="dock-pane" id="itab-threats"></div>
+      <div class="dock-pane" id="itab-assist">
+        <div id="assistLog"></div>
+        <textarea class="in" id="assistInput" placeholder="Ask the agent — e.g. 'enumerate threats on the mobile↔cloud flow' or 'what must I remediate first?'"></textarea>
+        <div class="row" style="margin-top:7px">
+          <input class="in" id="ollamaUrl" value="http://localhost:11434" style="font-size:10px">
+          <button class="btn primary" id="assistSend">Send</button>
+        </div>
+        <div class="small" style="margin-top:6px">Retrieval-augmented: every answer is grounded in the indexed model and shows its sources. Uses local Ollama if reachable, otherwise a deterministic on-device engine over the same retrieved context.</div>
+      </div>
+    </div>
+  </aside>
+</div>
+<script>
+/* ============================== ThreatLoom engine ============================== */
+"use strict";
+
+/* ---- framework + severity metadata ---- */
+const SEV = {Critical:{w:4,c:"--crit"},High:{w:3,c:"--high"},Medium:{w:2,c:"--med"},Low:{w:1,c:"--low"},Info:{w:0,c:"--info"}};
+const sevW = s => (SEV[s]||SEV.Low).w;
+const cssv = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const sevColor = s => cssv((SEV[s]||SEV.Low).c);
+const isLight = () => document.documentElement.getAttribute("data-theme")==="light";
+/* bright dark-theme zone hues remapped to readable equivalents on white */
+const ZONE_LIGHT = {"#ff4d5e":"#c0202f","#ffc24b":"#8a5e00","#37e0c4":"#0c8a78","#5b8cff":"#2b58c8","#c08bff":"#7333c4","#8aa0c4":"#4a5b73"};
+const zoneColor = raw => isLight() ? (ZONE_LIGHT[(raw||"").toLowerCase()]||raw) : raw;
+
+const FRAMEWORKS = {
+  STRIDE:{name:"STRIDE",hint:"Spoofing · Tampering · Repudiation · Info disclosure · DoS · Elevation",
+    cats:["Spoofing","Tampering","Repudiation","Info Disclosure","Denial of Service","Elevation of Privilege"],key:"stride"},
+  ATTACK:{name:"ATT&CK",hint:"MITRE ATT&CK enterprise/mobile/ICS tactics & techniques",
+    cats:["Initial Access","Execution","Persistence","Priv Esc","Defense Evasion","Credential Access","Lateral Movement","Exfiltration","Impact"],key:"attack"},
+  ATLAS:{name:"ATLAS",hint:"MITRE ATLAS — adversarial ML / AI system tactics",
+    cats:["ML Recon","ML Supply Chain","ML Model Access","Poisoning","Evasion","Exfiltration","ML Attack Staging"],key:"atlas"},
+  OWASP:{name:"OWASP",hint:"OWASP Top 10 / API / LLM Top 10",
+    cats:["Broken AuthN","Broken AuthZ","Injection","SSRF","Crypto Failures","Misconfig","Vuln Components","Logging Gaps","Prompt Injection","Model DoS"],key:"owasp"}
+};
+
+/* ---- helper to make a threat ---- */
+function T(id,title,target,sev,opts={}){
+  return Object.assign({
+    id,title,target,severity:sev,
+    stride:[],attack:[],atlas:[],owasp:[],cves:[],mitigations:[],
+    status:"mitigate", note:""
+  },opts);
+}
+
+/* ============================== EXAMPLE MODELS ============================== */
+const MODELS = {};
+
+/* ---------- 1. SaMD : cloud AI diagnostic ---------- */
+MODELS.samd = {
+  id:"samd", name:"SaMD", scn:"Cloud AI diagnostic (Class II SaMD · FDA 524B)",
+  zones:[
+    {id:"z-net",name:"Untrusted / Internet",x:30,y:40,w:250,h:430,color:"#ff4d5e"},
+    {id:"z-dmz",name:"DMZ / Edge",x:300,y:40,w:210,h:430,color:"#ffc24b"},
+    {id:"z-cloud",name:"Trusted Cloud (PHI boundary)",x:530,y:40,w:430,h:430,color:"#37e0c4"}
+  ],
+  nodes:[
+    {id:"clin",name:"Clinician Browser",type:"actor",zone:"z-net",x:70,y:110,libs:[],protocols:["TLS 1.3"],certs:["WebPKI"]},
+    {id:"mob",name:"Patient Mobile App",type:"client",zone:"z-net",x:70,y:300,libs:["OkHttp 4.9","React Native 0.71"],protocols:["TLS 1.3"],certs:["App attestation"]},
+    {id:"gw",name:"API Gateway / WAF",type:"gateway",zone:"z-dmz",x:340,y:170,libs:["Envoy 1.27"],protocols:["TLS 1.3","mTLS"],certs:["Server TLS"]},
+    {id:"auth",name:"Auth Service (OIDC)",type:"service",zone:"z-cloud",x:580,y:90,libs:["Keycloak 22"],protocols:["OIDC","OAuth2"],certs:["Token signing"]},
+    {id:"inf",name:"AI Inference Engine",type:"ai",zone:"z-cloud",x:790,y:90,libs:["PyTorch 2.1","triton 2.1"],protocols:["gRPC"],certs:[]},
+    {id:"reg",name:"Model Registry",type:"store",zone:"z-cloud",x:790,y:260,libs:["MLflow 2.7"],protocols:["HTTPS"],certs:["Artifact signing"]},
+    {id:"phi",name:"Patient Data Store (PHI)",type:"db",zone:"z-cloud",x:580,y:260,libs:["PostgreSQL 15"],protocols:["TLS"],certs:["Disk: AES-256"]},
+    {id:"lab",name:"3rd-party Lab API",type:"ext",zone:"z-cloud",x:580,y:390,libs:[],protocols:["HL7 FHIR R4"],certs:["Partner mTLS"]}
+  ],
+  flows:[
+    {id:"f1",from:"clin",to:"gw",label:"diagnostic request",protocol:"HTTPS/TLS1.3",data:"PHI",auth:"OIDC bearer",encrypted:true},
+    {id:"f2",from:"mob",to:"gw",label:"results sync",protocol:"HTTPS/TLS1.3",data:"PHI",auth:"OIDC bearer",encrypted:true},
+    {id:"f3",from:"gw",to:"auth",label:"token introspection",protocol:"OIDC",data:"tokens",auth:"mTLS",encrypted:true},
+    {id:"f4",from:"gw",to:"inf",label:"inference",protocol:"gRPC/mTLS",data:"image+PHI",auth:"SVID",encrypted:true},
+    {id:"f5",from:"inf",to:"reg",label:"pull model",protocol:"HTTPS",data:"model artifact",auth:"signed",encrypted:true},
+    {id:"f6",from:"inf",to:"phi",label:"persist result",protocol:"TLS",data:"PHI",auth:"db role",encrypted:true},
+    {id:"f7",from:"phi",to:"lab",label:"order/labs",protocol:"HL7 FHIR",data:"PHI",auth:"partner mTLS",encrypted:true}
+  ],
+  threats:[
+    T("S-T1","Prompt/data poisoning of training pipeline","reg","High",{atlas:["ML Supply Chain","Poisoning"],owasp:["Vuln Components"],
+      cves:[{id:"CVE-2024-37032",cvss:8.8,sev:"High"}],mitigations:[{text:"Sign + verify model artifacts (Sigstore)",implemented:true},{text:"Data provenance attestation",implemented:false}],status:"mitigate"}),
+    T("S-T2","Adversarial evasion of inference (wrong dx)","inf","Critical",{atlas:["Evasion","ML Model Access"],stride:["Tampering"],
+      mitigations:[{text:"Input sanitization + anomaly scoring",implemented:false},{text:"Human-in-loop confirmation for high-risk dx",implemented:true}],status:"remediate"}),
+    T("S-T3","OIDC token replay / audience confusion","f3","High",{stride:["Spoofing","Elevation of Privilege"],attack:["Credential Access"],owasp:["Broken AuthN"],
+      cves:[{id:"CVE-2023-6927",cvss:6.1,sev:"Medium"}],mitigations:[{text:"Audience + nonce binding, short TTL",implemented:true},{text:"DPoP sender-constrained tokens",implemented:false}],status:"mitigate"}),
+    T("S-T4","PHI exfiltration via broken object-level authz","f1","Critical",{owasp:["Broken AuthZ"],attack:["Exfiltration"],stride:["Info Disclosure"],
+      cves:[{id:"CVE-2024-21626",cvss:8.6,sev:"High"}],mitigations:[{text:"Per-object authz checks + tenant isolation tests",implemented:false}],status:"remediate"}),
+    T("S-T5","SSRF from lab integration endpoint","lab","Medium",{owasp:["SSRF"],attack:["Initial Access"],
+      mitigations:[{text:"Egress allowlist + metadata endpoint block",implemented:true}],status:"mitigate"}),
+    T("S-T6","Vulnerable transitive dependency (Envoy/Triton)","gw","High",{owasp:["Vuln Components"],
+      cves:[{id:"CVE-2023-44487",cvss:7.5,sev:"High"}],mitigations:[{text:"SBOM-driven patch SLA + GHAS Dependabot",implemented:true}],status:"mitigate"}),
+    T("S-T7","Insufficient audit logging for FDA traceability","phi","Low",{stride:["Repudiation"],owasp:["Logging Gaps"],
+      mitigations:[{text:"Immutable audit log (WORM) + 6yr retention",implemented:true}],status:"accept"})
+  ],
+  attack:{goal:"Issue an incorrect diagnosis / exfiltrate PHI at scale",residualNote:"Residual driven by unmitigated evasion + BOLA",
+    nodes:[{id:"a0",label:"Recon public API",kind:"start"},{id:"a1",label:"Steal OIDC token (replay)",kind:"step"},
+      {id:"a2",label:"BOLA → access other patients",kind:"step"},{id:"a3",label:"Adversarial input to model",kind:"step"},
+      {id:"a4",label:"Incorrect dx returned",kind:"impact"},{id:"a5",label:"Bulk PHI exfiltration",kind:"impact"}],
+    edges:[{from:"a0",to:"a1",technique:"ATT&CK T1110",mitigated:false},{from:"a1",to:"a2",technique:"OWASP API1",mitigated:false},
+      {from:"a2",to:"a5",technique:"ATT&CK TA0010",mitigated:false},{from:"a0",to:"a3",technique:"ATLAS Evasion",mitigated:false},
+      {from:"a3",to:"a4",technique:"ATLAS AML.T0015",mitigated:true}]},
+  certs:[
+    {name:"Server TLS (gateway)",scope:"edge",expires:"2026-03-14",status:"valid"},
+    {name:"Partner mTLS (lab)",scope:"lab integration",expires:"2025-09-02",status:"expiring"},
+    {name:"Model artifact signing",scope:"registry",expires:"2027-01-01",status:"valid"},
+    {name:"Token signing key",scope:"auth",expires:"2025-07-20",status:"expired"}
+  ]
+};
+
+/* ---------- 2. Hardware infusion pump, hospital deployed ---------- */
+MODELS.hw = {
+  id:"hw", name:"Hospital HW", scn:"Networked infusion pump · hospital-deployed (IEC 62443 + FDA)",
+  zones:[
+    {id:"z-bed",name:"Patient Bedside",x:30,y:40,w:240,h:430,color:"#5b8cff"},
+    {id:"z-clin",name:"Clinical VLAN (segmented)",x:290,y:40,w:300,h:430,color:"#ffc24b"},
+    {id:"z-vendor",name:"Vendor Cloud",x:610,y:40,w:340,h:430,color:"#37e0c4"}
+  ],
+  nodes:[
+    {id:"pump",name:"Infusion Pump (embedded)",type:"device",zone:"z-bed",x:70,y:120,libs:["FreeRTOS 10.4","mbedTLS 2.28"],protocols:["TLS 1.2","802.11"],certs:["Device cert (factory)"]},
+    {id:"bcma",name:"Barcode Med Admin",type:"client",zone:"z-bed",x:70,y:300,libs:[],protocols:["TLS"],certs:[]},
+    {id:"gwh",name:"Bedside Gateway",type:"gateway",zone:"z-clin",x:330,y:110,libs:["OpenSSL 1.1.1"],protocols:["TLS 1.2","MQTT"],certs:["Gateway cert"]},
+    {id:"dms",name:"Device Mgmt Server",type:"service",zone:"z-clin",x:330,y:300,libs:["Java 11","Spring 5.3"],protocols:["HTTPS","MQTT"],certs:["Server TLS"]},
+    {id:"ehr",name:"EHR Integration",type:"service",zone:"z-clin",x:480,y:200,libs:[],protocols:["HL7 v2","FHIR"],certs:["Interface engine"]},
+    {id:"fw",name:"Firmware Update Server",type:"store",zone:"z-vendor",x:650,y:120,libs:["nginx 1.24"],protocols:["HTTPS"],certs:["Code signing"]},
+    {id:"tele",name:"Telemetry / Analytics",type:"ai",zone:"z-vendor",x:650,y:300,libs:["Kafka 3.4"],protocols:["mTLS"],certs:["Stream mTLS"]}
+  ],
+  flows:[
+    {id:"h1",from:"pump",to:"gwh",label:"dose telemetry",protocol:"TLS1.2/802.11",data:"therapy data",auth:"device cert",encrypted:true},
+    {id:"h2",from:"bcma",to:"gwh",label:"med admin scan",protocol:"TLS",data:"PHI",auth:"nurse badge",encrypted:true},
+    {id:"h3",from:"gwh",to:"dms",label:"manage/config",protocol:"MQTT/TLS",data:"config",auth:"client cert",encrypted:true},
+    {id:"h4",from:"dms",to:"ehr",label:"orders/results",protocol:"HL7 FHIR",data:"PHI",auth:"interface auth",encrypted:true},
+    {id:"h5",from:"dms",to:"fw",label:"pull firmware",protocol:"HTTPS",data:"firmware image",auth:"signed",encrypted:true},
+    {id:"h6",from:"gwh",to:"tele",label:"stream telemetry",protocol:"mTLS",data:"device telemetry",auth:"mTLS",encrypted:true},
+    {id:"h7",from:"fw",to:"pump",label:"OTA update",protocol:"HTTPS",data:"firmware",auth:"signed image",encrypted:true}
+  ],
+  threats:[
+    T("H-T1","Unsigned/rollback firmware on pump","fw","Critical",{stride:["Tampering","Elevation of Privilege"],attack:["Persistence","Impact"],owasp:["Crypto Failures"],
+      cves:[{id:"CVE-2020-25165",cvss:7.5,sev:"High"}],mitigations:[{text:"Secure boot + signed images + anti-rollback counter",implemented:false}],status:"remediate"}),
+    T("H-T2","Weak TLS (1.2, legacy ciphers) on device","pump","High",{stride:["Info Disclosure"],owasp:["Crypto Failures"],
+      cves:[{id:"CVE-2022-0778",cvss:7.5,sev:"High"}],mitigations:[{text:"Upgrade mbedTLS, disable legacy ciphers, enforce 1.3",implemented:false}],status:"remediate"}),
+    T("H-T3","Lateral movement across flat clinical VLAN","gwh","High",{attack:["Lateral Movement"],stride:["Spoofing"],
+      mitigations:[{text:"Microsegmentation + NAC + east-west firewall",implemented:true}],status:"mitigate"}),
+    T("H-T4","Dose tampering via MQTT topic injection","h3","Critical",{stride:["Tampering"],owasp:["Broken AuthZ","Injection"],
+      mitigations:[{text:"Per-device topic ACLs + payload signing + dose guardrails",implemented:true},{text:"Independent hardware dose limiter",implemented:true}],status:"mitigate"}),
+    T("H-T5","Stolen factory device cert reuse","pump","Medium",{stride:["Spoofing"],attack:["Credential Access"],
+      mitigations:[{text:"Per-device unique certs + revocation + attestation",implemented:false}],status:"mitigate"}),
+    T("H-T6","DoS of bedside gateway → therapy disruption","gwh","High",{stride:["Denial of Service"],attack:["Impact"],
+      mitigations:[{text:"Local autonomous mode + rate limiting",implemented:true}],status:"mitigate"}),
+    T("H-T7","Default/shared SNMP & mgmt creds","dms","Medium",{owasp:["Broken AuthN","Misconfig"],
+      cves:[{id:"CVE-2019-10999",cvss:8.8,sev:"High"}],mitigations:[{text:"Unique creds, disable SNMPv2, vault rotation",implemented:true}],status:"mitigate"})
+  ],
+  attack:{goal:"Alter delivered dose or disrupt therapy fleet-wide",residualNote:"Residual high until secure boot + TLS hardening ship",
+    nodes:[{id:"b0",label:"Join clinical VLAN",kind:"start"},{id:"b1",label:"Spoof device cert",kind:"step"},
+      {id:"b2",label:"MQTT topic injection",kind:"step"},{id:"b3",label:"Push rollback firmware",kind:"step"},
+      {id:"b4",label:"Alter dose",kind:"impact"},{id:"b5",label:"Fleet-wide therapy disruption",kind:"impact"}],
+    edges:[{from:"b0",to:"b1",technique:"ATT&CK T1078",mitigated:false},{from:"b1",to:"b2",technique:"STRIDE Tamper",mitigated:true},
+      {from:"b2",to:"b4",technique:"ICS T0831",mitigated:true},{from:"b0",to:"b3",technique:"ATT&CK T1542",mitigated:false},
+      {from:"b3",to:"b5",technique:"ICS T0816",mitigated:false}]},
+  certs:[
+    {name:"Device cert (factory, shared CA)",scope:"pump",expires:"2026-11-01",status:"valid"},
+    {name:"Firmware code-signing",scope:"vendor",expires:"2025-08-15",status:"expiring"},
+    {name:"Gateway client cert",scope:"clinical",expires:"2027-02-10",status:"valid"},
+    {name:"Interface engine TLS",scope:"EHR",expires:"2024-12-01",status:"expired"}
+  ]
+};
+
+/* ---------- 3. Patient-deployed mobile + partner ---------- */
+MODELS.patient = {
+  id:"patient", name:"Patient + Partner", scn:"Wearable CGM · patient mobile + caregiver + pharmacy partner",
+  zones:[
+    {id:"z-body",name:"Patient Home / Body",x:30,y:40,w:250,h:430,color:"#5b8cff"},
+    {id:"z-net",name:"Internet",x:300,y:40,w:170,h:430,color:"#ff4d5e"},
+    {id:"z-cloud",name:"CGM Cloud",x:490,y:40,w:250,h:430,color:"#37e0c4"},
+    {id:"z-partner",name:"Pharmacy Partner",x:760,y:40,w:190,h:430,color:"#c08bff"}
+  ],
+  nodes:[
+    {id:"sensor",name:"Wearable Sensor (BLE)",type:"device",zone:"z-body",x:70,y:120,libs:["Nordic SDK 2.4"],protocols:["BLE 5.0"],certs:["Pairing key"]},
+    {id:"papp",name:"Patient Mobile App",type:"client",zone:"z-body",x:70,y:300,libs:["Retrofit 2.9","SQLCipher 4.5"],protocols:["BLE","TLS 1.3"],certs:["Pinned cert"]},
+    {id:"cgapp",name:"Caregiver App",type:"client",zone:"z-net",x:330,y:200,libs:["Alamofire 5.6"],protocols:["TLS 1.3"],certs:["Pinned cert"]},
+    {id:"be",name:"Cloud Backend API",type:"gateway",zone:"z-cloud",x:520,y:110,libs:["FastAPI 0.103"],protocols:["TLS 1.3"],certs:["Server TLS"]},
+    {id:"store",name:"Glucose Data Store",type:"db",zone:"z-cloud",x:520,y:300,libs:["MongoDB 6"],protocols:["TLS"],certs:["AES-256 at rest"]},
+    {id:"push",name:"Push / Alert Service",type:"service",zone:"z-cloud",x:640,y:200,libs:["FCM"],protocols:["HTTPS"],certs:["FCM key"]},
+    {id:"rx",name:"Partner Pharmacy API",type:"ext",zone:"z-partner",x:790,y:200,libs:[],protocols:["OAuth2","TLS 1.3"],certs:["Partner mTLS"]}
+  ],
+  flows:[
+    {id:"p1",from:"sensor",to:"papp",label:"glucose readings",protocol:"BLE 5.0",data:"health data",auth:"BLE pairing",encrypted:true},
+    {id:"p2",from:"papp",to:"be",label:"sync readings",protocol:"TLS1.3 + pinning",data:"health data",auth:"OAuth2 PKCE",encrypted:true},
+    {id:"p3",from:"cgapp",to:"be",label:"follow patient",protocol:"TLS1.3",data:"health data",auth:"OAuth2 + consent",encrypted:true},
+    {id:"p4",from:"be",to:"store",label:"persist",protocol:"TLS",data:"health data",auth:"db role",encrypted:true},
+    {id:"p5",from:"be",to:"push",label:"low-glucose alert",protocol:"HTTPS",data:"alert",auth:"service key",encrypted:true},
+    {id:"p6",from:"be",to:"rx",label:"refill order",protocol:"OAuth2/mTLS",data:"PII + Rx",auth:"partner mTLS",encrypted:true},
+    {id:"p7",from:"push",to:"cgapp",label:"deliver alert",protocol:"FCM/APNs",data:"alert",auth:"token",encrypted:true}
+  ],
+  threats:[
+    T("P-T1","BLE MITM / unauthenticated pairing","p1","High",{stride:["Spoofing","Tampering"],attack:["Initial Access"],owasp:["Broken AuthN"],
+      cves:[{id:"CVE-2020-15802",cvss:5.4,sev:"Medium"}],mitigations:[{text:"LE Secure Connections + numeric comparison + bonding",implemented:false}],status:"remediate"}),
+    T("P-T2","Spoofed low-glucose alert suppression","p5","Critical",{stride:["Tampering","Denial of Service"],attack:["Impact"],
+      mitigations:[{text:"Signed alerts + delivery receipts + on-device fallback alarm",implemented:false}],status:"remediate"}),
+    T("P-T3","Cert pinning bypass on rooted device","p2","Medium",{owasp:["Crypto Failures"],attack:["Defense Evasion"],
+      mitigations:[{text:"Root/jailbreak detection + attestation (Play Integrity/DeviceCheck)",implemented:true}],status:"mitigate"}),
+    T("P-T4","Over-broad caregiver consent scope","p3","High",{owasp:["Broken AuthZ"],stride:["Info Disclosure"],
+      mitigations:[{text:"Granular, revocable, time-boxed consent + audit",implemented:true}],status:"mitigate"}),
+    T("P-T5","Partner Rx API token leakage → PII","p6","High",{owasp:["Broken AuthN"],attack:["Credential Access","Exfiltration"],
+      cves:[{id:"CVE-2023-29007",cvss:7.0,sev:"High"}],mitigations:[{text:"Sender-constrained tokens, mTLS, narrow scopes, rotation",implemented:true}],status:"mitigate"}),
+    T("P-T6","Local DB plaintext on lost phone","papp","Medium",{stride:["Info Disclosure"],owasp:["Crypto Failures"],
+      mitigations:[{text:"SQLCipher + Keystore-backed key + auto-wipe",implemented:true}],status:"mitigate"}),
+    T("P-T7","Insufficient logging of partner data sharing","rx","Low",{stride:["Repudiation"],owasp:["Logging Gaps"],
+      mitigations:[{text:"Consent + disclosure ledger",implemented:false}],status:"accept"})
+  ],
+  attack:{goal:"Suppress a critical alert or exfiltrate patient health data via partner",residualNote:"Residual critical: alert integrity + BLE auth unaddressed",
+    nodes:[{id:"c0",label:"Proximity to wearable",kind:"start"},{id:"c1",label:"BLE MITM",kind:"step"},
+      {id:"c2",label:"Inject/suppress readings",kind:"step"},{id:"c3",label:"Block low-glucose alert",kind:"impact"},
+      {id:"c4",label:"Leak partner token",kind:"step"},{id:"c5",label:"Exfiltrate health data",kind:"impact"}],
+    edges:[{from:"c0",to:"c1",technique:"ATT&CK Mobile T1430",mitigated:false},{from:"c1",to:"c2",technique:"STRIDE Tamper",mitigated:false},
+      {from:"c2",to:"c3",technique:"Safety Impact",mitigated:false},{from:"c0",to:"c4",technique:"OWASP API2",mitigated:true},
+      {from:"c4",to:"c5",technique:"ATT&CK TA0010",mitigated:true}]},
+  certs:[
+    {name:"App cert pin (patient)",scope:"mobile",expires:"2026-05-01",status:"valid"},
+    {name:"Partner mTLS (pharmacy)",scope:"Rx API",expires:"2025-07-30",status:"expiring"},
+    {name:"BLE pairing key",scope:"sensor",expires:"n/a (per-pair)",status:"valid"},
+    {name:"Server TLS (backend)",scope:"cloud",expires:"2025-06-15",status:"expired"}
+  ]
+};
+
+/* ============================== state ============================== */
+const SVGNS="http://www.w3.org/2000/svg";
+let M=null, MODELID="samd";
+let SEL=null;                 // {kind:'node'|'flow'|'threat', id}
+let LENS="STRIDE";
+let DS=1.0;                   // diagram spread scale ("enlarge")
+let zoom=1, panX=0, panY=0;
+const OVL={dataflow:true,protocols:false,access:false,threats:true,mitigations:true,cve:true,attack:false};
+const NODE_W=138, NODE_H=48;
+const ICONS={actor:"🧑‍⚕️",client:"📱",gateway:"🛡️",service:"⚙️",ai:"🧠",store:"📦",db:"🗄️",ext:"🔌",device:"🩺"};
+
+function el(id){return document.getElementById(id);}
+function deepClone(o){return JSON.parse(JSON.stringify(o));}
+function loadModel(id){MODELID=id;M=deepClone(MODELS[id]);SEL=null;DS=1;zoom=1;panX=0;panY=0;renderAll();}
+function getNode(id){return M.nodes.find(n=>n.id===id);}
+function getFlow(id){return M.flows.find(f=>f.id===id);}
+function getThreat(id){return M.threats.find(t=>t.id===id);}
+function center(n){return {x:(n.x+NODE_W/2)*DS, y:(n.y+NODE_H/2)*DS};}
+
+/* ============================== risk engine ============================== */
+function threatCoverage(t){
+  if(!t.mitigations.length) return 0;
+  return t.mitigations.filter(m=>m.implemented).length / t.mitigations.length;
+}
+function threatResidualW(t){
+  const w=sevW(t.severity);
+  if(t.status==="accept") return w*0.25;
+  const cov=threatCoverage(t);
+  return w*(1-0.85*cov);
+}
+function band(s){return s>=70?["Critical","--crit"]:s>=45?["High","--high"]:s>=25?["Medium","--med"]:s>=10?["Low","--low"]:["Minimal","--info"];}
+function computeRisk(){
+  const active=M.threats.filter(t=>!t._disabled);
+  if(!active.length) return {inherent:0,residual:0,remediate:0,mitigate:0,accept:0};
+  const maxW=4*active.length;
+  const inh=active.reduce((s,t)=>s+sevW(t.severity),0);
+  const res=active.reduce((s,t)=>s+threatResidualW(t),0);
+  return {
+    inherent:Math.round(inh/maxW*100),
+    residual:Math.round(res/maxW*100),
+    remediate:active.filter(t=>t.status==="remediate").length,
+    mitigate:active.filter(t=>t.status==="mitigate").length,
+    accept:active.filter(t=>t.status==="accept").length
+  };
+}
+
+/* ============================== compliance / secure-SDLC scenario engine ============================== */
+let WIFMODE="live";        // "live" | "fda524b" | "ssdf" | "sdlc"
+let WIFASSUME={};          // capability id -> user assumes implemented (projection)
+
+function modelCorpus(){
+  const p=[];
+  M.threats.forEach(t=>{(t.mitigations||[]).forEach(m=>p.push(m.text));(t.stride||[]).forEach(s=>p.push(s));p.push(t.title);});
+  M.nodes.forEach(n=>{p.push((n.protocols||[]).join(" "));p.push((n.certs||[]).join(" "));(n.libs||[]).forEach(l=>p.push("library "+l.name));});
+  M.flows.forEach(f=>p.push((f.protocol||"")+" "+(f.auth||"")+" "+(f.data||"")));
+  (M.certs||[]).forEach(c=>p.push("certificate "+c.name));
+  return p.join(" \n ").toLowerCase();
+}
+function implementedHasAny(words){return M.threats.some(t=>(t.mitigations||[]).some(m=>m.implemented&&words.some(w=>m.text.toLowerCase().includes(w))));}
+function evidence(words){const c=modelCorpus();if(implementedHasAny(words))return "covered";if(words.some(w=>c.includes(w)))return "partial";return "gap";}
+function struct(boolFn,words){return (boolFn&&boolFn())?"covered":evidence(words);}
+
+const SCENARIOS={
+  fda524b:{name:"FDA Premarket Cybersecurity (524B)",icon:"⚕",
+    blurb:"Section 524B of the FD&C Act requires a cyber device to demonstrate these capabilities for premarket submission. Each is matched against your current model.",
+    ref:"FDA §524B · Sept 2023 premarket cybersecurity guidance",
+    caps:[
+      {id:"sbom",name:"Software Bill of Materials",w:3,req:"Provide an SBOM covering commercial, open-source, and off-the-shelf components.",det:()=>struct(()=>M.nodes.some(n=>(n.libs||[]).length),["sbom","bill of materials","cyclonedx","spdx","component inventory"])},
+      {id:"updates",name:"Authenticated, signed updates",w:4,req:"Ship validated, signed software updates and patches in a timely fashion.",det:()=>evidence(["signed","code signing","secure update","firmware update","authenticated update","ota"])},
+      {id:"authn",name:"Authentication & access control",w:4,req:"Restrict access to trusted users and services; enforce least privilege.",det:()=>struct(()=>M.flows.some(f=>f.auth),["authentication","mfa","access control","least privilege","rbac","oauth","mutual tls"])},
+      {id:"crypto",name:"Cryptography in transit & at rest",w:4,req:"Protect confidentiality and integrity with strong, current cryptography.",det:()=>evidence(["tls","https","encrypt","aes","cryptograph","at rest","in transit"])},
+      {id:"secureboot",name:"Secure boot / integrity protection",w:3,req:"Verify firmware and software integrity at boot and at runtime.",det:()=>evidence(["secure boot","integrity","attestation","measured boot","signed firmware"])},
+      {id:"logging",name:"Security logging & detection",w:3,req:"Detect, log, and respond to security events; support forensics.",det:()=>evidence(["log","audit","monitor","siem","detection","anomaly"])},
+      {id:"vuln",name:"Coordinated disclosure / PSIRT",w:3,req:"Maintain processes to intake, triage, and remediate vulnerabilities.",det:()=>evidence(["psirt","vulnerability disclosure","cvd","coordinated disclosure","patch management"])},
+      {id:"keys",name:"Key & certificate management",w:3,req:"Provision, protect, and rotate cryptographic keys and certificates.",det:()=>struct(()=>(M.certs||[]).length,["key management","certificate","rotation","pki","hsm","kms"])}
+    ]},
+  ssdf:{name:"NIST SSDF (SP 800-218)",icon:"◆",
+    blurb:"The Secure Software Development Framework groups practices into Prepare (PO), Protect (PS), Produce (PW), and Respond (RV). Walk each against your model.",
+    ref:"NIST SP 800-218 v1.1",
+    caps:[
+      {id:"po-req",name:"PO · Define security requirements",w:3,req:"Define and communicate security requirements for software and its environment.",det:()=>evidence(["requirement","security control","policy","baseline"])},
+      {id:"ps-prov",name:"PS · Protect code integrity & provenance",w:4,req:"Protect all forms of code from tampering; provide provenance (signing, SBOM).",det:()=>struct(()=>M.nodes.some(n=>(n.libs||[]).length),["signing","provenance","sbom","integrity","tamper"])},
+      {id:"pw-tm",name:"PW · Threat modeling & secure design",w:4,req:"Use threat modeling to identify and address risks during design.",det:()=>"covered"},
+      {id:"pw-sast",name:"PW · Static analysis (SAST)",w:3,req:"Review and analyze human-readable code for vulnerabilities.",det:()=>evidence(["sast","static analysis","code scanning","codeql","lint"])},
+      {id:"pw-sca",name:"PW · Dependency / SCA scanning",w:3,req:"Analyze third-party components for known vulnerabilities.",det:()=>struct(()=>M.nodes.some(n=>(n.libs||[]).length),["sca","dependency scan","dependabot","snyk","composition analysis"])},
+      {id:"pw-dast",name:"PW · Dynamic testing (DAST/pentest)",w:3,req:"Test executable software, including penetration testing.",det:()=>evidence(["dast","dynamic analysis","pen test","penetration","fuzz"])},
+      {id:"rv-id",name:"RV · Identify & confirm vulnerabilities",w:3,req:"Continuously monitor for, and confirm, vulnerabilities.",det:()=>evidence(["cve","vulnerability","monitor","advisory","scanning"])},
+      {id:"rv-rem",name:"RV · Assess, prioritize & remediate",w:4,req:"Triage, prioritize, and remediate confirmed vulnerabilities.",det:()=>evidence(["remediate","patch","fix","disposition","prioritize"])}
+    ]},
+  sdlc:{name:"Secure SDLC essentials",icon:"⛬",
+    blurb:"Cross-cutting secure-development controls expected of a regulated product team. Status is inferred from the controls present in your model.",
+    ref:"OWASP SAMM / BSIMM-aligned",
+    caps:[
+      {id:"tm",name:"Threat modeling",w:4,req:"Systematic identification of threats and mitigations per release.",det:()=>"covered"},
+      {id:"reqgate",name:"Security requirements & CI gates",w:3,req:"Security acceptance criteria enforced in the pipeline.",det:()=>evidence(["gate","ci","pipeline","acceptance","quality gate","requirement"])},
+      {id:"sast2",name:"Static analysis (SAST)",w:3,req:"Automated code scanning on every change.",det:()=>evidence(["sast","static analysis","codeql","code scanning"])},
+      {id:"sca2",name:"Dependency scanning (SCA/SBOM)",w:3,req:"Track and scan third-party and open-source components.",det:()=>struct(()=>M.nodes.some(n=>(n.libs||[]).length),["sca","sbom","dependency","snyk","dependabot"])},
+      {id:"secrets",name:"Secrets management",w:3,req:"No hard-coded secrets; centralized vaulting and rotation.",det:()=>evidence(["secret","vault","kms","hsm","credential","rotation"])},
+      {id:"review",name:"Peer code review",w:2,req:"Mandatory review with security sign-off on sensitive changes.",det:()=>evidence(["code review","peer review","pull request review","four eyes"])},
+      {id:"pentest",name:"Penetration testing",w:3,req:"Independent testing before release and periodically.",det:()=>evidence(["pen test","penetration","red team","dast"])},
+      {id:"monitor",name:"Runtime monitoring & response",w:3,req:"Detect and respond to security events in production.",det:()=>evidence(["monitor","siem","logging","detection","incident"])}
+    ]}
+};
+function scenarioStatuses(id){return SCENARIOS[id].caps.map(c=>({c,status:c.det()}));}
+function scenarioCoverage(id){
+  const rows=scenarioStatuses(id);const totW=rows.reduce((s,r)=>s+r.c.w,0);
+  const got=rows.reduce((s,r)=>s+(r.status==="covered"?r.c.w:r.status==="partial"?r.c.w*0.4:0),0);
+  return {pct:Math.round(got/totW*100),rows,totW};
+}
+function projectedResidual(id){
+  const r=computeRisk();const {rows,totW}=scenarioCoverage(id);
+  let factor=1;
+  rows.forEach(({c,status})=>{if(WIFASSUME[c.id]&&status!=="covered")factor*=(1-0.55*(c.w/totW));});
+  return Math.max(5,Math.round(r.residual*factor));
+}
+
+/* ============================== SVG helpers ============================== */
+function S(tag,attrs={},kids=[]){
+  const e=document.createElementNS(SVGNS,tag);
+  for(const k in attrs){if(attrs[k]!=null)e.setAttribute(k,attrs[k]);}
+  (Array.isArray(kids)?kids:[kids]).forEach(c=>{if(c)e.appendChild(typeof c==="string"?document.createTextNode(c):c);});
+  return e;
+}
+function defsMarkers(){
+  const defs=S("defs");
+  [["arr-flow","var(--accent2)"],["arr-red","var(--crit)"],["arr-green","var(--mit)"],["arr-grey","var(--faint)"],["arr-auth","var(--auth)"]].forEach(([id,c])=>{
+    const m=S("marker",{id,markerWidth:9,markerHeight:9,refX:7,refY:3,orient:"auto",markerUnits:"strokeWidth"});
+    m.appendChild(S("path",{d:"M0,0 L7,3 L0,6 Z",fill:c}));defs.appendChild(m);
+  });
+  return defs;
+}
+
+/* ============================== render system diagram ============================== */
+function renderStage(){
+  const svg=el("stage");
+  svg.innerHTML="";
+  svg.appendChild(defsMarkers());
+  const root=S("g",{id:"viewroot",transform:`translate(${panX},${panY}) scale(${zoom})`});
+  svg.appendChild(root);
+
+  // zones
+  M.zones.forEach(z=>{
+    const g=S("g");const zc=zoneColor(z.color);const lt=isLight();
+    g.appendChild(S("rect",{x:z.x*DS,y:z.y*DS,width:z.w*DS,height:z.h*DS,rx:14,
+      fill:zc,"fill-opacity":lt?0.07:0.06,stroke:zc,"stroke-opacity":lt?0.8:0.5,"stroke-dasharray":"6 5","stroke-width":1.4}));
+    g.appendChild(S("text",{x:z.x*DS+12,y:z.y*DS+22,fill:zc,"font-size":11,"font-weight":700,"font-family":"var(--mono)","fill-opacity":lt?1:.85},z.name.toUpperCase()));
+    root.appendChild(g);
+  });
+
+  // flows / interfaces
+  M.flows.forEach(f=>{
+    const a=getNode(f.from),b=getNode(f.to); if(!a||!b)return;
+    if(a._disabled||b._disabled) return;
+    const c1=center(a),c2=center(b);
+    const onAttack=OVL.attack && flowOnAttackPath(f.id);
+    let stroke="var(--line2)",sw=1.4,dash=null,marker=null,op=.6;
+    if(OVL.dataflow){stroke="var(--accent2)";sw=2;marker="url(#arr-flow)";op=.9;}
+    if(OVL.access && f.auth){stroke="var(--auth)";marker="url(#arr-auth)";op=.95;}
+    if(onAttack){stroke="var(--crit)";sw=2.6;dash="7 5";marker="url(#arr-red)";op=1;}
+    const path=S("path",{d:`M${c1.x},${c1.y} L${c2.x},${c2.y}`,stroke,"stroke-width":sw,fill:"none",
+      "stroke-dasharray":dash,"marker-end":marker,"stroke-opacity":op,style:"cursor:pointer"});
+    path.addEventListener("click",e=>{e.stopPropagation();select("flow",f.id);});
+    if(onAttack)path.appendChild(S("animate",{attributeName:"stroke-opacity",values:"1;.35;1",dur:"1.4s",repeatCount:"indefinite"}));
+    root.appendChild(path);
+
+    const mx=(c1.x+c2.x)/2,my=(c1.y+c2.y)/2;
+    // labels stack
+    let labels=[];
+    if(OVL.dataflow)labels.push([f.data||f.label,"var(--accent2)"]);
+    if(OVL.protocols&&f.protocol)labels.push([f.protocol,"var(--proto)"]);
+    if(OVL.access&&f.auth)labels.push(["🔒 "+f.auth,"var(--auth)"]);
+    labels.forEach(([txt,col],i)=>{
+      const w=txt.length*5.6+12, ly=my-10+i*15;
+      const lg=S("g",{style:"cursor:pointer"});
+      lg.appendChild(S("rect",{x:mx-w/2,y:ly-9,width:w,height:14,rx:4,fill:"var(--bg2)",stroke:col,"stroke-opacity":.6}));
+      lg.appendChild(S("text",{x:mx,y:ly+1,fill:col,"font-size":8.5,"text-anchor":"middle","font-family":"var(--mono)"},txt));
+      lg.addEventListener("click",e=>{e.stopPropagation();select("flow",f.id);});
+      root.appendChild(lg);
+    });
+    // threat/cve/mitigation markers on flow
+    overlayMarkersFor(root,f.id,mx,my+ (labels.length?labels.length*15-4:0));
+  });
+
+  // nodes
+  M.nodes.forEach(n=>{
+    if(n._disabled)return;
+    const g=S("g",{class:"node-g",transform:`translate(${n.x*DS},${n.y*DS})`});
+    g.dataset.id=n.id;
+    const seld=SEL&&SEL.kind==="node"&&SEL.id===n.id;
+    const onAttack=OVL.attack&&nodeOnAttackPath(n.id);
+    g.appendChild(S("rect",{width:NODE_W,height:NODE_H,rx:10,fill:"var(--panel)",
+      stroke:seld?"var(--accent)":(onAttack?"var(--crit)":"var(--line2)"),"stroke-width":seld?2.4:(onAttack?2.2:1.4)}));
+    if(onAttack)g.querySelector("rect").appendChild(S("animate",{attributeName:"stroke-opacity",values:"1;.4;1",dur:"1.4s",repeatCount:"indefinite"}));
+    g.appendChild(S("text",{x:11,y:20,"font-size":15},ICONS[n.type]||"⬡"));
+    g.appendChild(S("text",{x:32,y:19,fill:"var(--ink)","font-size":10.5,"font-weight":700},clip(n.name,16)));
+    g.appendChild(S("text",{x:32,y:33,fill:"var(--faint)","font-size":8,"font-family":"var(--mono)"},n.type.toUpperCase()));
+    // protocol mini-row
+    if(OVL.protocols&&n.protocols&&n.protocols.length)
+      g.appendChild(S("text",{x:11,y:43,fill:"var(--proto)","font-size":7.5,"font-family":"var(--mono)"},clip(n.protocols.join(" · "),26)));
+    if(OVL.access&&n.certs&&n.certs.length)
+      g.appendChild(S("text",{x:11,y:43,fill:"var(--auth)","font-size":7.5,"font-family":"var(--mono)"},"🔒 "+clip(n.certs.join(", "),24)));
+    root.appendChild(g);
+    overlayMarkersFor(root,n.id,(n.x+NODE_W)*DS-6,(n.y)*DS+6,true);
+    attachDrag(g,n);
+  });
+}
+
+function clip(s,n){return s.length>n?s.slice(0,n-1)+"…":s;}
+
+/* threat / cve / mitigation markers near a target */
+function overlayMarkersFor(root,targetId,x,y,corner){
+  const ts=M.threats.filter(t=>t.target===targetId && !t._disabled);
+  if(!ts.length)return;
+  const hi=ts.reduce((m,t)=>Math.max(m,sevW(t.severity)),0);
+  const sevName=Object.keys(SEV).find(k=>SEV[k].w===hi)||"Low";
+  let ox=corner?x:x+10, oy=corner?y:y+12;
+  if(OVL.threats){
+    const g=S("g",{style:"cursor:pointer"});
+    g.appendChild(S("circle",{cx:ox,cy:oy,r:9,fill:sevColor(sevName),stroke:"#0a0e16","stroke-width":1.5}));
+    g.appendChild(S("text",{x:ox,y:oy+3.4,"font-size":9,"font-weight":800,fill:"#0a0e16","text-anchor":"middle"},String(ts.length)));
+    g.addEventListener("click",e=>{e.stopPropagation();select("threat",ts[0].id);switchITab("threats");});
+    root.appendChild(g);
+  }
+  if(OVL.cve){
+    const cves=ts.flatMap(t=>t.cves||[]);
+    if(cves.length){
+      const cy=oy+18, w=66;
+      const g=S("g");
+      g.appendChild(S("rect",{x:ox-w/2,y:cy-7,width:w,height:13,rx:4,fill:"var(--bg2)",stroke:"var(--cve)"}));
+      g.appendChild(S("text",{x:ox,y:cy+2.5,fill:"var(--cve)","font-size":8,"text-anchor":"middle","font-family":"var(--mono)"},cves[0].id+(cves.length>1?" +"+(cves.length-1):"")));
+      root.appendChild(g);
+    }
+  }
+  if(OVL.mitigations){
+    const impl=ts.filter(t=>threatCoverage(t)>0).length;
+    if(impl){
+      const g=S("g");
+      g.appendChild(S("circle",{cx:ox-22,cy:oy,r:8,fill:"var(--mit)",stroke:"#0a0e16","stroke-width":1.5}));
+      g.appendChild(S("text",{x:ox-22,y:oy+3.2,"font-size":9,fill:"#06231a","text-anchor":"middle","font-weight":800},"✓"));
+      root.appendChild(g);
+    }
+  }
+}
+
+/* attack-path emphasis: nodes/flows touched by remediate(unmitigated) threats */
+function nodeOnAttackPath(id){return M.threats.some(t=>t.target===id&&t.status==="remediate"&&!t._disabled);}
+function flowOnAttackPath(id){return M.threats.some(t=>t.target===id&&t.status==="remediate"&&!t._disabled);}
+
+/* ============================== node drag + pan + zoom ============================== */
+function attachDrag(g,n){
+  g.addEventListener("pointerdown",ev=>{
+    ev.stopPropagation();
+    const start={x:ev.clientX,y:ev.clientY,nx:n.x,ny:n.y};
+    const move=e=>{n.x=start.nx+(e.clientX-start.x)/(zoom*DS);n.y=start.ny+(e.clientY-start.y)/(zoom*DS);renderStage();};
+    const up=()=>{document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);};
+    document.addEventListener("pointermove",move);document.addEventListener("pointerup",up);
+    select("node",n.id);
+  });
+}
+function setupCanvasNav(){
+  const wrap=el("canvasWrap"),svg=el("stage");
+  svg.addEventListener("pointerdown",ev=>{
+    if(ev.target.closest(".node-g"))return;
+    const start={x:ev.clientX,y:ev.clientY,px:panX,py:panY};
+    const move=e=>{panX=start.px+(e.clientX-start.x);panY=start.py+(e.clientY-start.y);applyTransform();};
+    const up=()=>{document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);};
+    document.addEventListener("pointermove",move);document.addEventListener("pointerup",up);
+    select(null);
+  });
+  wrap.addEventListener("wheel",e=>{e.preventDefault();const d=e.deltaY<0?1.1:0.9;const z2=Math.min(3,Math.max(.3,zoom*d));
+    const r=wrap.getBoundingClientRect();const mx=e.clientX-r.left,my=e.clientY-r.top;
+    panX=mx-(mx-panX)*(z2/zoom);panY=my-(my-panY)*(z2/zoom);zoom=z2;applyTransform();el("zoomLbl").textContent=Math.round(zoom*100)+"%";},{passive:false});
+}
+function applyTransform(){const r=el("stage").querySelector("#viewroot");if(r)r.setAttribute("transform",`translate(${panX},${panY}) scale(${zoom})`);}
+function fit(){
+  const xs=M.nodes.map(n=>n.x),ys=M.nodes.map(n=>n.y);
+  const zx=M.zones.map(z=>z.x+z.w),zy=M.zones.map(z=>z.y+z.h);
+  const maxX=Math.max(...zx,...xs.map(x=>x+NODE_W))*DS, maxY=Math.max(...zy,...ys.map(y=>y+NODE_H))*DS;
+  const r=el("canvasWrap").getBoundingClientRect();
+  zoom=Math.min((r.width-40)/maxX,(r.height-40)/maxY,1.3);panX=20;panY=20;applyTransform();el("zoomLbl").textContent=Math.round(zoom*100)+"%";
+}
+
+/* ============================== selection + inspector ============================== */
+function select(kind,id){SEL=kind?{kind,id}:null;renderStage();renderInspector();if(kind&&kind!=="threat")switchITab("inspect");}
+function switchITab(name){document.querySelectorAll("[data-itab]").forEach(b=>b.classList.toggle("on",b.dataset.itab===name));
+  ["inspect","threats","assist"].forEach(t=>el("itab-"+t).classList.toggle("on",t===name));}
+
+function sevBadge(s){return `<span class="sev" style="background:${hex(sevColor(s))}22;color:${sevColor(s)}"><span class="d" style="background:${sevColor(s)}"></span>${s}</span>`;}
+function hex(c){return c;}
+function statusPill(st){const map={remediate:["REMEDIATE","--remediate"],mitigate:["MITIGATE","--med"],accept:["ACCEPTED","--accept"]};const[m,c]=map[st]||map.mitigate;return `<span class="statuspill" style="background:${cssv(c)}22;color:${cssv(c)}">${m}</span>`;}
+
+function renderInspector(){
+  const box=el("itab-inspect");
+  if(!SEL){box.innerHTML='<div class="empty">Select a node, flow, or threat to inspect &amp; edit.</div>';renderThreatList();return;}
+  if(SEL.kind==="node")box.innerHTML=nodeForm(getNode(SEL.id));
+  else if(SEL.kind==="flow")box.innerHTML=flowForm(getFlow(SEL.id));
+  else if(SEL.kind==="threat")box.innerHTML=threatForm(getThreat(SEL.id));
+  bindInspector();
+  renderThreatList();
+}
+
+function nodeForm(n){
+  const ts=M.threats.filter(t=>t.target===n.id);
+  return `<div class="card"><div class="top"><span class="nm">${ICONS[n.type]||"⬡"} ${n.name}</span>
+    <button class="del" data-del-node="${n.id}">delete</button></div></div>
+    <label class="lbl">Name</label><input class="in" data-f="name" value="${esc(n.name)}">
+    <label class="lbl">Type</label><select class="in" data-f="type">${Object.keys(ICONS).map(t=>`<option ${t===n.type?"selected":""}>${t}</option>`).join("")}</select>
+    <label class="lbl">Trust zone</label><select class="in" data-f="zone">${M.zones.map(z=>`<option value="${z.id}" ${z.id===n.zone?"selected":""}>${z.name}</option>`).join("")}</select>
+    <label class="lbl">Libraries (comma)</label><input class="in" data-f="libs" value="${esc((n.libs||[]).join(", "))}">
+    <label class="lbl">Protocols (comma)</label><input class="in" data-f="protocols" value="${esc((n.protocols||[]).join(", "))}">
+    <label class="lbl">Certificates (comma)</label><input class="in" data-f="certs" value="${esc((n.certs||[]).join(", "))}">
+    <label class="lbl">Threats on this node (${ts.length})</label>
+    ${ts.map(t=>`<div class="card" style="cursor:pointer" data-open-threat="${t.id}"><div class="top"><span class="id">${t.id}</span> ${sevBadge(t.severity)}</div><div class="small" style="margin-top:5px">${esc(t.title)}</div></div>`).join("")||'<div class="small">none</div>'}
+    <button class="btn primary" style="margin-top:8px;width:100%" data-add-threat-to="${n.id}">+ Add threat to node</button>`;
+}
+function flowForm(f){
+  const ts=M.threats.filter(t=>t.target===f.id);
+  return `<div class="card"><div class="top"><span class="nm">↦ ${getNode(f.from)?.name} → ${getNode(f.to)?.name}</span>
+    <button class="del" data-del-flow="${f.id}">delete</button></div></div>
+    <label class="lbl">Label</label><input class="in" data-ff="label" value="${esc(f.label)}">
+    <label class="lbl">Data classification</label><input class="in" data-ff="data" value="${esc(f.data||"")}">
+    <label class="lbl">Protocol</label><input class="in" data-ff="protocol" value="${esc(f.protocol||"")}">
+    <label class="lbl">Auth / access</label><input class="in" data-ff="auth" value="${esc(f.auth||"")}">
+    <label class="lbl">Threats on this flow (${ts.length})</label>
+    ${ts.map(t=>`<div class="card" style="cursor:pointer" data-open-threat="${t.id}"><div class="top"><span class="id">${t.id}</span> ${sevBadge(t.severity)}</div><div class="small" style="margin-top:5px">${esc(t.title)}</div></div>`).join("")||'<div class="small">none</div>'}
+    <button class="btn primary" style="margin-top:8px;width:100%" data-add-threat-to="${f.id}">+ Add threat to flow</button>`;
+}
+function threatForm(t){
+  const tgt=getNode(t.target)||getFlow(t.target);
+  const tgtName=tgt?(tgt.name||((getNode(tgt.from)?.name||"?")+"→"+(getNode(tgt.to)?.name||"?"))):"unassigned";
+  return `<div class="card"><div class="top"><span class="id">${t.id}</span> ${sevBadge(t.severity)} ${statusPill(t.status)}<button class="del" data-del-threat="${t.id}">delete</button></div></div>
+    <label class="lbl">Title</label><textarea class="in" data-tf="title">${esc(t.title)}</textarea>
+    <div class="small">Target: <b>${esc(tgtName)}</b></div>
+    <label class="lbl">Severity</label><select class="in" data-tf="severity">${Object.keys(SEV).map(s=>`<option ${s===t.severity?"selected":""}>${s}</option>`).join("")}</select>
+    <label class="lbl">Disposition</label><select class="in" data-tf="status">
+      <option value="remediate" ${t.status==="remediate"?"selected":""}>Remediate (must fix)</option>
+      <option value="mitigate" ${t.status==="mitigate"?"selected":""}>Mitigate (reduce)</option>
+      <option value="accept" ${t.status==="accept"?"selected":""}>Accept (residual)</option></select>
+    <label class="lbl">Framework mapping</label>
+    ${["stride","attack","atlas","owasp"].map(k=>`<input class="in" data-tmap="${k}" style="margin-bottom:5px" placeholder="${k.toUpperCase()}" value="${esc((t[k]||[]).join(", "))}">`).join("")}
+    <label class="lbl">CVEs <button class="btn" style="padding:2px 7px;font-size:10px" data-add-cve="${t.id}">+ add</button></label>
+    ${(t.cves||[]).map((c,i)=>`<div class="card" style="padding:7px"><div class="top"><span class="id" style="color:var(--cve)">${c.id}</span> <span class="tag">CVSS ${c.cvss}</span> ${sevBadge(c.sev)}<button class="del" data-del-cve="${t.id}:${i}">×</button></div></div>`).join("")||'<div class="small">none</div>'}
+    <label class="lbl">Mitigations <button class="btn" style="padding:2px 7px;font-size:10px" data-add-mit="${t.id}">+ add</button></label>
+    ${(t.mitigations||[]).map((m,i)=>`<div class="card" style="padding:8px"><div class="row"><input type="checkbox" data-mit-impl="${t.id}:${i}" ${m.implemented?"checked":""} style="accent-color:var(--mit)"><span class="${m.implemented?"mit-line":"small"}" style="flex:1">${esc(m.text)}</span><button class="del" data-del-mit="${t.id}:${i}">×</button></div></div>`).join("")||'<div class="small">none</div>'}
+    <div class="card" style="margin-top:10px;border-color:var(--line2)"><div class="small">Residual contribution</div>
+    <div class="bar" style="margin-top:5px"><i style="width:${Math.round(threatResidualW(t)/4*100)}%;background:${sevColor(t.severity)}"></i></div></div>`;
+}
+function esc(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+/* ---- inspector bindings ---- */
+function bindInspector(){
+  const root=el("itab-inspect");
+  root.querySelectorAll("[data-f]").forEach(inp=>inp.addEventListener("change",()=>{
+    const n=getNode(SEL.id),k=inp.dataset.f;
+    if(["libs","protocols","certs"].includes(k))n[k]=inp.value.split(",").map(s=>s.trim()).filter(Boolean);
+    else n[k]=inp.value;renderAll();}));
+  root.querySelectorAll("[data-ff]").forEach(inp=>inp.addEventListener("change",()=>{getFlow(SEL.id)[inp.dataset.ff]=inp.value;renderAll();}));
+  root.querySelectorAll("[data-tf]").forEach(inp=>inp.addEventListener("change",()=>{getThreat(SEL.id)[inp.dataset.tf]=inp.value;renderAll();}));
+  root.querySelectorAll("[data-tmap]").forEach(inp=>inp.addEventListener("change",()=>{getThreat(SEL.id)[inp.dataset.tmap]=inp.value.split(",").map(s=>s.trim()).filter(Boolean);renderAll();}));
+  root.querySelectorAll("[data-mit-impl]").forEach(cb=>cb.addEventListener("change",()=>{const[id,i]=cb.dataset.mitImpl.split(":");getThreat(id).mitigations[+i].implemented=cb.checked;renderAll();}));
+  root.querySelectorAll("[data-open-threat]").forEach(c=>c.addEventListener("click",()=>select("threat",c.dataset.openThreat)));
+  root.querySelectorAll("[data-del-node]").forEach(b=>b.addEventListener("click",()=>{M.nodes=M.nodes.filter(n=>n.id!==b.dataset.delNode);M.flows=M.flows.filter(f=>f.from!==b.dataset.delNode&&f.to!==b.dataset.delNode);M.threats=M.threats.filter(t=>t.target!==b.dataset.delNode);select(null);renderAll();}));
+  root.querySelectorAll("[data-del-flow]").forEach(b=>b.addEventListener("click",()=>{M.flows=M.flows.filter(f=>f.id!==b.dataset.delFlow);M.threats=M.threats.filter(t=>t.target!==b.dataset.delFlow);select(null);renderAll();}));
+  root.querySelectorAll("[data-del-threat]").forEach(b=>b.addEventListener("click",()=>{M.threats=M.threats.filter(t=>t.id!==b.dataset.delThreat);select(null);renderAll();}));
+  root.querySelectorAll("[data-add-threat-to]").forEach(b=>b.addEventListener("click",()=>addThreat(b.dataset.addThreatTo)));
+  root.querySelectorAll("[data-add-cve]").forEach(b=>b.addEventListener("click",()=>{const id=prompt("CVE id","CVE-2025-00000");if(!id)return;const cvss=parseFloat(prompt("CVSS score","7.5"))||7.5;getThreat(b.dataset.addCve).cves.push({id,cvss,sev:cvss>=9?"Critical":cvss>=7?"High":cvss>=4?"Medium":"Low"});renderAll();select("threat",b.dataset.addCve);}));
+  root.querySelectorAll("[data-del-cve]").forEach(b=>b.addEventListener("click",()=>{const[id,i]=b.dataset.delCve.split(":");getThreat(id).cves.splice(+i,1);renderAll();select("threat",id);}));
+  root.querySelectorAll("[data-add-mit]").forEach(b=>b.addEventListener("click",()=>{const tx=prompt("Mitigation / control");if(!tx)return;getThreat(b.dataset.addMit).mitigations.push({text:tx,implemented:false});renderAll();select("threat",b.dataset.addMit);}));
+  root.querySelectorAll("[data-del-mit]").forEach(b=>b.addEventListener("click",()=>{const[id,i]=b.dataset.delMit.split(":");getThreat(id).mitigations.splice(+i,1);renderAll();select("threat",id);}));
+}
+function addThreat(target){
+  const id=(MODELID[0].toUpperCase())+"-T"+(M.threats.length+1)+Math.floor(Math.random()*90+10);
+  M.threats.push(T(id,"New threat",target,"Medium",{stride:["Tampering"],mitigations:[]}));
+  renderAll();select("threat",id);switchITab("inspect");
+}
+
+/* threat list tab */
+function renderThreatList(){
+  const box=el("itab-threats");
+  const sorted=[...M.threats].sort((a,b)=>sevW(b.severity)-sevW(a.severity));
+  box.innerHTML=`<button class="btn primary" style="width:100%;margin-bottom:10px" id="newThreatBtn">+ New threat</button>`+
+    sorted.map(t=>{
+      const tgt=getNode(t.target)||getFlow(t.target);
+      const tn=tgt?(tgt.name||"flow"):"—";
+      const refs=(t.cves||[]).map(c=>`<span class="tag" style="color:var(--cve);border-color:var(--cve)">${c.id}</span>`).join(" ");
+      const fw=["stride","attack","atlas","owasp"].flatMap(k=>(t[k]||[]).map(v=>`<span class="tag">${k==="attack"?"ATT&CK":k.toUpperCase()}:${v}</span>`)).join(" ");
+      const cov=Math.round(threatCoverage(t)*100);
+      return `<div class="card" data-open-threat="${t.id}" style="cursor:pointer;border-left:3px solid ${sevColor(t.severity)}">
+        <div class="top"><span class="id">${t.id}</span> ${sevBadge(t.severity)} ${statusPill(t.status)}</div>
+        <div class="nm" style="margin:6px 0 4px">${esc(t.title)}</div>
+        <div class="small">target: ${esc(tn)} · mitigations ${cov}% implemented</div>
+        <div class="chiprow" style="margin-top:6px">${refs} ${fw}</div></div>`;
+    }).join("");
+  box.querySelector("#newThreatBtn").addEventListener("click",()=>addThreat(M.nodes[0]?.id));
+  box.querySelectorAll("[data-open-threat]").forEach(c=>c.addEventListener("click",()=>{select("threat",c.dataset.openThreat);switchITab("inspect");}));
+}
+
+/* ============================== dock panes ============================== */
+function renderDock(){renderAttackPane();renderFramePane();renderRiskPane();renderWhatifPane();renderCertsPane();}
+
+function renderAttackPane(){
+  const A=M.attack,pane=el("pane-attack");
+  const W=Math.max(640,A.nodes.length*150),H=150;
+  const positions={};A.nodes.forEach((n,i)=>positions[n.id]={x:60+i*((W-120)/Math.max(1,A.nodes.length-1)),y:n.kind==="impact"?110:(n.kind==="start"?40:75)});
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto;background:var(--bg2);border:1px solid var(--line);border-radius:10px">
+    <defs><marker id="ag-r" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--crit)"/></marker>
+    <marker id="ag-g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--mit)"/></marker></defs>`;
+  A.edges.forEach(e=>{const a=positions[e.from],b=positions[e.to];const col=e.mitigated?"var(--mit)":"var(--crit)";
+    svg+=`<path d="M${a.x+30},${a.y} C${(a.x+b.x)/2},${a.y} ${(a.x+b.x)/2},${b.y} ${b.x-30},${b.y}" stroke="${col}" stroke-width="${e.mitigated?2:2.4}" fill="none" stroke-dasharray="${e.mitigated?"":"6 4"}" marker-end="url(#${e.mitigated?"ag-g":"ag-r"})" opacity=".9"/>`;
+    svg+=`<text x="${(a.x+b.x)/2}" y="${(a.y+b.y)/2-5}" font-size="7.5" fill="${col}" font-family="var(--mono)" text-anchor="middle">${esc(e.technique)}${e.mitigated?" ✓":""}</text>`;});
+  A.nodes.forEach(n=>{const p=positions[n.id];const col=n.kind==="impact"?"var(--crit)":n.kind==="start"?"var(--accent2)":"var(--med)";
+    svg+=`<g><rect x="${p.x-30}" y="${p.y-14}" width="60" height="28" rx="7" fill="var(--panel)" stroke="${col}" stroke-width="1.6"/>
+      <text x="${p.x}" y="${p.y+2}" font-size="7.4" fill="var(--ink)" text-anchor="middle">${esc(clip(n.label,16))}</text></g>`;});
+  svg+=`</svg>`;
+  // framework strip
+  const counts=frameworkCounts();
+  const strip=Object.entries(FRAMEWORKS).map(([k,fw])=>{
+    const total=Object.values(counts[fw.name]).reduce((a,b)=>a+b,0)||1;
+    const bars=fw.cats.filter(c=>counts[fw.name][c]).map(c=>`<span class="tag" style="border-color:var(--med)">${esc(c)} ·${counts[fw.name][c]}</span>`).join(" ")||'<span class="small">no mappings</span>';
+    return `<div style="margin-bottom:7px"><b class="small" style="color:var(--accent2)">${fw.name}</b> <span class="chiprow" style="display:inline-flex">${bars}</span></div>`;
+  }).join("");
+  const r=computeRisk();const[rb,rc]=band(r.residual);
+  pane.innerHTML=`<div class="legend"><span><i style="background:var(--crit)"></i>active attack edge</span><span><i style="background:var(--mit)"></i>mitigated (broken) edge</span></div>
+    <div style="overflow:auto">${svg}</div>
+    <div class="card" style="margin-top:10px;border-left:3px solid ${cssv(rc)}"><div class="row"><b>Adversary goal:</b> <span class="small">${esc(A.goal)}</span></div>
+      <div class="small" style="margin-top:5px">${esc(A.residualNote)} — residual after mitigations: <b style="color:${cssv(rc)}">${r.residual}/100 ${rb}</b></div></div>
+    <label class="lbl">Visual framework analysis (this model)</label>${strip}`;
+}
+function frameworkCounts(){
+  const c={};
+  Object.values(FRAMEWORKS).forEach(fw=>{c[fw.name]={};fw.cats.forEach(cat=>c[fw.name][cat]=0);});
+  M.threats.filter(t=>!t._disabled).forEach(t=>{[["stride","STRIDE"],["attack","ATT&CK"],["atlas","ATLAS"],["owasp","OWASP"]].forEach(([k,nm])=>{(t[k]||[]).forEach(v=>{const cat=Object.keys(c[nm]).find(x=>v.toLowerCase().includes(x.toLowerCase())||x.toLowerCase().includes(v.toLowerCase()));if(cat)c[nm][cat]++;else c[nm][v]=(c[nm][v]||0)+1;});});});
+  return c;
+}
+
+function renderFramePane(){
+  const pane=el("pane-frame");
+  const counts=frameworkCounts();const fw=FRAMEWORKS[LENS];const data=counts[fw.name];
+  const max=Math.max(1,...Object.values(data));
+  pane.innerHTML=`<div class="small" style="margin-bottom:10px">Lens: <b style="color:var(--accent2)">${fw.name}</b> — ${esc(fw.hint)}. Switch lens in the left rail.</div>`+
+    Object.entries(data).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([cat,v])=>
+      `<div style="margin-bottom:9px"><div class="row" style="justify-content:space-between"><span class="small">${esc(cat)}</span><span class="tag">${v}</span></div>
+       <div class="bar" style="margin-top:3px"><i style="width:${Math.round(v/max*100)}%;background:var(--accent2)"></i></div></div>`).join("")
+    || '<div class="empty">No threats mapped to this framework yet. Map them in the threat inspector.</div>';
+}
+
+function renderRiskPane(){
+  const pane=el("pane-risk");const r=computeRisk();
+  const remediate=M.threats.filter(t=>t.status==="remediate"&&!t._disabled).sort((a,b)=>sevW(b.severity)-sevW(a.severity));
+  const mitigate=M.threats.filter(t=>t.status==="mitigate"&&!t._disabled);
+  const accept=M.threats.filter(t=>t.status==="accept"&&!t._disabled);
+  const[ib,ic]=band(r.inherent),[rbn,rc]=band(r.residual);
+  const col2=(arr,title,color)=>`<div style="flex:1;min-width:220px"><div class="lbl" style="color:${color}">${title} (${arr.length})</div>${arr.map(t=>`<div class="card" style="padding:8px;border-left:3px solid ${color};cursor:pointer" data-open-threat="${t.id}"><div class="top"><span class="id">${t.id}</span> ${sevBadge(t.severity)}</div><div class="small" style="margin-top:4px">${esc(t.title)}</div></div>`).join("")||'<div class="small">none</div>'}</div>`;
+  pane.innerHTML=`<div class="row" style="gap:14px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="card" style="flex:1;min-width:150px"><div class="lbl">Inherent risk</div><div class="risk-chip" style="border:none;padding:0"><span class="val" style="font-size:26px;color:${cssv(ic)}">${r.inherent}</span><span class="small">/100 ${ib}</span></div></div>
+      <div class="card" style="flex:1;min-width:150px"><div class="lbl">Residual (final) risk</div><div class="risk-chip" style="border:none;padding:0"><span class="val" style="font-size:26px;color:${cssv(rc)}">${r.residual}</span><span class="small">/100 ${rbn}</span></div>
+        <div class="bar" style="margin-top:6px"><i style="width:${r.residual}%;background:${cssv(rc)}"></i></div></div>
+      <div class="card" style="flex:1;min-width:150px"><div class="lbl">Disposition</div>
+        <div class="small">🔴 remediate: <b>${r.remediate}</b><br>🟠 mitigate: <b>${r.mitigate}</b><br>⚪ accepted: <b>${r.accept}</b></div></div>
+    </div>
+    <div class="row" style="gap:14px;align-items:flex-start;flex-wrap:wrap">
+      ${col2(remediate,"ABSOLUTELY REMEDIATE",cssv("--remediate"))}
+      ${col2(mitigate,"MITIGATE / REDUCE",cssv("--med"))}
+      ${col2(accept,"ACCEPTED RESIDUAL",cssv("--accept"))}
+    </div>`;
+  pane.querySelectorAll("[data-open-threat]").forEach(c=>c.addEventListener("click",()=>{select("threat",c.dataset.openThreat);switchITab("inspect");}));
+}
+
+function renderWhatifPane(){
+  const pane=el("pane-whatif");
+  const modes=[["live","⚙ Live toggles"],["fda524b","⚕ FDA 524B"],["ssdf","◆ NIST SSDF"],["sdlc","⛬ Secure SDLC"]];
+  const selector=`<div class="wif-modes">${modes.map(([k,n])=>`<button data-wifmode="${k}" class="${k===WIFMODE?"on":""}">${n}</button>`).join("")}</div>`;
+  if(WIFMODE==="live"){
+    pane.innerHTML=selector+`<div class="small wif-intro">Toggle controls and components, then watch residual risk recompute live. <button class="btn" id="resetWhatif">Reset model</button></div>
+      <div class="wif-grid">
+      <div class="wif-col"><div class="lbl">Controls / mitigations</div>
+        ${M.threats.filter(t=>!t._disabled).flatMap(t=>t.mitigations.map((m,i)=>`<div class="whatif-item"><input type="checkbox" data-wif="${t.id}:${i}" ${m.implemented?"checked":""}><span class="${m.implemented?"mit-line":"small"}" style="flex:1">${esc(clip(m.text,46))}</span><span class="tag">${t.id}</span></div>`)).join("")}
+      </div>
+      <div class="wif-col"><div class="lbl">Components (disable to simulate removal)</div>
+        ${M.nodes.map(n=>`<div class="whatif-item"><input type="checkbox" data-wnode="${n.id}" ${n._disabled?"":"checked"}><span class="${n._disabled?"small":""}" style="flex:1">${ICONS[n.type]} ${esc(n.name)}</span></div>`).join("")}
+        <div class="lbl" style="margin-top:14px">Threats (accept to remove from active risk)</div>
+        ${M.threats.map(t=>`<div class="whatif-item"><input type="checkbox" data-wthreat="${t.id}" ${t._disabled?"":"checked"}><span class="${t._disabled?"small":""}" style="flex:1">${esc(clip(t.title,40))}</span>${sevBadge(t.severity)}</div>`).join("")}
+      </div></div>`;
+    pane.querySelectorAll("[data-wif]").forEach(cb=>cb.addEventListener("change",()=>{const[id,i]=cb.dataset.wif.split(":");getThreat(id).mitigations[+i].implemented=cb.checked;renderAll();}));
+    pane.querySelectorAll("[data-wnode]").forEach(cb=>cb.addEventListener("change",()=>{getNode(cb.dataset.wnode)._disabled=!cb.checked;renderAll();}));
+    pane.querySelectorAll("[data-wthreat]").forEach(cb=>cb.addEventListener("change",()=>{getThreat(cb.dataset.wthreat)._disabled=!cb.checked;renderAll();}));
+    pane.querySelector("#resetWhatif").addEventListener("click",()=>loadModel(MODELID));
+  } else {
+    const sc=SCENARIOS[WIFMODE];const {pct,rows}=scenarioCoverage(WIFMODE);
+    const r=computeRisk();const proj=projectedResidual(WIFMODE);
+    const[pb,pc]=band(proj);const assumedN=Object.keys(WIFASSUME).filter(k=>WIFASSUME[k]).length;
+    const stmap={covered:["✓ Present","--mit"],partial:["◐ Partial","--med"],gap:["✕ Gap","--crit"]};
+    pane.innerHTML=selector+
+      `<div class="wif-intro2"><div class="wif-blurb">${esc(sc.blurb)}</div><div class="wif-ref">${esc(sc.ref)}</div></div>
+       <div class="wif-summary">
+         <div class="wif-stat"><div class="wif-stat-l">Capability coverage</div><div class="wif-ring" style="--p:${pct}"><span>${pct}%</span></div></div>
+         <div class="wif-stat"><div class="wif-stat-l">Current residual</div><div class="wif-big">${r.residual}<small>/100</small></div></div>
+         <div class="wif-stat"><div class="wif-stat-l">Projected${assumedN?" ("+assumedN+" assumed)":""}</div><div class="wif-big" style="color:${cssv(pc)}">${proj}<small>/100 ${pb}</small></div></div>
+       </div>
+       <div class="wif-steps">${rows.map(({c,status},i)=>{
+          const[lbl,col]=stmap[status];const covered=status==="covered";
+          return `<div class="wif-step ${status}"><div class="wif-step-h"><span class="wif-step-n">${i+1}</span><span class="wif-step-name">${esc(c.name)}</span><span class="statuspill" style="background:${cssv(col)}22;color:${cssv(col)}">${lbl}</span></div>
+            <div class="wif-step-req">${esc(c.req)}</div>
+            <label class="wif-assume ${covered?"done":""}"><input type="checkbox" data-assume="${c.id}" ${covered||WIFASSUME[c.id]?"checked":""} ${covered?"disabled":""}>${covered?"Implemented in model":"Assume implemented → project risk"}</label></div>`;
+       }).join("")}</div>`;
+    pane.querySelectorAll("[data-assume]").forEach(cb=>cb.addEventListener("change",()=>{WIFASSUME[cb.dataset.assume]=cb.checked;renderWhatifPane();}));
+  }
+  pane.querySelectorAll("[data-wifmode]").forEach(b=>b.addEventListener("click",()=>{WIFMODE=b.dataset.wifmode;if(WIFMODE!=="live")WIFASSUME={};renderWhatifPane();}));
+}
+
+function renderCertsPane(){
+  const pane=el("pane-certs");
+  const col={valid:"--low",expiring:"--med",expired:"--crit"};
+  pane.innerHTML=`<div class="small" style="margin-bottom:8px">Certificate &amp; key inventory — expiry drives spoofing/MITM exposure. Edit in JSON export or add via “Certificate”.</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <tr style="color:var(--faint);text-align:left"><th style="padding:6px">Certificate / key</th><th>Scope</th><th>Expires</th><th>Status</th></tr>
+    ${M.certs.map((c,i)=>`<tr style="border-top:1px solid var(--line)"><td style="padding:7px 6px">${esc(c.name)}</td><td>${esc(c.scope)}</td>
+      <td style="font-family:var(--mono)">${esc(c.expires)}</td>
+      <td><span class="statuspill" style="background:${cssv(col[c.status])}22;color:${cssv(col[c.status])}">${c.status}</span> <button class="del" data-del-cert="${i}">×</button></td></tr>`).join("")}
+    </table>`;
+  pane.querySelectorAll("[data-del-cert]").forEach(b=>b.addEventListener("click",()=>{M.certs.splice(+b.dataset.delCert,1);renderAll();}));
+}
+
+/* ============================== top + left rail render ============================== */
+function renderTop(){
+  const r=computeRisk();const[rb,rc]=band(r.residual),[ib,ic]=band(r.inherent);
+  el("residualTop").textContent=r.residual;el("residualTop").style.color=cssv(rc);
+  el("inherentTop").textContent=r.inherent;
+  el("canvasTitle").textContent="System Architecture";
+  el("canvasScn").textContent=M.scn;
+}
+function renderRail(){
+  // scenario picker
+  el("scenarioPick").innerHTML=Object.values(MODELS).map(m=>`<button data-scn="${m.id}" class="${m.id===MODELID?"on":""}">${m.name}</button>`).join("");
+  el("scenarioPick").querySelectorAll("[data-scn]").forEach(b=>b.addEventListener("click",()=>loadModel(b.dataset.scn)));
+  // overlays
+  const ovDefs=[["dataflow","Data flow","data + direction overlay","--accent2"],["protocols","Protocols","transport/app protocol","--proto"],
+    ["access","Access & AuthZ","auth + certs + 🔒","--auth"],["threats","Threats","severity badges","--crit"],
+    ["mitigations","Mitigations","implemented controls ✓","--mit"],["cve","CVE refs","CVE chips","--cve"],["attack","Attack path","unmitigated kill-path","--crit"]];
+  el("overlayBox").innerHTML=ovDefs.map(([k,nm,sub,c])=>`<div class="ovl ${OVL[k]?"on":""}" data-ovl="${k}" style="color:${cssv(c)}"><div class="sw"></div><div><div class="nm">${nm}</div><div class="sub">${sub}</div></div><div class="swatch"></div></div>`).join("");
+  el("overlayBox").querySelectorAll("[data-ovl]").forEach(d=>d.addEventListener("click",()=>{OVL[d.dataset.ovl]=!OVL[d.dataset.ovl];renderRail();renderStage();}));
+  // framework lens
+  el("fwTabs").innerHTML=Object.keys(FRAMEWORKS).map(k=>`<button data-fw="${k}" class="${k===LENS?"on":""}">${FRAMEWORKS[k].name}</button>`).join("");
+  el("fwTabs").querySelectorAll("[data-fw]").forEach(b=>b.addEventListener("click",()=>{LENS=b.dataset.fw;renderRail();renderFramePane();}));
+  el("fwHint").textContent=FRAMEWORKS[LENS].hint;
+  // add menu
+  const adds=[["node","⬡","Component"],["flow","↦","Data flow"],["threat","⚠","Threat"],["cve","🐞","CVE"],["lib","📚","Library"],["proto","🔌","Protocol"],["zone","▢","Trust zone"],["cert","🔑","Certificate"]];
+  el("addMenu").innerHTML=adds.map(([k,ic,nm])=>`<button data-add="${k}"><span class="ic">${ic}</span>${nm}</button>`).join("");
+  el("addMenu").querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>addElement(b.dataset.add)));
+}
+
+/* add elements */
+function addElement(kind){
+  if(kind==="node"){const id="n"+Date.now();const z=M.zones[0];M.nodes.push({id,name:"New Component",type:"service",zone:z.id,x:(z.x+40),y:(z.y+60),libs:[],protocols:[],certs:[]});renderAll();select("node",id);}
+  else if(kind==="flow"){if(M.nodes.length<2){toast("Need ≥2 components");return;}const id="e"+Date.now();M.flows.push({id,from:M.nodes[0].id,to:M.nodes[1].id,label:"new flow",protocol:"TLS",data:"data",auth:"token",encrypted:true});renderAll();select("flow",id);}
+  else if(kind==="threat"){addThreat(SEL&&SEL.kind!=="threat"?SEL.id:M.nodes[0]?.id);}
+  else if(kind==="cve"){if(!SEL||SEL.kind!=="threat"){toast("Select a threat first");switchITab("threats");return;}const id=prompt("CVE id","CVE-2025-00000");if(!id)return;const cvss=parseFloat(prompt("CVSS","7.5"))||7.5;getThreat(SEL.id).cves.push({id,cvss,sev:cvss>=9?"Critical":cvss>=7?"High":cvss>=4?"Medium":"Low"});renderAll();select("threat",SEL.id);}
+  else if(kind==="lib"){if(!SEL||SEL.kind!=="node"){toast("Select a component first");return;}const l=prompt("Library + version","openssl 3.0");if(!l)return;getNode(SEL.id).libs.push(l);renderAll();select("node",SEL.id);}
+  else if(kind==="proto"){if(!SEL||SEL.kind!=="node"){toast("Select a component first");return;}const p=prompt("Protocol","MQTT");if(!p)return;getNode(SEL.id).protocols.push(p);renderAll();select("node",SEL.id);}
+  else if(kind==="zone"){const id="z"+Date.now();M.zones.push({id,name:"New Zone",x:40,y:40,w:200,h:200,color:"#8aa0c4"});renderAll();toast("Zone added (edit via JSON / drag soon)");}
+  else if(kind==="cert"){const name=prompt("Certificate / key name");if(!name)return;M.certs.push({name,scope:prompt("Scope","")||"",expires:prompt("Expires (YYYY-MM-DD)","2026-01-01")||"",status:"valid"});renderAll();switchDock("certs");}
+}
+
+/* ============================== ingestion ============================== */
+function handleFiles(files){
+  [...files].forEach(f=>{
+    const chip=document.createElement("span");chip.className="chip";chip.textContent=f.name;el("ingested").appendChild(chip);
+    if(/\.(json|cdx|spdx)$/i.test(f.name)){const r=new FileReader();r.onload=()=>parseSBOM(r.result,f.name);r.readAsText(f);}
+  });
+  toast(files.length+" artifact(s) ingested");
+}
+function parseSBOM(text,name){
+  let libs=[];try{const j=JSON.parse(text);
+    if(j.components)libs=j.components.map(c=>`${c.name} ${c.version||""}`.trim());           // CycloneDX
+    else if(j.packages)libs=j.packages.map(p=>`${p.name} ${p.versionInfo||""}`.trim());        // SPDX
+  }catch(e){toast("Could not parse SBOM");return;}
+  if(!libs.length){toast("No components found in SBOM");return;}
+  // attach to selected node or first AI/gateway node, and flag known-risky
+  const tgt=(SEL&&SEL.kind==="node"?getNode(SEL.id):null)||M.nodes.find(n=>n.type==="gateway")||M.nodes[0];
+  tgt.libs=[...new Set([...(tgt.libs||[]),...libs])];
+  const risky=libs.filter(l=>/openssl 1|log4j|struts|envoy 1\.2[0-6]|pytorch 1\./i.test(l));
+  risky.forEach(l=>{const id="SBOM-"+Math.floor(Math.random()*9000+1000);M.threats.push(T(id,"Vulnerable component: "+l,tgt.id,"High",{owasp:["Vuln Components"],mitigations:[{text:"Patch/upgrade "+l+" per SBOM SLA",implemented:false}],status:"remediate"}));});
+  renderAll();toast(`SBOM → ${libs.length} libs on ${tgt.name}${risky.length?", "+risky.length+" flagged":""}`);
+}
+
+/* ============================== agent (Ollama + deterministic fallback) ============================== */
+function addAssist(text,who){const d=document.createElement("div");d.className="assist-msg"+(who==="user"?" user":"");d.textContent=text;el("assistLog").appendChild(d);el("assistLog").scrollTop=1e9;return d;}
+function addAssistHTML(html,who,cls){const d=document.createElement("div");d.className="assist-msg"+(who==="user"?" user":"")+(cls?" "+cls:"");d.innerHTML=html;el("assistLog").appendChild(d);el("assistLog").scrollTop=1e9;return d;}
+
+/* ============================== theme ============================== */
+function initTheme(){let t="dark";try{t=localStorage.getItem("tl-theme")||"dark";}catch(e){}applyTheme(t);}
+function applyTheme(t){document.documentElement.setAttribute("data-theme",t);const b=el("themeBtn");if(b)b.textContent=t==="light"?"☀ Light":"☾ Dark";try{localStorage.setItem("tl-theme",t);}catch(e){}}
+function toggleTheme(){const cur=document.documentElement.getAttribute("data-theme")==="light"?"light":"dark";applyTheme(cur==="light"?"dark":"light");renderAll();}
+
+/* ============================== RAG knowledge base ============================== */
+/* Chunk the live model into retrievable, citable documents. Rebuilt on demand so
+   added/edited threats, CVEs, libraries and flows are always in the index. */
+function buildKB(){
+  const kb=[];
+  M.nodes.forEach(n=>kb.push({ref:n.id,type:"node",label:n.name,
+    text:`Component ${n.name} type ${n.type}. Protocols ${(n.protocols||[]).join(", ")||"n/a"}. Certificates ${(n.certs||[]).join(", ")||"none"}. Libraries ${(n.libs||[]).map(l=>l.name+" "+(l.version||"")).join(", ")||"none"}.`}));
+  M.flows.forEach(f=>kb.push({ref:f.id,type:"flow",label:(getNode(f.from)?.name||"?")+"→"+(getNode(f.to)?.name||"?"),
+    text:`Data flow from ${getNode(f.from)?.name} to ${getNode(f.to)?.name}. Data ${f.data||f.label||""}. Protocol ${f.protocol||"?"}. Auth ${f.auth||"none"}.`}));
+  M.threats.forEach(t=>kb.push({ref:t.id,type:"threat",label:t.id+" "+t.title,sev:t.severity,
+    text:`Threat ${t.id} ${t.title}. Severity ${t.severity}. Status ${t.status}. Target ${getNode(t.target)?.name||t.target}. `+
+      `STRIDE ${(t.stride||[]).join("/")}. ATT&CK ${(t.attack||[]).join(",")}. ATLAS ${(t.atlas||[]).join(",")}. OWASP ${(t.owasp||[]).join(",")}. `+
+      `CVEs ${(t.cves||[]).map(c=>c.id+" CVSS "+c.cvss).join(", ")||"none"}. `+
+      `Mitigations ${(t.mitigations||[]).map(m=>(m.implemented?"[done] ":"[open] ")+m.text).join("; ")||"none"}. Coverage ${Math.round(threatCoverage(t)*100)}%.`}));
+  (M.certs||[]).forEach(c=>kb.push({ref:"cert:"+c.name,type:"cert",label:c.name,
+    text:`Certificate ${c.name} status ${c.status} expires ${c.expires}.`}));
+  const r=computeRisk();
+  kb.push({ref:"risk:summary",type:"risk",label:"risk posture",
+    text:`Inherent risk ${r.inherent} of 100. Residual risk ${r.residual} of 100 band ${band(r.residual)[0]}. Remediate ${r.remediate} mitigate ${r.mitigate} accept ${r.accept}. Scenario ${M.scn}.`});
+  return kb;
+}
+const STOP=new Set("the a an of to in on for and or is are with by as at from this that it its be can will into use used uses".split(" "));
+function toks(s){return (s.toLowerCase().match(/[a-z0-9&./-]{2,}/g)||[]).filter(w=>!STOP.has(w));}
+function retrieve(query,k){
+  const kb=buildKB();const q=toks(query);if(!q.length)return kb.slice(0,k||5).map(c=>({c,score:0.1}));
+  const qset={};q.forEach(w=>qset[w]=(qset[w]||0)+1);
+  const scored=kb.map(c=>{
+    const ct=toks(c.text+" "+c.label);const cset={};ct.forEach(w=>cset[w]=(cset[w]||0)+1);
+    let s=0;for(const w in qset){if(cset[w])s+=qset[w]*(1+Math.log(1+cset[w]));}
+    if(c.type==="threat"&&/threat|risk|attack|vuln|cve/.test(query.toLowerCase()))s*=1.15;
+    s/=Math.sqrt(ct.length||1);
+    return {c,score:s};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+  return scored.slice(0,k||6);
+}
+function sourcesBlock(hits){
+  if(!hits.length)return "";
+  const items=hits.map(h=>`<span class="src" title="${esc(h.c.text)}"><b>${esc(h.c.ref)}</b> · ${h.c.type}${h.c.label&&h.c.type!=="node"?" · "+esc(h.c.label):""}</span>`).join("");
+  return `<div class="rag-src"><div class="rag-src-h">▣ Retrieved context · ${hits.length} source${hits.length>1?"s":""} (RAG)</div>${items}</div>`;
+}
+
+function modelContext(){
+  const r=computeRisk();
+  return `Model: ${M.name} (${M.scn}). Residual risk ${r.residual}/100, inherent ${r.inherent}/100. `+
+    `Must-remediate: ${M.threats.filter(t=>t.status==="remediate").map(t=>t.id+" "+t.title).join("; ")||"none"}. `+
+    `Threats: ${M.threats.map(t=>`${t.id}[${t.severity}] ${t.title} (mit ${Math.round(threatCoverage(t)*100)}%)`).join(" | ")}.`;
+}
+async function askAgent(q){
+  addAssist(q,"user");
+  // 1. RETRIEVE — ground the answer in the live model (RAG)
+  const hits=retrieve(q,6);
+  const grounded=hits.map(h=>`[${h.c.ref}] ${h.c.text}`).join("\n");
+  const thinking=addAssist("▣ Retrieving relevant context…","ai");
+  const url=el("ollamaUrl").value.trim();
+  // 2. GENERATE — Ollama grounded on retrieved chunks, else deterministic over same chunks
+  try{
+    const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),3500);
+    const res=await fetch(url+"/api/generate",{method:"POST",signal:ctrl.signal,headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"llama3.1",stream:false,prompt:
+`You are a product-security threat-modeling agent. Answer ONLY using the retrieved context below; cite the bracketed ids you used.
+Retrieved context:
+${grounded}
+
+Overall posture: ${modelContext()}
+Question: ${q}
+Answer concisely with concrete, prioritized security actions and cite ids like [T1].`})});
+    clearTimeout(to);const j=await res.json();
+    thinking.remove();
+    addAssist(j.response?.trim()||"(empty response)","ai");
+    addAssistHTML(sourcesBlock(hits),"ai","");
+    return;
+  }catch(e){/* fall through to deterministic, same retrieved chunks */}
+  thinking.remove();
+  addAssist(heuristicAnswer(q,hits),"ai");
+  addAssistHTML(sourcesBlock(hits),"ai","");
+}
+function heuristicAnswer(q,hits){
+  const ql=q.toLowerCase();const r=computeRisk();
+  const rem=M.threats.filter(t=>t.status==="remediate"&&!t._disabled).sort((a,b)=>sevW(b.severity)-sevW(a.severity));
+  if(/remediate|first|priorit|urgent|must/.test(ql))
+    return "Must-remediate, highest severity first:\n"+(rem.map((t,i)=>`${i+1}. ${t.id} [${t.severity}] ${t.title}\n   → ${t.mitigations.filter(m=>!m.implemented).map(m=>m.text).join("; ")||"define a control"}`).join("\n")||"Nothing flagged remediate.")+`\n\nResidual risk would drop toward ${Math.max(0,r.residual-rem.length*8)}/100 once these ship.`;
+  if(/residual|risk score|final/.test(ql))
+    return `Inherent ${r.inherent}/100, residual ${r.residual}/100 (${band(r.residual)[0]}). Drivers: ${rem.map(t=>t.id).join(", ")||"well-mitigated"}. ${r.accept} accepted, ${r.mitigate} mitigated.`;
+  if(/mitigat|control|fix|reduce/.test(ql)){
+    const gaps=M.threats.filter(t=>threatCoverage(t)<1&&!t._disabled);
+    return "Open control gaps:\n"+gaps.map(t=>`• ${t.id}: `+t.mitigations.filter(m=>!m.implemented).map(m=>m.text).join("; ")||`• ${t.id}: no controls defined`).join("\n");}
+  if(/cve|vuln|patch/.test(ql)){const cves=M.threats.flatMap(t=>(t.cves||[]).map(c=>`${c.id} (CVSS ${c.cvss}, ${c.sev}) — ${t.title}`));return cves.length?"Tracked CVEs:\n"+cves.join("\n"):"No CVEs tracked yet — add via the CVE control.";}
+  if(/stride|attack|atlas|owasp|map|framework/.test(ql)){const c=frameworkCounts();return Object.entries(c).map(([k,v])=>`${k}: ${Object.entries(v).filter(([,n])=>n).map(([cat,n])=>cat+"×"+n).join(", ")||"—"}`).join("\n");}
+  if(/flow|interface|data/.test(ql))return "Data flows:\n"+M.flows.map(f=>`${getNode(f.from)?.name} →[${f.protocol}, ${f.data}, ${f.auth}]→ ${getNode(f.to)?.name}`).join("\n");
+  if(/cert|expir|key/.test(ql))return "Certificate exposure:\n"+M.certs.map(c=>`${c.name}: ${c.status} (exp ${c.expires})`).join("\n");
+  // default: answer straight from retrieved chunks so it stays grounded
+  if(hits&&hits.length)
+    return "Grounded on the most relevant parts of the model:\n"+hits.map(h=>`• [${h.c.ref}] ${h.c.text}`).join("\n")+"\n\n(Local Ollama not reachable — deterministic retrieval-grounded engine.)";
+  return "I can enumerate threats, tell you what to remediate first, summarize residual risk, list CVEs, map to STRIDE/ATT&CK/ATLAS/OWASP, walk data flows, or review certificates. (Local Ollama not reachable — using on-device retrieval + heuristics.)";
+}
+/* Autonomous multi-step agentic pass: plan → retrieve → detect gaps → act → recompute → report */
+async function runAgentPass(){
+  switchITab("assist");
+  const step=(t)=>addAssistHTML("<span class='agent-step'>"+t+"</span>","ai","step");
+  step("① Plan — assess "+esc(M.name)+" and reduce residual risk.");
+  await wait(140);
+  const kb=buildKB();
+  step("② Retrieve — indexed "+kb.length+" chunks ("+M.threats.length+" threats, "+M.flows.length+" flows, "+M.nodes.length+" components).");
+  await wait(140);
+  const before=computeRisk().residual;
+  // detect gaps
+  const unmitigated=M.threats.filter(t=>sevW(t.severity)>=3&&threatCoverage(t)===0&&!t._disabled);
+  const noControls=M.threats.filter(t=>!t.mitigations.length&&!t._disabled);
+  const expiredCerts=(M.certs||[]).filter(c=>c.status==="expired");
+  step("③ Detect gaps — "+unmitigated.length+" high/critical with no coverage, "+noControls.length+" with no controls, "+expiredCerts.length+" expired cert(s).");
+  await wait(140);
+  // act
+  let acted=0;
+  noControls.forEach(t=>{t.mitigations.push({text:"Define a compensating control for "+t.title,implemented:false});acted++;});
+  unmitigated.forEach(t=>{if(t.status!=="remediate"){t.status="remediate";acted++;}});
+  renderAll();
+  step("④ Act — applied "+acted+" change(s): stubbed missing controls and escalated unmitigated high/critical threats to REMEDIATE.");
+  await wait(140);
+  const after=computeRisk().residual;
+  step("⑤ Recompute — residual risk "+before+" → "+after+"/100 ("+band(after)[0]+"). Note: residual reflects newly-flagged remediation work now visible on the board.");
+  await wait(120);
+  // grounded summary via RAG path
+  const hits=retrieve("what must I remediate first and what is the residual risk",6);
+  addAssist(heuristicAnswer("what must I remediate first",hits),"ai");
+  addAssistHTML(sourcesBlock(hits),"ai","");
+}
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+
+/* ============================== exports ============================== */
+function serializeStage(){
+  const svg=el("stage").cloneNode(true);
+  svg.setAttribute("xmlns",SVGNS);
+  const bb=el("canvasWrap").getBoundingClientRect();
+  svg.setAttribute("width",bb.width);svg.setAttribute("height",bb.height);
+  svg.setAttribute("viewBox",`0 0 ${bb.width} ${bb.height}`);
+  const safeVar=p=>{
+    if(p==="--mono")return "monospace";
+    if(p==="--sans")return "sans-serif";
+    return cssv(p).replace(/"/g,"'");           // never emit double-quotes into an attribute
+  };
+  const inner=new XMLSerializer().serializeToString(svg)
+    .replace(/^<svg[^>]*>/,"").replace(/<\/svg>$/,"")
+    .replace(/var\((--[a-z0-9]+)\)/g,(m,p)=>safeVar(p));
+  return `<svg xmlns="${SVGNS}" width="${bb.width}" height="${bb.height}" viewBox="0 0 ${bb.width} ${bb.height}"><rect width="100%" height="100%" fill="${cssv("--bg")}"/>${inner}</svg>`;
+}
+function download(name,data,type){const b=new Blob([data],{type});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+async function stagePNG(scale=2){
+  const svgStr=serializeStage();const bb=el("canvasWrap").getBoundingClientRect();
+  const img=new Image();const url="data:image/svg+xml;base64,"+btoa(unescape(encodeURIComponent(svgStr)));
+  await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url;});
+  const cv=document.createElement("canvas");cv.width=bb.width*scale;cv.height=bb.height*scale;
+  const cx=cv.getContext("2d");cx.fillStyle=cssv("--bg");cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(img,0,0,cv.width,cv.height);
+  return cv.toDataURL("image/png");
+}
+function riskRows(){return M.threats.map(t=>[t.id,t.severity,t.status,t.title,(t.cves||[]).map(c=>c.id).join(" "),Math.round(threatCoverage(t)*100)+"%"]);}
+async function doExport(kind){
+  el("exportMenu").classList.add("hide");
+  const r=computeRisk();
+  if(kind==="svg"){download(`threatloom-${MODELID}-diagram.svg`,serializeStage(),"image/svg+xml");}
+  else if(kind==="png"){const d=await stagePNG();download(`threatloom-${MODELID}-diagram.png`,await(await fetch(d)).blob(),"image/png");}
+  else if(kind==="json"){download(`threatloom-${MODELID}.json`,JSON.stringify(M,null,2),"application/json");}
+  else if(kind==="doc"){
+    const rows=riskRows().map(rw=>`<tr>${rw.map(c=>`<td style="border:1px solid #999;padding:4px">${esc(c)}</td>`).join("")}</tr>`).join("");
+    const html=`<html><head><meta charset="utf-8"></head><body><h1>ThreatLoom Report — ${esc(M.name)}</h1><p>${esc(M.scn)}</p>
+      <h2>Risk</h2><p>Inherent ${r.inherent}/100 (${band(r.inherent)[0]}); Residual ${r.residual}/100 (${band(r.residual)[0]}). Remediate ${r.remediate}, mitigate ${r.mitigate}, accepted ${r.accept}.</p>
+      <h2>Threat register</h2><table style="border-collapse:collapse"><tr><th>ID</th><th>Sev</th><th>Disposition</th><th>Title</th><th>CVE</th><th>Mit%</th></tr>${rows}</table>
+      <h2>Certificates</h2><ul>${M.certs.map(c=>`<li>${esc(c.name)} — ${esc(c.scope)} — exp ${esc(c.expires)} — ${esc(c.status)}</li>`).join("")}</ul></body></html>`;
+    download(`threatloom-${MODELID}-report.doc`,html,"application/msword");
+  }
+  else if(kind==="pdf"){
+    if(!window.jspdf){toast("PDF lib not loaded (offline)");return;}
+    const {jsPDF}=window.jspdf;const pdf=new jsPDF({unit:"pt",format:"a4"});const png=await stagePNG(2);
+    pdf.setFontSize(18);pdf.text("ThreatLoom — "+M.name,40,46);pdf.setFontSize(10);pdf.setTextColor(120);pdf.text(M.scn,40,62);
+    pdf.setTextColor(0);pdf.text(`Inherent ${r.inherent}/100 (${band(r.inherent)[0]})   Residual ${r.residual}/100 (${band(r.residual)[0]})   Remediate ${r.remediate}`,40,82);
+    pdf.addImage(png,"PNG",40,96,515,290);
+    let y=410;pdf.setFontSize(12);pdf.text("Threat register",40,y);y+=16;pdf.setFontSize(8);
+    riskRows().forEach(rw=>{if(y>800){pdf.addPage();y=40;}pdf.text(`${rw[0]} [${rw[1]}/${rw[2]}] ${clip(rw[3],70)}  ${rw[4]} mit:${rw[5]}`,40,y);y+=12;});
+    pdf.save(`threatloom-${MODELID}-report.pdf`);
+  }
+  else if(kind==="pptx"){
+    if(!window.PptxGenJS){toast("PPTX lib not loaded (offline)");return;}
+    const png=await stagePNG(2);const p=new PptxGenJS();
+    let s=p.addSlide();s.background={color:"0A0E16"};s.addText("ThreatLoom — "+M.name,{x:.5,y:.4,fontSize:28,color:"37E0C4",bold:true});
+    s.addText(M.scn,{x:.5,y:1.1,fontSize:13,color:"8AA0C4"});
+    s.addText(`Inherent ${r.inherent}/100   Residual ${r.residual}/100   Remediate ${r.remediate}`,{x:.5,y:1.6,fontSize:14,color:"FFFFFF"});
+    let s2=p.addSlide();s2.background={color:"0A0E16"};s2.addText("System architecture + overlays",{x:.5,y:.3,fontSize:18,color:"E7EEFC",bold:true});
+    s2.addImage({data:png,x:.4,y:.9,w:9,h:5.0});
+    let s3=p.addSlide();s3.background={color:"0A0E16"};s3.addText("Threat register",{x:.5,y:.3,fontSize:18,color:"E7EEFC",bold:true});
+    s3.addTable([["ID","Sev","Disposition","Title","Mit%"],...riskRows().map(rw=>[rw[0],rw[1],rw[2],clip(rw[3],50),rw[5]])],{x:.4,y:.9,w:9,fontSize:9,color:"E7EEFC",border:{pt:.5,color:"2B3A57"},fill:{color:"111A2B"}});
+    p.writeFile({fileName:`threatloom-${MODELID}-deck.pptx`});
+  }
+}
+
+/* ============================== dock + resize wiring ============================== */
+function switchDock(name){document.querySelectorAll("#dockTabs button").forEach(b=>b.classList.toggle("on",b.dataset.dock===name));
+  ["attack","frame","risk","whatif","certs"].forEach(t=>el("pane-"+t).classList.toggle("on",t===name));}
+function setupDockTabs(){
+  const tabs=[["attack","Attack graph"],["frame","Framework analysis"],["risk","Risk & disposition"],["whatif","What-if & compliance"],["certs","Certificates"]];
+  const tools=el("dockTabs").querySelector(".dock-tools");
+  el("dockTabs").innerHTML=tabs.map(([k,n],i)=>`<button data-dock="${k}" class="${i===0?"on":""}">${n}</button>`).join("");
+  if(tools)el("dockTabs").appendChild(tools);
+  el("dockTabs").querySelectorAll("[data-dock]").forEach(b=>b.addEventListener("click",()=>switchDock(b.dataset.dock)));
+}
+function setupResizers(){
+  document.querySelectorAll(".gutter").forEach(g=>{
+    g.addEventListener("pointerdown",ev=>{
+      ev.preventDefault();const kind=g.dataset.resize;const start={x:ev.clientX,y:ev.clientY};
+      const rail=el("rail"),insp=el("inspector"),dock=el("dock");
+      const init={rail:rail.offsetWidth,insp:insp.offsetWidth,dock:dock.offsetHeight};
+      const move=e=>{
+        if(kind==="rail")rail.style.width=Math.max(180,init.rail+(e.clientX-start.x))+"px";
+        else if(kind==="inspector")insp.style.width=Math.max(200,init.insp-(e.clientX-start.x))+"px";
+        else if(kind==="dock")dock.style.height=Math.max(90,init.dock-(e.clientY-start.y))+"px";
+        if(kind==="dock")renderAttackPane();
+      };
+      const up=()=>{document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);};
+      document.addEventListener("pointermove",move);document.addEventListener("pointerup",up);
+    });
+  });
+}
+function setupITabs(){document.querySelectorAll("[data-itab]").forEach(b=>b.addEventListener("click",()=>switchITab(b.dataset.itab)));}
+
+let toastT;function toast(msg){let t=el("toastEl");if(!t){t=document.createElement("div");t.id="toastEl";t.className="toast";document.body.appendChild(t);}t.textContent=msg;t.style.display="block";clearTimeout(toastT);toastT=setTimeout(()=>t.style.display="none",2600);}
+
+/* ============================== master render ============================== */
+function renderAll(){renderTop();renderRail();renderStage();renderInspector();renderDock();}
+
+/* ============================== boot ============================== */
+function boot(){
+  loadModel("samd");
+  setupCanvasNav();setupDockTabs();setupResizers();setupITabs();
+  // input wiring
+  el("drop").addEventListener("click",()=>el("file").click());
+  el("file").addEventListener("change",e=>handleFiles(e.target.files));
+  ["dragover","dragenter"].forEach(ev=>el("drop").addEventListener(ev,e=>{e.preventDefault();el("drop").classList.add("hot");}));
+  ["dragleave","drop"].forEach(ev=>el("drop").addEventListener(ev,e=>{e.preventDefault();el("drop").classList.remove("hot");}));
+  el("drop").addEventListener("drop",e=>handleFiles(e.dataTransfer.files));
+  el("repo").addEventListener("change",e=>{if(e.target.value){const c=document.createElement("span");c.className="chip";c.textContent="repo: "+e.target.value.split("/").slice(-2).join("/");el("ingested").appendChild(c);toast("Repo registered for analysis");}});
+  // zoom controls
+  el("zoomIn").addEventListener("click",()=>{zoom=Math.min(3,zoom*1.15);applyTransform();el("zoomLbl").textContent=Math.round(zoom*100)+"%";});
+  el("zoomOut").addEventListener("click",()=>{zoom=Math.max(.3,zoom/1.15);applyTransform();el("zoomLbl").textContent=Math.round(zoom*100)+"%";});
+  el("zoomFit").addEventListener("click",fit);
+  el("bigger").addEventListener("click",()=>{DS=DS>=1.8?1:DS+0.2;renderStage();fit();toast("Diagram spread ×"+DS.toFixed(1));});
+  // frame collapse / focus / pop-out
+  const setRail=c=>{el("rail").classList.toggle("collapsed",c);setTimeout(fit,30);};
+  const setInsp=c=>{el("inspector").classList.toggle("collapsed",c);setTimeout(fit,30);};
+  el("railCollapse").addEventListener("click",()=>setRail(true));
+  el("railExpand").addEventListener("click",()=>setRail(false));
+  el("inspCollapse").addEventListener("click",()=>setInsp(true));
+  el("inspExpand").addEventListener("click",()=>setInsp(false));
+  el("dockCollapse").addEventListener("click",()=>{const d=el("dock");const c=d.classList.toggle("collapsed");el("dockCollapse").textContent=c?"▴":"▾";el("dockCollapse").title=c?"Expand analysis dock":"Collapse analysis dock";setTimeout(fit,30);});
+  // collapsible rail sections (accordion)
+  document.querySelectorAll(".sec h3[data-acc]").forEach(h=>h.addEventListener("click",()=>{h.parentElement.classList.toggle("collapsed");}));
+  // focus mode: hide side panels + dock for a full-width diagram
+  el("focusDiagram").addEventListener("click",()=>{const on=el("shell").classList.toggle("focus-diagram");el("focusDiagram").classList.toggle("on",on);el("focusDiagram").title=on?"Restore panels":"Focus diagram (hide panels)";setTimeout(fit,40);});
+  // pop-out: true browser full screen on the diagram canvas
+  el("popoutDiagram").addEventListener("click",()=>{const c=el("canvasWrap");
+    if(!document.fullscreenElement){(c.requestFullscreen?c.requestFullscreen():Promise.reject()).then(()=>setTimeout(fit,80)).catch(()=>{el("shell").classList.add("focus-diagram");setTimeout(fit,40);toast("Full screen blocked — using focus mode");});}
+    else{document.exitFullscreen();}});
+  document.addEventListener("fullscreenchange",()=>setTimeout(fit,80));
+  // export menu
+  el("exportBtn").addEventListener("click",()=>el("exportMenu").classList.toggle("hide"));
+  el("exportMenu").querySelectorAll("[data-x]").forEach(b=>b.addEventListener("click",()=>doExport(b.dataset.x)));
+  document.addEventListener("click",e=>{if(!e.target.closest(".dropdown"))el("exportMenu").classList.add("hide");});
+  // theme toggle (light / dark background)
+  el("themeBtn").addEventListener("click",toggleTheme);
+  initTheme();
+  // agent
+  el("agentBtn").addEventListener("click",runAgentPass);
+  el("assistSend").addEventListener("click",()=>{const v=el("assistInput").value.trim();if(v){askAgent(v);el("assistInput").value="";}});
+  el("assistInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){el("assistSend").click();}});
+  addAssistHTML("<b>Agentic RAG agent ready.</b> Model <b>"+esc(M.name)+"</b> is indexed into "+buildKB().length+" retrievable chunks. Ask a question and I retrieve the relevant nodes, flows, threats, CVEs, certs and framework mappings, then ground my answer in them (sources shown). Click <b>⟳ Run agent</b> for an autonomous multi-step pass: retrieve → find gaps → propose &amp; apply controls → recompute residual risk.","ai");
+  setTimeout(fit,60);
+  window.addEventListener("resize",()=>renderAttackPane());
+}
+document.addEventListener("DOMContentLoaded",boot);
+
+</script>
+</body>
+</html>
