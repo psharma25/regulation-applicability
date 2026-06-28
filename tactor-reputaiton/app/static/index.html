@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Threat Actor Reputation Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#FFFFFF; --panel:#FBFAF7; --panel2:#F4F2EC; --line:#E2DED3; --line2:#D5D0C3;
+    --ink:#15202E; --ink2:#3A4350; --mute:#7A8290;
+    --amber:#C77F18; --amber-fill:#E8A33D; --amber-soft:#FBEFD8;
+    --teal:#2C7D71; --teal-fill:#3DA89A; --teal-soft:#DEF0EC;
+    --red:#B23A30; --red-soft:#F7E2DF;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    line-height:1.5;
+    min-height:100vh;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 22px 80px}
+
+  /* Header / hero */
+  header.hero{
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:linear-gradient(180deg,#FFFFFF,var(--panel));
+    padding:26px 28px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 1px 2px rgba(21,32,46,.04);
+  }
+  .eyebrow{
+    font-size:11px;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--amber);margin:0 0 10px;font-weight:600;
+  }
+  h1{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:clamp(26px,4vw,40px);line-height:1.04;margin:0;color:var(--ink);
+    letter-spacing:-.01em;
+  }
+  h1 .slash{color:var(--amber)}
+  .sub{color:var(--ink2);margin:12px 0 0;max-width:62ch;font-size:13px}
+
+  .controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:22px}
+  button.run{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:15px;
+    letter-spacing:.02em;cursor:pointer;border:none;border-radius:3px;
+    padding:13px 22px;color:#FFFFFF;
+    background:var(--amber);transition:transform .08s ease, box-shadow .2s;
+  }
+  button.run:hover{transform:translateY(-1px);box-shadow:0 6px 20px -8px var(--amber)}
+  button.run:disabled{opacity:.45;cursor:wait;transform:none;box-shadow:none}
+  a.dl{
+    font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:14px;
+    text-decoration:none;color:var(--teal);border:1px solid var(--teal);
+    border-radius:3px;padding:12px 18px;transition:background .2s;
+  }
+  a.dl:hover{background:var(--teal-soft)}
+  a.dl.off{opacity:.4;pointer-events:none;color:var(--mute);border-color:var(--line2)}
+  .status{font-size:12px;color:var(--mute)}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;
+    background:var(--mute);margin-right:7px;vertical-align:middle}
+  .dot.run{background:var(--amber);animation:pulse 1s infinite}
+  .dot.ok{background:var(--teal)}
+  .dot.err{background:var(--red)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* Legend */
+  .legend{display:flex;gap:26px;flex-wrap:wrap;margin:26px 2px 6px;font-size:11.5px;color:var(--mute)}
+  .legend b{color:var(--ink);font-weight:600}
+  .chip{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+  /* Board */
+  .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px;margin-top:14px}
+  .card{
+    border:1px solid var(--line);border-radius:4px;background:var(--panel);
+    padding:18px 18px 16px;position:relative;
+    animation:rise .35s ease both;
+    box-shadow:0 1px 2px rgba(21,32,46,.04);
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .rank{
+    position:absolute;top:14px;right:16px;font-size:11px;color:var(--mute);
+    font-weight:600;letter-spacing:.1em;
+  }
+  .name{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:21px;margin:0;color:var(--ink)}
+  .badge-new{
+    display:inline-block;margin-left:8px;font-family:"IBM Plex Mono",monospace;
+    font-size:9px;font-weight:600;letter-spacing:.14em;vertical-align:middle;
+    color:var(--teal);background:var(--teal-soft);border:1px solid #A9D4CC;
+    border-radius:2px;padding:2px 6px;
+  }
+  .card.defunct{opacity:.72}
+  .card.defunct .name{color:var(--mute)}
+  .badge-defunct{
+    display:inline-block;margin-left:8px;font-size:9px;font-weight:600;
+    letter-spacing:.14em;vertical-align:middle;color:var(--mute);
+    border:1px solid var(--line2);border-radius:2px;padding:2px 6px;
+  }
+  .meta{font-size:11.5px;color:var(--mute);margin:3px 0 0}
+  .stamp{
+    display:inline-block;margin-top:10px;font-size:10px;font-weight:600;
+    letter-spacing:.16em;text-transform:uppercase;padding:3px 8px;border-radius:2px;
+  }
+  .stamp.directed{color:var(--red);border:1px solid var(--red);
+    transform:rotate(-2deg);background:var(--red-soft)}
+  .stamp.tolerated{color:var(--amber);border:1px solid #E6C98C;background:var(--amber-soft)}
+  .stamp.criminal{color:var(--mute);border:1px solid var(--line2);background:var(--panel2)}
+
+  .gauges{margin-top:16px;display:flex;flex-direction:column;gap:13px}
+  .gauge .glabel{display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px}
+  .gauge .glabel .gk{color:var(--mute);letter-spacing:.04em}
+  .gauge .glabel .gv{font-weight:600;color:var(--ink)}
+  .track{height:8px;border-radius:5px;background:var(--panel2);overflow:hidden;border:1px solid var(--line)}
+  .fill{height:100%;border-radius:5px;width:0;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .fill.sev{background:linear-gradient(90deg,#EEC988,var(--amber-fill))}
+  .fill.rel{background:linear-gradient(90deg,#9AD0C8,var(--teal-fill))}
+  .band{font-size:10.5px;color:var(--mute);margin-top:4px}
+
+  .foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;font-size:11px;color:var(--mute)}
+  .foot b{color:var(--ink);font-weight:600}
+  .notes{font-size:11.5px;color:var(--ink2);margin-top:10px;line-height:1.45}
+
+  /* Log */
+  .logwrap{margin-top:30px;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
+  .logwrap h3{font-family:"Space Grotesk",sans-serif;font-size:12px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--mute);margin:0;padding:13px 16px;border-bottom:1px solid var(--line)}
+  pre.log{margin:0;padding:14px 16px;max-height:230px;overflow:auto;font-size:11.5px;color:var(--ink2)}
+  pre.log .be{color:var(--amber);font-weight:600}
+
+  .empty{color:var(--mute);font-size:13px;padding:40px 4px;text-align:center}
+  .caveat{margin-top:26px;font-size:11.5px;color:var(--mute);border-left:2px solid var(--amber);padding-left:14px;max-width:80ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Defensive threat intelligence · scoring workbook + live tracker</p>
+    <h1>Threat actor reputation<span class="slash">/</span>board</h1>
+    <p class="sub">Ranks ransomware &amp; extortion actors on two axes — how dangerous they are, and whether they honor a payment — from analyst priors enriched with live public reporting. Run a scan to refresh and export the scoring workbook.</p>
+    <div class="controls">
+      <button class="run" id="runBtn">Run scan</button>
+      <a class="dl off" id="dlBtn" href="#">Download workbook (.xlsx)</a>
+      <span class="status" id="status"><span class="dot" id="dot"></span><span id="statusText">Idle — no scan yet</span></span>
+    </div>
+  </header>
+
+  <div class="legend">
+    <span><span class="chip" style="background:var(--amber-fill)"></span><b>Threat severity</b> — higher is worse for you</span>
+    <span><span class="chip" style="background:var(--teal-fill)"></span><b>Deal reliability</b> — higher means more likely to honor payment</span>
+    <span><span class="chip" style="background:var(--red)"></span><b>State-directed</b> — sanctions risk on payment</span>
+  </div>
+
+  <div class="board" id="board">
+    <div class="empty">Press <b>Run scan</b> to assess actors and build the board.</div>
+  </div>
+
+  <div class="logwrap">
+    <h3>Scan log</h3>
+    <pre class="log" id="log">awaiting scan…</pre>
+  </div>
+
+  <p class="caveat">Scores are a planning aid, not an endorsement — every listed actor is a criminal operation. Ransoms actually paid and payer identities are mostly undisclosed; per-group decryptor success rates are tracked privately by negotiation firms. Reliability reflects reputation and incentive structure, not a verified success rate. Across all groups roughly a third of victims who pay receive non-working decryptors. See the workbook's "About" sheet for full methodology.</p>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let pollTimer = null;
+
+function setStatus(state, text){
+  $("dot").className = "dot " + (state || "");
+  $("statusText").textContent = text;
+}
+
+function gauge(label, value, cls, band){
+  const pct = Math.max(0, Math.min(100, (value/10)*100));
+  return `<div class="gauge">
+    <div class="glabel"><span class="gk">${label}</span><span class="gv">${value.toFixed(1)}/10</span></div>
+    <div class="track"><div class="fill ${cls}" data-w="${pct}"></div></div>
+    <div class="band">${band}</div>
+  </div>`;
+}
+
+function stampClass(ns){ return ns === "directed" ? "directed" : ns === "tolerated" ? "tolerated" : "criminal"; }
+function stampText(ns){ return ns === "directed" ? "State-directed" : ns === "tolerated" ? "State-tolerated" : "Criminal"; }
+
+function render(scan){
+  const board = $("board");
+  if(!scan.actors || !scan.actors.length){
+    board.innerHTML = `<div class="empty">Gathering evidence…</div>`;
+    return;
+  }
+  board.innerHTML = scan.actors.map((a,i) => `
+    <div class="card${a.status === 'defunct' ? ' defunct' : ''}" style="animation-delay:${i*40}ms">
+      <span class="rank">#${String(i+1).padStart(2,"0")}</span>
+      <p class="name">${a.name}${a.discovered ? '<span class="badge-new">NEW</span>' : ''}${a.status === 'defunct' ? '<span class="badge-defunct">DEFUNCT</span>' : ''}</p>
+      <p class="meta">${a.origin} · ${a.model}${a.recent_victims ? " · "+a.recent_victims+" recent victims" : ""}</p>
+      <span class="stamp ${stampClass(a.nation_state_class)}">${stampText(a.nation_state_class)}</span>
+      <div class="gauges">
+        ${gauge("Threat severity", a.threat_severity, "sev", sevBand(a.threat_severity))}
+        ${gauge("Deal reliability", a.deal_reliability, "rel", relBand(a.deal_reliability))}
+      </div>
+      ${a.notes ? `<p class="notes">${a.notes}</p>` : ""}
+      <div class="foot"><span>confidence <b>${(a.confidence*100|0)}%</b></span><span>${a.evidence ? a.evidence.length : 0} sources</span></div>
+    </div>`).join("");
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".fill").forEach(f => f.style.width = f.dataset.w + "%");
+  });
+}
+
+function sevBand(s){ return s>=8.5?"Critical":s>=7?"High":s>=5?"Elevated":s>=3?"Moderate":"Low"; }
+function relBand(s){ return s>=7?"Often honors payment":s>=5?"Mixed / inconsistent":s>=3?"Frequently cheats":"Assume no recovery"; }
+
+function renderLog(scan){
+  const log = $("log");
+  const lines = (scan.log||[]).map(l => l.replace(/(backend:.*)/,'<span class="be">$1</span>')).join("\n");
+  log.innerHTML = lines || "…";
+  log.scrollTop = log.scrollHeight;
+}
+
+async function poll(id){
+  try{
+    const r = await fetch(`/api/scan/${id}`);
+    const scan = await r.json();
+    render(scan); renderLog(scan);
+    if(scan.status === "running"){
+      setStatus("run", "Scanning… backend: " + (scan.llm_backend||"detecting"));
+    } else if(scan.status === "complete"){
+      const disc = scan.discovered_count ? ` · ${scan.discovered_count} new` : "";
+      setStatus("ok", `Complete — ${scan.actors.length} actors${disc} · backend ${scan.llm_backend}`);
+      const dl = $("dlBtn");
+      dl.href = `/api/scan/${id}/xlsx`; dl.classList.remove("off");
+      $("runBtn").disabled = false;
+      clearInterval(pollTimer);
+    } else if(scan.status === "error"){
+      setStatus("err", "Error — " + (scan.error||"see log"));
+      $("runBtn").disabled = false;
+      clearInterval(pollTimer);
+    }
+  }catch(e){ /* keep polling */ }
+}
+
+$("runBtn").addEventListener("click", async () => {
+  $("runBtn").disabled = true;
+  $("dlBtn").classList.add("off");
+  setStatus("run", "Queuing scan…");
+  $("board").innerHTML = `<div class="empty">Initializing agent…</div>`;
+  const r = await fetch("/api/scan", {method:"POST"});
+  const {scan_id} = await r.json();
+  if(pollTimer) clearInterval(pollTimer);
+  poll(scan_id);
+  pollTimer = setInterval(() => poll(scan_id), 1200);
+});
+
+(async () => {
+  try{
+    const r = await fetch("/api/latest");
+    const scan = await r.json();
+    if(scan && scan.status === "complete"){
+      render(scan); renderLog(scan);
+      setStatus("ok", `Last scan — ${scan.actors.length} actors · backend ${scan.llm_backend}`);
+      const dl = $("dlBtn");
+      dl.href = `/api/scan/${scan.scan_id}/xlsx`; dl.classList.remove("off");
+    }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
