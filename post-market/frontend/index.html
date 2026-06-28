@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CVD Console · Medical Device PSIRT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;--panel:#F8FAFB;--panel2:#FFFFFF;--raise:#F1F5F6;
+    --border:#E4EAED;--border-strong:#CFDADF;
+    --ink:#13232B;--muted:#5C6E76;--faint:#90A1A8;
+    --teal:#0E8C7F;--teal-soft:#E4F4F1;--teal-ink:#0a5f56;
+    --amber:#B26B00;--amber-soft:#FBF0DC;--red:#C42B2E;--red-soft:#FBE6E6;
+    --green:#18794E;--green-soft:#E3F3EA;--violet:#5B4DBE;
+    --mono:'JetBrains Mono',monospace;--disp:'Space Grotesk',sans-serif;--body:'Inter',sans-serif;
+  }
+  *{box-sizing:border-box}html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px}
+  a{color:var(--teal);text-decoration:none}a:hover{text-decoration:underline}
+  ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#d4dee2;border-radius:6px}
+  .mono{font-family:var(--mono)}
+  button{font-family:var(--body);cursor:pointer;border-radius:7px;font-weight:600;padding:9px 14px;font-size:13px;background:var(--raise);color:var(--ink);transition:.15s;border:1px solid var(--border)}
+  button:hover{background:#E8EEF0}
+  button.primary{background:var(--teal);color:#fff;border-color:var(--teal)}button.primary:hover{background:#0b766b}
+  button.ghost{background:#fff}button.danger{background:var(--red-soft);color:var(--red);border-color:#f0caca}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  input,textarea,select{font-family:var(--body);background:#fff;border:1px solid var(--border-strong);color:var(--ink);border-radius:7px;padding:9px 11px;font-size:13px;width:100%}
+  textarea{resize:vertical;font-family:var(--mono);line-height:1.55}
+  label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin:0 0 5px}
+  header{display:flex;align-items:center;gap:18px;padding:13px 22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#ffffffee;backdrop-filter:blur(8px);z-index:10}
+  .logo{font-family:var(--disp);font-weight:700;font-size:18px;letter-spacing:-.02em}.logo b{color:var(--teal)}
+  .org{color:var(--muted);font-size:12px;border-left:1px solid var(--border-strong);padding-left:16px;cursor:pointer;transition:.12s}
+  .org:hover{color:var(--teal)}
+  .spacer{flex:1}
+  .nav{display:flex;gap:4px;background:var(--raise);padding:4px;border-radius:9px;border:1px solid var(--border)}
+  .nav button{background:transparent;border:none;color:var(--muted);padding:7px 14px;font-size:13px}
+  .nav button.on{background:#fff;color:var(--teal);box-shadow:0 1px 3px #0001}
+  .pill{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid var(--border-strong);display:inline-flex;align-items:center;gap:7px;color:var(--muted)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--faint)}.dot.on{background:var(--green)}.dot.off{background:var(--amber)}
+  main{height:calc(100vh - 59px);overflow:hidden}
+  .view{display:none;height:100%}.view.on{display:block}
+  #view-disc{display:none;grid-template-columns:380px 1fr}#view-disc.on{display:grid}
+  .queue{border-right:1px solid var(--border);overflow-y:auto;padding:14px;background:var(--panel)}
+  .detail{overflow-y:auto;padding:22px 26px}
+  .qhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .qhead h2{font-family:var(--disp);font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0}
+  .toolbar{display:flex;gap:8px;margin-bottom:10px}
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .chip{font-size:11px;padding:5px 9px;border-radius:20px;background:#fff;color:var(--muted);cursor:pointer;border:1px solid var(--border)}
+  .chip.active{color:var(--teal);border-color:var(--teal);background:var(--teal-soft)}
+  .card{background:#fff;border:1px solid var(--border);border-radius:11px;padding:13px 14px;margin-bottom:9px;cursor:pointer;transition:.15s}
+  .qrow{background:#fff;border:1px solid var(--border);border-radius:9px;margin-bottom:6px;cursor:pointer;transition:.12s}
+  .qrow:hover{border-color:var(--border-strong)}
+  .qrow.open{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
+  .qline{display:flex;align-items:center;gap:8px;padding:9px 11px}
+  .qrow .cve{font-family:var(--mono);font-size:12px;color:var(--teal-ink);font-weight:600}
+  .qspacer{flex:1}
+  .qdot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .qdot.crit{background:var(--red)}.qdot.high{background:var(--amber)}.qdot.med{background:#caa908}.qdot.low{background:var(--green)}.qdot.none{background:var(--faint)}
+  .qbody{padding:0 11px 11px;border-top:1px solid var(--border);margin-top:2px;padding-top:9px}
+  .qbody .ttl{font-size:13px;line-height:1.4;margin-bottom:8px}
+  .card:hover{border-color:var(--border-strong);box-shadow:0 2px 8px #0000000a}
+  .card.sel{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
+  .card .cve{font-family:var(--mono);font-size:12px;color:var(--teal-ink);font-weight:600}
+  .card .ttl{font-size:13px;margin:5px 0 8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .b{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;letter-spacing:.02em}
+  .b.crit{background:var(--red-soft);color:var(--red)}.b.high{background:var(--amber-soft);color:var(--amber)}
+  .b.med{background:#f3f0d6;color:#8a7407}.b.low{background:var(--green-soft);color:var(--green)}.b.none{background:var(--raise);color:var(--muted)}
+  .b.kev{background:var(--red);color:#fff}.b.state{background:var(--raise);color:var(--muted);border:1px solid var(--border-strong)}
+  .b.auth{background:#eef2fb;color:var(--violet)}
+  .b.sla-breach{background:var(--red);color:#fff}
+  .b.sec-med{background:var(--teal-soft);color:var(--teal-ink)}
+  .b.sec-ot{background:#eef2fb;color:var(--violet)}
+  .sectoggle{display:inline-flex;gap:3px;background:var(--raise);padding:3px;border-radius:8px;border:1px solid var(--border);margin-bottom:10px}
+  .sectoggle button{background:transparent;border:none;color:var(--muted);padding:5px 11px;font-size:12px;border-radius:6px}
+  .sectoggle button.on{background:#fff;color:var(--teal);box-shadow:0 1px 2px #0001}
+  .rail{display:flex;align-items:center;margin:6px 0 20px;padding:20px 8px;background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow-x:auto}
+  .station{display:flex;flex-direction:column;align-items:center;gap:9px;min-width:96px;position:relative}
+  .node{width:34px;height:34px;border-radius:50%;border:2px solid var(--border-strong);background:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--faint);z-index:2;transition:.3s}
+  .station.done .node{border-color:var(--teal);background:var(--teal);color:#fff}
+  .station.active .node{border-color:var(--teal);background:var(--teal);color:#fff;animation:pulse 1.8s infinite}
+  .station.na .node{border-color:var(--amber);background:var(--amber-soft);color:var(--amber)}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 #0e8c7f55}70%{box-shadow:0 0 0 11px #0e8c7f00}100%{box-shadow:0 0 0 0 #0e8c7f00}}
+  .station .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.03em;color:var(--muted);text-align:center}
+  .station.active .lbl,.station.done .lbl{color:var(--teal-ink)}
+  .link{position:absolute;top:17px;left:50%;width:100%;height:2px;background:var(--border-strong);z-index:1}
+  .station.done .link{background:var(--teal)}
+  h1{font-family:var(--disp);font-size:22px;font-weight:600;letter-spacing:-.02em;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .panel{background:#fff;border:1px solid var(--border);border-radius:11px;padding:18px;margin-bottom:16px}
+  .panel h3{font-family:var(--disp);font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 14px;display:flex;align-items:center;gap:8px}
+  .panel h3::before{content:"";width:3px;height:14px;background:var(--teal);border-radius:2px}
+  .kv{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:13px}
+  .kv .k{color:var(--muted)}.kv .v{font-family:var(--mono)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+  .dev{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin-bottom:8px}
+  .dev .dn{font-weight:600}.dev .dc{font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:4px}
+  .empty{color:var(--faint);text-align:center;padding:50px 20px}.empty .big{font-family:var(--disp);font-size:15px;color:var(--muted);margin-bottom:6px}
+  .gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .gate{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:12px}
+  .gate .gr{font-family:var(--disp);font-weight:600;text-transform:capitalize;margin-bottom:8px}
+  .gate .gs{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:5px;display:inline-block}
+  .gs.pending{background:var(--raise);color:var(--muted)}.gs.approved{background:var(--green-soft);color:var(--green)}.gs.rejected{background:var(--red-soft);color:var(--red)}
+  .gate .ga{display:flex;gap:6px;margin-top:10px}.gate .ga button{padding:6px 10px;font-size:12px;flex:1}
+  .roster{border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-top:6px}
+  .rrow{display:grid;grid-template-columns:140px 110px 1fr;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px}
+  .rrow:last-child{border-bottom:none}.rrow:nth-child(even){background:var(--panel)}
+  .rrole{font-family:var(--disp);font-weight:600;text-transform:capitalize}
+  .rwho{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .ntiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+  .ntile{display:flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;background:#fff}
+  .ntile.on{border-color:var(--teal);background:var(--teal-soft)}
+  .ntile input[type=checkbox]{width:auto;flex:0 0 auto}
+  .ntile .ndate{width:84px;font-family:var(--mono);font-size:11px;padding:4px 6px;margin-left:auto}
+  .tabs{display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--border)}
+  .tab{padding:9px 14px;font-size:12px;font-family:var(--mono);color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab.active{color:var(--teal);border-color:var(--teal)}
+  .steptabs{flex-wrap:wrap;gap:2px;margin-bottom:16px;position:sticky;top:0;background:#fff;z-index:5;padding-top:2px}
+  .steptabs .tab{border:1px solid var(--border);border-bottom:2px solid transparent;border-radius:7px 7px 0 0;background:var(--panel)}
+  .steptabs .tab.active{background:#fff;color:var(--teal);border-color:var(--teal) var(--teal) var(--teal)}
+  .steptabs .tab.onpath{color:var(--teal-ink)}
+  pre.code{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px;overflow:auto;font-family:var(--mono);font-size:12px;line-height:1.6;color:#33464e;max-height:420px}
+  .md{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:13px;line-height:1.7}
+  .md h1{font-size:18px}.md h2{font-size:14px;font-family:var(--disp);margin:16px 0 6px;color:var(--teal-ink)}
+  .audit{font-family:var(--mono);font-size:11px;line-height:1.9;color:var(--muted)}.audit .t{color:var(--faint)}.audit .a{color:var(--teal-ink)}
+  .wrap{max-width:1240px;margin:0 auto;padding:24px 26px;overflow-y:auto;height:100%}
+  .wrap h1{font-family:var(--disp);font-size:24px;margin:0 0 4px}
+  .lead{color:var(--muted);font-size:13px;margin-bottom:20px;max-width:820px;line-height:1.6}
+  .tablewrap{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  thead th{background:var(--panel);text-align:left;padding:11px 13px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+  tbody td{padding:12px 13px;border-bottom:1px solid var(--border);vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}tbody tr:hover{background:#fafcfc}
+  .vend{font-weight:600}.prod{color:var(--muted);font-size:12px;margin-top:2px}
+  .patchcol{background:#f4faf8}.deployed{font-family:var(--mono);font-size:12px;color:var(--green);font-weight:600}.deployed.none{color:var(--amber);font-weight:400}
+  .date{font-family:var(--mono);font-size:12px}.src{font-size:12px;white-space:nowrap}
+  .seedtag{font-size:9px;font-family:var(--mono);color:var(--faint);border:1px solid var(--border);border-radius:4px;padding:1px 5px;margin-left:6px}
+  .yn{font-family:var(--mono);font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px}
+  .yn.y{background:var(--green-soft);color:var(--green)}.yn.n{background:var(--red-soft);color:var(--red)}.yn.u{background:var(--raise);color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+  .tc{border:1px solid var(--border);border-radius:12px;padding:16px;background:#fff;transition:.15s}
+  .tc:hover{box-shadow:0 4px 14px #0000000d;border-color:var(--border-strong)}
+  .tc .co{font-family:var(--disp);font-weight:600;font-size:16px}
+  .tc .cat{font-size:11px;color:var(--teal-ink);background:var(--teal-soft);padding:2px 8px;border-radius:20px;display:inline-block;margin:6px 0 10px}
+  .tc .note{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px}
+  .tc .tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}.tc .tg{font-size:10px;font-family:var(--mono);background:var(--raise);color:var(--muted);padding:2px 6px;border-radius:5px}
+  .tc .links{display:flex;gap:8px;flex-wrap:wrap}.tc .links a{font-size:12px;font-weight:600;border:1px solid var(--border);border-radius:7px;padding:6px 10px}.tc .links a:hover{border-color:var(--teal);text-decoration:none}
+  .secthead{font-family:var(--disp);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:22px 0 12px;font-weight:600}
+  /* process guide */
+  .proc{display:flex;flex-direction:column;gap:0}
+  .pstep{display:grid;grid-template-columns:46px 1fr;gap:14px;position:relative;padding-bottom:20px}
+  .pstep:not(:last-child)::before{content:"";position:absolute;left:22px;top:40px;bottom:0;width:2px;background:var(--border-strong)}
+  .pnum{width:46px;height:46px;border-radius:50%;background:var(--teal-soft);color:var(--teal-ink);border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:18px;z-index:2}
+  .pstep.cur .pnum{background:var(--teal);color:#fff;animation:pulse 1.8s infinite}
+  .pbody{padding-top:4px}
+  .pbody .plabel{font-family:var(--disp);font-weight:600;font-size:15px}
+  .pbody .pdesc{color:var(--muted);font-size:13px;margin:4px 0 8px;line-height:1.5}
+  .pmeta{display:flex;gap:8px;flex-wrap:wrap}
+  .pmeta .m{font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:6px;background:var(--raise);color:var(--muted)}
+  .pmeta .hitl{background:#eef2fb;color:var(--violet)}
+  .pmeta .sla{background:var(--amber-soft);color:var(--amber)}
+  /* timeline bars */
+  .tlrow{display:grid;grid-template-columns:230px 1fr 90px;gap:12px;align-items:center;margin-bottom:9px}
+  .tllabel{font-size:12px}.tllabel.cur{color:var(--teal-ink);font-weight:600}
+  .tlbar{height:18px;background:var(--raise);border-radius:5px;position:relative;overflow:hidden}
+  .tlfill{height:100%;border-radius:5px}.tlfill.ok{background:var(--green)}.tlfill.over{background:var(--amber)}
+  .tlsla{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--red)}
+  .tltime{font-family:var(--mono);font-size:12px;text-align:right}
+  /* metrics */
+  .mcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+  .mcard{border:1px solid var(--border);border-radius:12px;padding:18px;background:#fff}
+  .mcard .mn{font-family:var(--disp);font-size:34px;font-weight:700;line-height:1}
+  .mcard .ml{font-size:12px;color:var(--muted);margin-top:6px}
+  .mcard.good .mn{color:var(--green)}.mcard.warn .mn{color:var(--amber)}.mcard.info .mn{color:var(--teal-ink)}
+  .bar{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .bar .bl{width:120px;font-size:12px;color:var(--muted);text-transform:capitalize}
+  .bar .bt{flex:1;height:20px;background:var(--raise);border-radius:5px;overflow:hidden}
+  .bar .bf{height:100%;border-radius:5px;background:var(--teal)}
+  .bar .bf.crit{background:var(--red)}.bar .bf.high{background:var(--amber)}.bar .bf.med{background:#caa908}.bar .bf.low{background:var(--green)}
+  .bar .bv{width:42px;font-family:var(--mono);font-size:12px;text-align:right}
+  .toast{position:fixed;bottom:22px;right:22px;background:#fff;border:1px solid var(--teal);border-radius:9px;padding:13px 17px;font-size:13px;z-index:50;max-width:380px;box-shadow:0 12px 40px #0002;animation:slide .2s}
+  .toast.err{border-color:var(--red)}
+  @keyframes slide{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+  .modal{position:fixed;inset:0;background:#1b2b3340;display:flex;align-items:center;justify-content:center;z-index:40}
+  .modal .box{background:#fff;border:1px solid var(--border-strong);border-radius:13px;padding:22px;width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px #0003}
+  .modal h3{font-family:var(--disp);margin:0 0 16px}.fld{margin-bottom:12px}
+  .notice{background:var(--amber-soft);border:1px solid #ecd9af;border-radius:8px;padding:11px 13px;font-size:12px;color:#7a5200;margin-bottom:16px;line-height:1.5}
+  .disclaimer{background:var(--amber-soft);border:1px solid #ecd9af;border-radius:8px;padding:11px 13px;font-size:12px;color:#7a5200;margin-bottom:14px;line-height:1.5}
+  .xref{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .xbox{border:1px solid var(--border);border-radius:9px;padding:13px;background:var(--panel)}
+  .xbox .xh{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:7px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><b>◊</b> CVD&nbsp;Console</div>
+  <div class="org" id="org" onclick="editOrgName()" title="Click to rename your organization">—</div>
+  <div class="nav">
+    <button id="t-disc" class="on" onclick="go('disc')">Disclosures</button>
+    <button id="t-met" onclick="go('met')">Metrics</button>
+    <button id="t-inc" onclick="go('inc')">Incidents</button>
+    <button id="t-tc" onclick="go('tc')">Trust Centers</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="pill" id="aipill" onclick="toggleAI()" style="cursor:pointer" title="Toggle live LLM / RAG assist"><span class="dot" id="aidot"></span><span id="aitxt">AI assist</span></div>
+  <button class="ghost" onclick="openSettings()" title="Model / RAG settings" style="padding:7px 11px">⚙</button>
+  <div class="pill"><span class="dot" id="llmdot"></span><span id="llmtxt">checking…</span></div>
+</header>
+<main>
+  <section id="view-disc" class="on">
+    <div class="queue">
+      <div class="qhead"><h2>Disclosure queue</h2><span class="mono" id="qcount" style="color:var(--faint);font-size:12px"></span></div>
+      <div class="toolbar">
+        <button class="ghost" style="flex:1" onclick="openManual()">+ Manual CVE</button>
+        <button class="primary" style="flex:1" onclick="scan()">⟲ Scan feeds</button>
+      </div>
+      <div class="toolbar"><button class="ghost" style="flex:1" onclick="showProcess()">◇ Process guide</button></div>
+      <div id="sectogglewrap"></div>
+      <div style="margin-bottom:10px"><input id="qsearch" placeholder="Search CVE or title…" oninput="renderList()" style="font-size:12px;padding:7px 10px"></div>
+      <div class="filters" id="filters"></div>
+      <div id="list"></div>
+    </div>
+    <div class="detail" id="detail"></div>
+  </section>
+  <section id="view-inc" class="view"><div class="wrap">
+    <h1>Security incidents</h1>
+    <div class="lead">Security incidents affecting fielded medical devices, with patch-deployment timing. Each row links the CVE as <b>impacted per CISA</b> and shows whether the vendor disclosed it on their <b>trust center</b>. Published disclosures from the pipeline can be logged here.</div>
+    <div class="notice">Seeded rows are sourced from public CISA / vendor advisories. Patch-deployment wording mirrors what each source stated; rolling or customer-applied deployments are labeled as such rather than given a precise date.</div>
+    <div class="row" style="margin:0 0 14px"><button class="primary" onclick="openIncident()">+ Log incident</button></div>
+    <div id="incsectoggle"></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Vendor / product</th><th>Incident / CVE</th><th>Sector</th><th>Severity</th><th>Disclosed</th><th class="patchcol">Patch deployed</th><th>Per CISA</th><th>Vendor disclosed?</th><th></th></tr></thead>
+      <tbody id="inctbody"></tbody>
+    </table></div>
+  </div></section>
+  <section id="view-tc" class="view"><div class="wrap">
+    <h1>Vendor trust centers</h1>
+    <div class="lead" id="tclead"></div>
+    <div id="tcsectoggle"></div>
+    <div id="tcgrid"></div>
+  </div></section>
+  <section id="view-met" class="view"><div class="wrap">
+    <h1>Disclosure metrics</h1>
+    <div class="lead">Program metrics across all tracked vulnerabilities: how many were disclosed, how many were not impacting, severity mix, and timeline performance against the per-step SLA.</div>
+    <div id="metbody"></div>
+  </div></section>
+</main>
+<div id="toast"></div>
+<div id="modalRoot"></div>
+
+<script>
+const API="";
+/* company-specific data (org name, per-step status/notes, per-advisory patch+notifications).
+   Persisted locally so a team can track their own program across sessions. */
+let CO = (function(){ try{ return JSON.parse(localStorage.getItem("cvd_company")) || {}; }catch(e){ return {}; } })();
+CO.steps = CO.steps || {}; CO.adv = CO.adv || {};
+function saveCO(){ try{ localStorage.setItem("cvd_company", JSON.stringify(CO)); }catch(e){} }
+const NOTIFY_TARGETS=[["customers","Customers / HDOs"],["cisa","CISA"],["fda","FDA"],["hhs","HHS OCR"],["hisac","H-ISAC / ISAO"],["other","Other"]];
+function coAdv(id){ return CO.adv[id] || (CO.adv[id]={patch_available:"",patch_deployed:"",notified:{}}); }
+let S={advisories:[],sel:null,detail:null,filter:"ALL",sector:"ALL",scope:"all",health:null,tab:"advisory",view:"disc",incidents:[],trust:null,process:null,showProc:true,ai:false,stepView:"overview",_s2m:{}};
+const SEV=s=>({CRITICAL:"crit",HIGH:"high",MEDIUM:"med",LOW:"low",NONE:"none"}[s]||"none");
+const secBadge=s=>!s?"":`<span class="b ${s==="IT/OT"?"sec-ot":"sec-med"}">${esc(s)}</span>`;
+function secToggle(fn){return `<div class="sectoggle">${["ALL","MedTech","IT/OT"].map(x=>`<button class="${S.sector===x?'on':''}" onclick="${fn}('${x}')">${x==="ALL"?"All sectors":x}</button>`).join("")}</div>`;}
+function setSector(x){S.sector=x;renderList();}
+function setSectorInc(x){S.sector=x;renderIncidents();}
+function setSectorTc(x){S.sector=x;renderTrust();}
+function scopeToggle(fn){const orgN=(S.health&&S.health.org&&S.health.org.name)||"My org";
+  return `<div class="sectoggle scope">${[["all","All data"],["mine",orgN+" only"]].map(o=>`<button class="${S.scope===o[0]?'on':''}" onclick="${fn}('${o[0]}')">${esc(o[1])}</button>`).join("")}</div>`;}
+function setScope(x){S.scope=x;renderList();}
+function setScopeInc(x){S.scope=x;renderIncidents();}
+function setScopeTc(x){S.scope=x;renderTrust();}
+function setScopeMet(x){S.scope=x;loadMetrics();}
+function advMine(a){return S.scope==="all" || !a.ext_vendor;}   // org's own product advisories
+function incMine(i){return S.scope==="all" || !i.seeded || (i.vendor===(S.health&&S.health.org&&S.health.org.name));}
+function myVendorSet(){const s=new Set();(S.incidents||[]).forEach(i=>{if(incMine(i)&&i.vendor)s.add(i.vendor.toLowerCase());});
+  (S.advisories||[]).forEach(a=>{if(a.ext_vendor)s.add(a.ext_vendor.toLowerCase());});return s;}
+const STATIONS=["INGESTED","TRIAGED","VERIFIED","DRAFT_READY","APPROVED","PUBLISHED"];
+const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const val=id=>document.getElementById(id).value.trim();
+const fday=s=>s==null?"—":(s/86400).toFixed(1)+"d";
+function toast(m,e){const t=document.getElementById("toast");t.innerHTML=`<div class="toast ${e?'err':''}">${m}</div>`;setTimeout(()=>t.innerHTML="",3400);}
+async function api(p,o){const r=await fetch(API+p,Object.assign({headers:{"Content-Type":"application/json"}},o));
+  if(!r.ok){let d;try{d=await r.json()}catch{d={detail:r.statusText}}throw new Error(d.detail||"error");}
+  return r.headers.get("content-type")?.includes("json")?r.json():r.text();}
+function go(v){S.view=v;for(const x of["disc","inc","tc","met"]){document.getElementById("t-"+x).className=(x===v?"on":"");
+    document.getElementById("view-"+x).className=(x==="disc"?(v==="disc"?"on":""):("view"+(x===v?" on":"")));}
+  if(v==="inc")loadIncidents();if(v==="tc")loadTrust();if(v==="met")loadMetrics();}
+
+async function boot(){
+  S.health=await api("/api/health");S.process=await api("/api/process");
+  S._s2m={}; S.process.steps.forEach(m=>m.states.forEach(st=>{S._s2m[st]=m.key;})); S._s2m["NOT_APPLICABLE"]="validate_impact";
+  if(CO.orgName && window.setOrgName){ window.setOrgName(CO.orgName); S.health.org.name=CO.orgName; }
+  updateOrgHeader();
+  const ok=S.health.llm_available;
+  document.getElementById("llmdot").className="dot "+(ok?"on":"off");
+  document.getElementById("llmtxt").textContent=ok?("LLM "+S.health.model):"LLM offline · deterministic";
+  renderAIPill();
+  renderFilters();await refresh();
+}
+function aiAvailable(){return !!(window.llmConfig&&window.llmConfig.enabled);}
+function updateOrgHeader(){const el=document.getElementById("org");if(el)el.textContent=S.health.org.name+" · PSIRT ✎";}
+function applyOrgName(name){name=(name||"").trim();if(!name)return;CO.orgName=name;saveCO();if(window.setOrgName)window.setOrgName(name);S.health.org.name=name;updateOrgHeader();refresh();}
+function editOrgName(){const cur=(S.health&&S.health.org&&S.health.org.name)||"";const n=prompt("Organization name (used across all tabs):",cur);if(n!==null)applyOrgName(n);}
+function fmtAgo(at){if(!at)return"";const s=Date.now()/1000-at;if(s<3600)return Math.round(s/60)+"m ago";if(s<86400)return Math.round(s/3600)+"h ago";return Math.round(s/86400)+"d ago";}
+function rosterHTML(a){const roles=S.health.required_roles;const latest={};(a.signoffs||[]).forEach(s=>{latest[s.role]=s;});
+  const done=roles.filter(r=>latest[r]&&latest[r].decision==="approved").length;
+  return `<div style="font-size:12px;color:var(--muted);margin-bottom:6px">${done} of ${roles.length} validators approved</div><div class="roster">${roles.map(r=>{const s=latest[r];const dec=s?s.decision:"pending";
+    return `<div class="rrow"><span class="rrole">${r}</span><span class="gs ${dec}">${dec==="approved"?"✓ approved":dec==="rejected"?"✕ rejected":"⋯ pending"}</span><span class="rwho">${s?esc(s.actor||r)+" · "+fmtAgo(s.at):"awaiting sign-off"}</span></div>`;}).join("")}</div>`;}
+function openSettings(){const c=window.llmConfig||{};
+  document.getElementById("modalRoot").innerHTML=`<div class="modal"><div class="box"><h3>Organization & model settings</h3>
+    <div class="fld"><label>Organization name (used across all tabs)</label><input id="sorg" value="${esc(S.health&&S.health.org&&S.health.org.name||"")}" placeholder="Your company, Inc."></div>
+    <div style="font-size:12px;color:var(--muted);margin:4px 0 14px;line-height:1.5">Your org name flows into the header, new disclosures, the metrics report, and the worked example. Per-step status and per-advisory patch/notification tracking are saved in this browser.</div>
+    <div class="fld"><label>Live model</label><select id="se"><option value="off" ${!c.enabled?'selected':''}>Off — deterministic agents</option><option value="on" ${c.enabled?'selected':''}>On — use live model</option></select></div>
+    <div class="fld"><label>Provider</label><select id="sk"><option value="ollama" ${c.kind==='ollama'?'selected':''}>Ollama (local)</option><option value="openai" ${c.kind==='openai'?'selected':''}>OpenAI-compatible /v1/chat</option></select></div>
+    <div class="fld"><label>Endpoint URL</label><input id="su" value="${esc(c.url||'')}" placeholder="http://localhost:11434"></div>
+    <div class="fld"><label>Model</label><input id="sm" value="${esc(c.model||'')}" placeholder="llama3.1:8b"></div>
+    <div class="fld"><label>API key (OpenAI-compatible only)</label><input id="sak" value="${esc(c.key||'')}" placeholder="sk-… (left in this browser session only)"></div>
+    <div class="notice">For local Ollama from a file:// page, start it with <span class="mono">OLLAMA_ORIGINS=*</span> so the browser may call it. No key is stored to disk.</div>
+    <div class="row" style="justify-content:flex-end"><button class="ghost" onclick="closeModal()">Cancel</button><button class="primary" onclick="saveSettings()">Save</button></div></div></div>`;}
+function saveSettings(){window.llmConfig={enabled:val("se")==="on",kind:val("sk"),url:val("su"),model:val("sm"),key:val("sak")};
+  const orgName=val("sorg"); if(orgName){ applyOrgName(orgName); }
+  closeModal();renderAIPill();if(window.llmConfig.enabled&&!S.ai){S.ai=true;renderAIPill();}
+  toast("Settings saved ✓");}
+function renderAIPill(){document.getElementById("aidot").className="dot "+(S.ai?"on":"off");
+  document.getElementById("aitxt").textContent=S.ai?(aiAvailable()?"AI assist: live LLM":"AI assist: on (fallback)"):"AI assist: off";}
+function toggleAI(){S.ai=!S.ai;
+  if(S.ai&&!aiAvailable())toast("Live LLM not reachable here — agents stay deterministic. The backend build runs Ollama server-side.",true);
+  renderAIPill(); if(S.detail)renderDetail();}
+async function refresh(){
+  S.advisories=await api("/api/advisories");
+  document.getElementById("qcount").textContent=S.advisories.length+" tracked";
+  renderList();
+  if(S.sel){try{S.detail=await api("/api/advisories/"+S.sel)}catch{S.sel=null;S.detail=null}}
+  renderDetail();
+}
+function renderFilters(){
+  const st=["ALL","INGESTED","TRIAGED","VERIFYING","VERIFIED","DRAFT_READY","IN_REVIEW","CHANGES_REQUESTED","APPROVED","PUBLISHED","NOT_APPLICABLE"];
+  document.getElementById("filters").innerHTML=st.map(s=>`<span class="chip ${S.filter===s?'active':''}" onclick="setFilter('${s}')">${s.replace('_',' ').toLowerCase()}</span>`).join("");
+}
+function setFilter(f){S.filter=f;renderFilters();renderList();}
+function vdBadge(v){return v===true?'<span class="yn y">disclosed ✓</span>':v===false?'<span class="yn n">not disclosed</span>':'';}
+function renderList(){
+  const tw=document.getElementById("sectogglewrap");if(tw)tw.innerHTML=secToggle("setSector")+scopeToggle("setScope");
+  const q=(document.getElementById("qsearch")?.value||"").toLowerCase();
+  const items=S.advisories.filter(a=>(S.filter==="ALL"||a.state===S.filter)
+    && (S.sector==="ALL"||a.sector===S.sector) && advMine(a)
+    && (!q || (a.cve_id+" "+(a.title||"")).toLowerCase().includes(q)));
+  document.getElementById("list").innerHTML=items.length?items.map(a=>{
+    const open=S.sel===a.id;
+    return `<div class="qrow ${open?'open':''}" onclick="select('${a.id}')">
+      <div class="qline"><span class="qdot ${SEV(a.severity)}"></span>
+        <span class="cve">${a.cve_id}</span>
+        ${a.sla&&a.sla.overdue?'<span class="b sla-breach">SLA ⚠</span>':''}
+        <span class="qspacer"></span><span class="b state">${a.state.replace('_',' ')}</span></div>
+      ${open?`<div class="qbody"><div class="ttl">${esc(a.title||"")}</div>
+        <div class="badges"><span class="b ${SEV(a.severity)}">${a.severity||"—"}${a.cvss?(" "+a.cvss):""}</span>
+        ${a.in_kev?'<span class="b kev">KEV</span>':''}${secBadge(a.sector)}<span class="b auth">${a.authority||a.source}</span></div></div>`:''}
+    </div>`;}).join(""):`<div class="empty"><div class="big">No matches</div>Adjust the filter, sector, search, or scan feeds.</div>`;
+}
+async function select(id){S.sel=id;S.showProc=false;S.tab="advisory";S.detail=await api("/api/advisories/"+id);renderList();renderDetail();}
+function showProcess(){S.sel=null;S.detail=null;S.showProc=true;S.stepView="overview";renderList();renderDetail();}
+function setStepView(k){S.stepView=k;S.sel=null;S.detail=null;S.showProc=true;renderList();renderDetail();}
+
+const STEP_SHORT={discover:"Discover",validate_impact:"Validate impact",create_disclosure:"Create disclosure",validate_signoff:"Validate",publish:"Publish"};
+function stepNav(){
+  const onpath=S.detail?S.detail.current_macro:null;
+  let h=`<div class="tabs steptabs"><div class="tab ${(!S.sel&&S.stepView==='overview')?'active':''}" onclick="setStepView('overview')">Overview</div>`;
+  h+=S.process.steps.map((s,i)=>{const active=(!S.sel&&S.stepView===s.key);const cs=CO.steps[s.key];const doneMark=cs&&cs.status==="done"?' ✓':'';
+    return `<div class="tab ${active?'active':''} ${onpath===s.key?'onpath':''}" onclick="setStepView('${s.key}')">${i+1} · ${STEP_SHORT[s.key]||s.key}${onpath===s.key?' ●':''}${doneMark}</div>`;}).join("");
+  return h+`</div>`;
+}
+function stepStatusFor(state,i){
+  const MK=S.process.steps.map(s=>s.key); const vi=MK.indexOf("validate_impact");
+  if(state==="PUBLISHED")return "done";
+  if(state==="NOT_APPLICABLE")return i<vi?"done":(i===vi?"offramp":"skip");
+  const ci=MK.indexOf(S._s2m[state]); if(ci<0)return "todo";
+  return i<ci?"done":(i===ci?"current":"todo");
+}
+function pipelineSummary(){
+  const counts={}; S.process.steps.forEach(s=>counts[s.key]=0);
+  S.advisories.forEach(a=>{if(a.state!=="PUBLISHED"&&a.state!=="NOT_APPLICABLE"){const m=S._s2m[a.state];if(counts[m]!=null)counts[m]++;}});
+  return `<div class="panel"><h3>Where the org is now — live pipeline</h3>${S.process.steps.map((s,i)=>`
+    <div class="bar"><div class="bl" style="width:170px">${i+1} · ${esc(STEP_SHORT[s.key]||s.key)}</div>
+      <div class="bt"><div class="bf" style="width:${Math.min(100,counts[s.key]*22)}%"></div></div><div class="bv">${counts[s.key]}</div></div>`).join("")}
+    <div style="font-size:11px;color:var(--faint);margin-top:6px">Open a step tab above to see which advisories are in that step and whether they've completed it.</div></div>`;
+}
+function stepCardMini(a,key){
+  let extra="";
+  if(a.sla&&a.sla.macro===key&&a.sla.in_progress)extra=`<span class="b ${a.sla.overdue?'sla-breach':'state'}">${a.sla.overdue?'⚠ overdue ':''}${fday(a.sla.elapsed_seconds)} / ${a.sla.sla_seconds/86400}d</span>`;
+  return `<div class="card" onclick="select('${a.id}')"><div class="cve">${a.cve_id}</div><div class="ttl">${esc(a.title||'')}</div>
+    <div class="badges"><span class="b ${SEV(a.severity)}">${a.severity}${a.cvss?' '+a.cvss:''}</span>${secBadge(a.sector)}<span class="b state">${a.state.replace('_',' ')}</span>${extra}</div></div>`;
+}
+const STEP_STATUS_OPTS=[["not_started","Not started"],["in_progress","In progress"],["done","Completed"]];
+function stepStatusPanel(key){
+  const cs=CO.steps[key]||{status:"not_started",notes:""};
+  return `<div class="panel"><h3>Org status for this step — editable</h3>
+    <div class="row" style="margin-top:0"><div class="fld" style="flex:1;margin:0"><label>Mark this step</label>
+      <select id="ss_${key}">${STEP_STATUS_OPTS.map(o=>`<option value="${o[0]}" ${cs.status===o[0]?'selected':''}>${o[1]}</option>`).join("")}</select></div>
+      <button class="ghost" style="align-self:flex-end" onclick="aiStepAssist('${key}')">✨ AI assist</button></div>
+    <div class="fld" style="margin-top:10px"><label>Notes / evidence (owner, blockers, what "done" means here)</label>
+      <textarea id="sn_${key}" rows="3" placeholder="e.g. Owner: PSIRT lead. Intake from NVD+CISA feeds automated; weekly review cadence agreed.">${esc(cs.notes||"")}</textarea></div>
+    <div class="row" style="margin-top:8px"><button class="primary" onclick="saveStepStatus('${key}')">Save step status</button>
+      ${cs.updated?`<span style="font-size:11px;color:var(--faint)">last saved ${esc(cs.updated)}</span>`:''}</div>
+    <div id="aistep_${key}" style="margin-top:10px"></div></div>`;
+}
+function saveStepStatus(key){CO.steps[key]={status:val("ss_"+key),notes:document.getElementById("sn_"+key).value.trim(),updated:new Date().toLocaleString()};
+  saveCO();toast("Step status saved ✓");renderDetail();}
+async function aiStepAssist(key){const box=document.getElementById("aistep_"+key);
+  const step=S.process.steps.find(s=>s.key===key);
+  if(!aiAvailable()){box.innerHTML=`<div class="notice" style="margin:0">Turn on a live model in ⚙ settings for tailored guidance. Checklist for <b>${esc(step.label)}</b>: define the owner, the entry/exit criteria, the SLA (${step.sla_days}d target), and the evidence that proves completion.</div>`;return;}
+  box.innerHTML='<div style="color:var(--muted)">⋯ querying model…</div>';
+  const sys="You are a medical-device/OT PSIRT process coach. Give a concise (<=120 words) checklist for completing this CVD process step well: owner, entry/exit criteria, evidence of completion, and the top risk to avoid.";
+  const user="Step: "+step.label+"\nWhat it does: "+step.desc+"\nHuman-in-the-loop: "+(step.hitl||"none")+"\nSLA target: "+step.sla_days+" days\nOrg: "+S.health.org.name;
+  try{const out=await window.callLLM([{role:"user",content:user}],sys);
+    box.innerHTML='<div class="md" style="white-space:pre-wrap">'+esc(out)+'</div><div style="font-size:11px;color:var(--faint);margin-top:6px">Generated by live model · review before use.</div>';}
+  catch(e){box.innerHTML='<div style="color:var(--amber);font-size:13px">Live model unavailable ('+esc(e.message||'error')+').</div>';}
+}
+function stepBoard(key){
+  const MK=S.process.steps.map(s=>s.key); const i=MK.indexOf(key); const step=S.process.steps[i];
+  const g={current:[],done:[],todo:[],offramp:[]};
+  S.advisories.forEach(a=>{const st=stepStatusFor(a.state,i); if(st==="skip")return; g[st].push(a);});
+  const total=S.advisories.length, completed=g.done.length, pct=Math.round(100*completed/(total||1));
+  const grp=(t,arr,note)=>arr.length?`<div class="secthead">${t} · ${arr.length}</div>${arr.map(a=>stepCardMini(a,key)).join("")}`
+    :`<div class="secthead">${t} · 0</div><div style="color:var(--faint);font-size:12px;margin-bottom:8px">${note||'—'}</div>`;
+  let extra="";
+  if(key==="validate_signoff"){
+    const inreview=g.current.concat(g.done.filter(a=>a.state==="PUBLISHED"));
+    extra=`<div class="panel"><h3>Sign-off status — who has signed off</h3>${
+      inreview.length?inreview.map(a=>`<div style="margin-bottom:14px"><div class="cve" style="margin-bottom:6px">${a.cve_id} <span class="b state">${a.state.replace('_',' ')}</span></div>${rosterHTML(a)}</div>`).join(""):
+      '<div style="color:var(--faint);font-size:12px">No advisories are in validation right now.</div>'}</div>`;
+  }
+  if(key==="create_disclosure"){ extra=templatesPanel(); }
+  return `<div class="panel"><h3>Step ${i+1} · ${esc(step.label)}</h3>
+    <div class="lead" style="margin:0 0 10px">${esc(step.desc)}</div>
+    <div class="pmeta" style="margin-bottom:12px">${step.hitl?`<span class="m hitl">◇ human-in-the-loop · ${esc(step.hitl)}</span>`:`<span class="m">automated</span>`}<span class="m sla">SLA ${step.sla_days}d</span></div>
+    <div class="bar"><div class="bl">completed</div><div class="bt"><div class="bf" style="width:${pct}%"></div></div><div class="bv">${completed}/${total}</div></div>
+    <div style="font-size:12px;color:var(--muted);margin:6px 0 0"><b>${g.current.length}</b> here now · <b>${completed}</b> completed this step · <b>${g.todo.length}</b> not yet reached${g.offramp.length?` · <b>${g.offramp.length}</b> closed (not applicable)`:''}</div></div>
+  ${stepStatusPanel(key)}
+  <div class="panel"><h3>● Where the org is — in this step now</h3>${grp("Currently in this step",g.current,"Nothing is sitting in this step right now.")}</div>
+  ${extra}
+  ${g.offramp.length?`<div class="panel"><h3>Closed at this step (not applicable)</h3>${g.offramp.map(a=>stepCardMini(a,key)).join("")}</div>`:''}
+  <div class="panel"><h3>✓ Completed this step</h3>${grp("Passed this gate",g.done,"No items have completed this step yet.")}</div>
+  <div class="panel"><h3>Not yet reached</h3>${grp("Upstream",g.todo,"Everything tracked has reached this step.")}</div>`;
+}
+
+// ---- live LLM / RAG assist (standalone uses window.callLLM; backend uses Ollama) ----
+function ragContext(a){
+  const tr=a.triage||{}; const L=[];
+  (tr.affected_devices||[]).forEach(d=>L.push("• Device "+d.device_name+" ["+(d.submission||'')+" "+(d.fda_number||'')+"] — matched SBOM components: "+d.matched_components.map(m=>m.component+" "+(m.version||'')).join(", ")));
+  if(!(tr.affected_devices||[]).length)L.push("• No device SBOM entry matches this CVE's CPEs.");
+  if(a.ext_vendor&&S.trust){const key=a.ext_vendor.toLowerCase().split(" ")[0];const t=S.trust.trust_centers.find(x=>x.company.toLowerCase().includes(key));if(t)L.push("• Vendor trust center: "+t.company+" — "+t.trust_center+" ("+(t.tags||[]).join(", ")+")");}
+  L.push("• CWE: "+(((a.cve_detail||{}).cwes)||[]).join(", "));
+  L.push("• CPEs: "+(((a.cve_detail||{}).cpes)||[]).join(", "));
+  return L.join("\n");
+}
+function aiSection(a){
+  if(!S.ai)return "";
+  const note=aiAvailable()?"Grounded on retrieved SBOM + trust-center context, generated by a live model.":"Live model not reachable here; the backend build calls Ollama. Showing retrieved context only.";
+  return `<div class="panel"><h3>✨ AI agent assessment (RAG-grounded)</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${note}</div>
+    <div class="secthead" style="margin-top:0">Retrieved context (knowledge base)</div>
+    <pre class="code" style="max-height:160px">${esc(ragContext(a))}</pre>
+    <div class="row"><button class="primary" onclick="aiAssess('${a.id}')" ${aiAvailable()?'':'disabled'}>✨ Generate assessment (live LLM)</button></div>
+    <div id="aibox" style="margin-top:12px"></div></div>`;
+}
+async function aiAssess(id){
+  const a=S.detail; if(!a)return; const box=document.getElementById("aibox");
+  box.innerHTML='<div style="color:var(--muted)">⋯ retrieving context and querying model…</div>';
+  const drafting=(a.state==="VERIFIED"||a.state==="DRAFT_READY"||a.state==="IN_REVIEW");
+  const sys=drafting
+    ? "You are a medical-device/OT PSIRT disclosure writer. Using ONLY the retrieved context, draft a concise public advisory summary (<=140 words): impact, affected products, recommended action. Neutral and factual; invent no details."
+    : "You are a medical-device/OT PSIRT triage analyst. Using ONLY the retrieved context, give a concise (<=120 words) applicability assessment and a recommended VEX status (known_affected / known_not_affected / under_investigation). Name the specific SBOM components that match.";
+  const user="CVE: "+a.cve_id+"\nTitle: "+a.title+"\nSeverity: "+a.severity+" (CVSS "+a.cvss+")\nExternal vendor: "+(a.ext_vendor||"n/a (org product)")+"\n\nRetrieved context:\n"+ragContext(a);
+  try{
+    const out=await window.callLLM([{role:"user",content:user}],sys);
+    box.innerHTML='<div class="md" style="white-space:pre-wrap">'+esc(out)+'</div><div style="font-size:11px;color:var(--faint);margin-top:6px">Generated by live model · grounded on retrieved context · review before use.</div>';
+  }catch(e){box.innerHTML='<div style="color:var(--amber);font-size:13px">Live model unavailable ('+esc(e.message||'error')+'). Deterministic agent output stands.</div>';}
+}
+
+const EXEMPLARS={
+  advisory:`# Aurora Infusion Pump — OpenSSL Advisory (MERIDIAN-2026-014)
+
+**Advisory ID:** MERIDIAN-2026-014   **Status:** Final   **Version:** 1.1
+**CVE:** CVE-2022-3602   **Severity:** HIGH (CVSS 7.5)   **Published:** 2026-03-04
+
+## Summary
+A buffer overflow in OpenSSL X.509 name-constraint checking affects the Aurora
+Infusion Pump AIP-3000. Exploitation requires a crafted certificate during TLS
+client authentication. No patient-harm scenario has been identified.
+
+## Affected products
+- Aurora Infusion Pump AIP-3000, firmware 2.0.0–2.1.4 (OpenSSL 3.0.x)
+
+## Unaffected products
+- Sentinel Patient Monitor SPM-X1 (OpenSSL 1.1.1t — not in the vulnerable 3.0.x line)
+
+## Impact (VEX: known_affected)
+Denial of service of the device's secure-messaging service. Remote code execution
+not demonstrated on this platform.
+
+## Remediation
+Firmware 2.1.5 (OpenSSL 3.0.7) — available via Meridian Field Service from 2026-03-10.
+
+## Workarounds (until patched)
+Restrict device network access to the clinical VLAN; disable optional remote TLS
+client-auth in Service Menu > Network.
+
+## Acknowledgements
+Reported via Meridian PSIRT coordinated disclosure.
+
+## Revision history
+1.0 (2026-03-04) initial · 1.1 (2026-03-10) remediation date added
+
+## Contact
+psirt@meridianmed.example · PGP on https://psirt.meridianmed.example`,
+  csaf:`{
+  "document": {
+    "category": "csaf_vex",
+    "csaf_version": "2.0",
+    "title": "Aurora Infusion Pump AIP-3000 - OpenSSL CVE-2022-3602",
+    "publisher": { "category": "vendor", "name": "Meridian Medical Systems",
+                   "namespace": "https://psirt.meridianmed.example" },
+    "tracking": {
+      "id": "MERIDIAN-2026-014", "status": "final", "version": "1",
+      "initial_release_date": "2026-03-04T00:00:00Z",
+      "current_release_date": "2026-03-10T00:00:00Z"
+    },
+    "notes": [{ "category": "summary", "text": "Buffer overflow in OpenSSL X.509 affecting AIP-3000." }]
+  },
+  "product_tree": { "branches": [{
+    "category": "vendor", "name": "Meridian Medical Systems",
+    "branches": [{ "category": "product_name", "name": "Aurora Infusion Pump AIP-3000",
+      "product": { "name": "AIP-3000 fw 2.0.0-2.1.4",
+        "product_id": "AIP-3000-2.x", "product_identification_helper": {
+          "cpe": "cpe:2.3:o:meridian:aip-3000_firmware:2.1.4:*:*:*:*:*:*:*",
+          "sbom_urls": ["https://psirt.meridianmed.example/sbom/aip-3000-2.1.4.cdx.json"] } } }] }] },
+  "vulnerabilities": [{
+    "cve": "CVE-2022-3602",
+    "cwe": { "id": "CWE-787", "name": "Out-of-bounds Write" },
+    "scores": [{ "cvss_v3": { "version": "3.1", "baseScore": 7.5,
+      "baseSeverity": "HIGH",
+      "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H" },
+      "products": ["AIP-3000-2.x"] }],
+    "product_status": { "known_affected": ["AIP-3000-2.x"] },
+    "remediations": [{ "category": "vendor_fix",
+      "details": "Update to AIP-3000 firmware 2.1.5 (OpenSSL 3.0.7).",
+      "product_ids": ["AIP-3000-2.x"] }],
+    "flags": [],
+    "threats": [{ "category": "impact",
+      "details": "Denial of service of secure-messaging service; RCE not demonstrated." }]
+  }]
+}`,
+  vex:`{
+  "document": {
+    "category": "csaf_vex", "csaf_version": "2.0",
+    "title": "Contec CMS8000 CVE-2024-12248 - Meridian applicability (NOT AFFECTED)",
+    "publisher": { "category": "vendor", "name": "Meridian Medical Systems",
+                   "namespace": "https://psirt.meridianmed.example" },
+    "tracking": { "id": "MERIDIAN-2026-009", "status": "final", "version": "1" }
+  },
+  "product_tree": { "branches": [{ "category": "vendor", "name": "Meridian Medical Systems",
+    "branches": [{ "category": "product_name", "name": "Meridian device portfolio",
+      "product": { "name": "All shipping Meridian products", "product_id": "MERIDIAN-ALL" } }] }] },
+  "vulnerabilities": [{
+    "cve": "CVE-2024-12248",
+    "product_status": { "known_not_affected": ["MERIDIAN-ALL"] },
+    "flags": [{ "label": "vulnerable_code_not_present",
+      "product_ids": ["MERIDIAN-ALL"] }],
+    "threats": [{ "category": "impact",
+      "details": "Vulnerable Contec CMS8000 firmware is not present in any Meridian product; no Meridian SBOM component matches the affected CPE." }]
+  }]
+}`,
+  story:`# Worked example — CVE-2022-3602 end to end
+
+_A single vulnerability carried through all five steps, showing what a complete, well-run coordinated disclosure looks like for one product._
+
+## 1 · Discover (Day 0)
+Upstream OpenSSL advisory for CVE-2022-3602 ("SpookySSL", X.509 name-constraint buffer overflow, CVSS 7.5) is ingested from NVD. The Aurora Infusion Pump AIP-3000 ships OpenSSL 3.0.x, so the feed agent flags it for triage.
+
+## 2 · Validate impact (Day 0–2) — human decision: Impacted? YES
+SBOM match confirms OpenSSL 3.0.6 in AIP-3000 firmware 2.0.0–2.1.4. A lab unit reproduces the overflow only via a crafted client certificate during optional TLS client-auth; the secure-messaging service can be made to crash (DoS). No RCE achieved on this platform; no patient-harm path identified. Sibling product SPM-X1 runs OpenSSL 1.1.1t — **not** in the vulnerable 3.0.x line → known_not_affected.
+
+## 3 · Create disclosure (Day 2–4)
+PSIRT drafts the public advisory.md, the machine-readable CSAF 2.0 (known_affected for AIP-3000), and a VEX (known_not_affected for SPM-X1). Fix identified: OpenSSL 3.0.7 in firmware 2.1.5.
+
+## 4 · Validate / sign-off (Day 4–9) — human gates
+Security, legal, business, and communication leads each approve. Legal confirms FD&C 524B reporting posture with counsel; communication aligns customer messaging.
+
+## 5 · Publish + notify + patch (Day 9–12)
+Advisory published. Fix 2.1.5 released; field deployment via Meridian Field Service. Disclosure communicated to customers/HDOs, CISA, FDA, and H-ISAC (see Comms & patch tab).`,
+  comms:`COMMUNICATIONS & PATCH LOG — CVE-2022-3602 / MERIDIAN-2026-014
+
+PATCH
+  Fix available     : firmware 2.1.5 (OpenSSL 3.0.7)   — released 2026-03-10
+  Deployment        : customer-applied via Meridian Field Service; fleet rollout
+                      through 2026-Q2 (interim workaround: disable optional TLS client-auth)
+
+DISCLOSED / COMMUNICATED TO
+  [x] Customers / HDOs   2026-03-04   advisory + service bulletin to affected sites
+  [x] CISA               2026-03-04   CSAF submitted; ICS Medical Advisory coordinated
+  [x] FDA                2026-03-04   notified per postmarket cybersecurity expectations
+  [x] H-ISAC / ISAO      2026-03-05   shared with member community
+  [ ] Other              —            n/a
+
+COORDINATION
+  Reporter              : external researcher via Meridian PSIRT CVD intake
+  Embargo lifted        : 2026-03-04 (coordinated with CISA)
+  Public references     : advisory.md (public), CSAF 2.0, VEX (sibling not-affected)`
+};
+const TPL_GOOD=["Stable advisory ID + version + dated revision history","CVSS vector string, not just a score","Explicit known_affected AND known_not_affected (VEX) product status","Machine-readable: CPE + SBOM URL in the product tree","Concrete remediation with a version and date, plus interim workarounds","Honest impact (says what is NOT demonstrated)","For not-impacting: a VEX justification (vulnerable_code_not_present)"];
+function templatesPanel(){const t=S.tplTab||"story";
+  const body=(t==="story")?`<div class="md">${mdToHtml(EXEMPLARS.story)}</div>`
+    :(t==="advisory")?`<div class="md">${mdToHtml(EXEMPLARS.advisory)}</div>`
+    :(t==="comms")?`<pre class="code">${esc(EXEMPLARS.comms)}</pre>`
+    :`<pre class="code">${esc(t==="csaf"?EXEMPLARS.csaf:EXEMPLARS.vex)}</pre>`;
+  const tab=(k,l)=>`<div class="tab ${t===k?'active':''}" onclick="setTpl('${k}')">${l}</div>`;
+  return `<div class="panel"><h3>What “good” looks like — one CVE, end to end</h3>
+    <div class="lead" style="margin:0 0 10px">A single complete case: <b>CVE-2022-3602</b> on the Aurora Infusion Pump, carried through all five steps with every artifact a strong disclosure produces — public advisory, machine-readable CSAF/VEX, and the comms + patch log.</div>
+    <div class="tabs">${tab('story','① The story')}${tab('advisory','② advisory.md')}${tab('csaf','③ CSAF 2.0 (affected)')}${tab('vex','④ VEX (not-affected)')}${tab('comms','⑤ Comms & patch')}</div>
+    ${body}
+    <div class="secthead" style="margin-top:14px">Why this is the bar</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.7">${TPL_GOOD.map(x=>"✓ "+esc(x)).join("<br>")}</div></div>`;
+}
+function setTpl(t){S.tplTab=t;renderDetail();}
+
+function patchNotifyPanel(a){
+  const m=coAdv(a.id); const n=m.notified||{};
+  const chips=NOTIFY_TARGETS.map(t=>{const v=n[t[0]]||{};const on=!!v.done;
+    return `<label class="ntile ${on?'on':''}"><input type="checkbox" id="nt_${t[0]}" ${on?'checked':''} onchange="this.closest('.ntile').classList.toggle('on',this.checked)"> ${esc(t[1])}
+      <input class="ndate" id="nd_${t[0]}" value="${esc(v.date||'')}" placeholder="date" onclick="event.preventDefault()"></label>`;}).join("");
+  const summary=NOTIFY_TARGETS.filter(t=>(n[t[0]]||{}).done).map(t=>`<span class="yn y">${esc(t[1])}${n[t[0]].date?' · '+esc(n[t[0]].date):''}</span>`).join(" ")||'<span style="color:var(--faint);font-size:12px">none recorded yet</span>';
+  return `<div class="panel"><h3>Patch &amp; disclosure communications — editable</h3>
+    <div class="row" style="margin-top:0">
+      <div class="fld" style="flex:1;margin:0"><label>Patch available (version / date)</label><input id="pa_${a.id}" value="${esc(m.patch_available||'')}" placeholder="e.g. firmware 2.1.5 (OpenSSL 3.0.7) — 2026-03-10"></div>
+      <div class="fld" style="flex:1;margin:0"><label>Patch deployed (date / how)</label><input id="pd_${a.id}" value="${esc(m.patch_deployed||'')}" placeholder="e.g. Field Service rollout through 2026-Q2"></div></div>
+    <div class="secthead" style="margin:14px 0 6px">Disclosure communicated to</div>
+    <div class="ntiles">${chips}</div>
+    <div class="row" style="margin-top:10px"><button class="primary" onclick="savePatchNotify('${a.id}')">Save patch &amp; comms</button>
+      ${m.updated?`<span style="font-size:11px;color:var(--faint)">last saved ${esc(m.updated)}</span>`:''}</div>
+    <div style="margin-top:10px;font-size:12px"><span style="color:var(--muted)">Recorded recipients: </span>${summary}</div></div>`;
+}
+function savePatchNotify(id){const m=coAdv(id);
+  m.patch_available=document.getElementById("pa_"+id).value.trim();
+  m.patch_deployed=document.getElementById("pd_"+id).value.trim();
+  m.notified={}; NOTIFY_TARGETS.forEach(t=>{const done=document.getElementById("nt_"+t[0]).checked;
+    m.notified[t[0]]={done,date:document.getElementById("nd_"+t[0]).value.trim()};});
+  m.updated=new Date().toLocaleString(); CO.adv[id]=m; saveCO();
+  toast("Patch & communications saved ✓"); renderDetail();}
+function renderDetail(){
+  const d=document.getElementById("detail");
+  if(S.showProc||!S.detail){
+    const body=(S.stepView&&S.stepView!=="overview")?stepBoard(S.stepView)
+      :(processHTML(null)+pipelineSummary()+`<div class="empty">Select an advisory from the queue, or open a step tab to see where the org is.</div>`);
+    d.innerHTML=stepNav()+body;return;
+  }
+  const a=S.detail,det=a.cve_detail||{},tr=a.triage||{},ver=a.verification||{},doc=a.document||{};
+  let h=stepNav()+`<h1>${a.cve_id}</h1><div class="sub">${esc(a.title||"")}</div>`+railHTML(a.state);
+  h+=crossrefHTML(a);
+  h+=`<div class="panel"><h3>Vulnerability</h3><div class="kv">
+    <div class="k">Severity</div><div class="v"><span class="b ${SEV(a.severity)}">${a.severity} ${a.cvss||""}</span> ${a.in_kev?'<span class="b kev">CISA KEV</span>':''}</div>
+    <div class="k">Authority</div><div class="v">${a.authority||a.source}</div>
+    <div class="k">CWE</div><div class="v">${(det.cwes||[]).join(", ")||"—"}</div>
+    <div class="k">CPEs</div><div class="v" style="font-size:11px">${(det.cpes||[]).slice(0,4).join("<br>")||"—"}</div>
+    <div class="k">State</div><div class="v">${a.state}</div></div></div>`;
+  h+=timelineHTML(a.timeline,a.current_macro);
+  h+=stepCard(a,det,tr,ver,doc);
+  h+=patchNotifyPanel(a);
+  h+=aiSection(a);
+  if(doc.advisory_md){h+=`<div class="panel"><h3>Disclosure artifacts (CISA format)</h3><div class="tabs">
+      <div class="tab ${S.tab==='advisory'?'active':''}" onclick="setTab('advisory')">advisory.md</div>
+      <div class="tab ${S.tab==='csaf'?'active':''}" onclick="setTab('csaf')">CSAF / VEX</div>
+      <div class="tab ${S.tab==='fda'?'active':''}" onclick="setTab('fda')">FDA report</div></div>${docBody(a,doc)}</div>`;}
+  h+=`<div class="panel"><h3>Audit trail</h3><div class="audit">${(a.audit||[]).map(x=>`<div><span class="t">${new Date(x.at*1000).toLocaleString()}</span> · <span class="a">${x.actor}</span> · ${x.action}</div>`).join("")||"—"}</div></div>`;
+  d.innerHTML=h;
+}
+
+function station(name,cur){
+  const order=["INGESTED","TRIAGED","VERIFYING","VERIFIED","DRAFTING","DRAFT_READY","IN_REVIEW","CHANGES_REQUESTED","APPROVED","PUBLISHED"];
+  const map={INGESTED:0,TRIAGED:1,VERIFIED:2,DRAFT_READY:3,APPROVED:4,PUBLISHED:5};const ci=order.indexOf(cur);
+  let cs=0;if(ci>=order.indexOf("PUBLISHED"))cs=5;else if(ci>=order.indexOf("APPROVED"))cs=4;
+  else if(ci>=order.indexOf("DRAFT_READY"))cs=3;else if(ci>=order.indexOf("VERIFIED"))cs=2;else if(ci>=order.indexOf("TRIAGED"))cs=1;
+  const si=map[name];if(cur==="NOT_APPLICABLE"&&name==="TRIAGED")return"na";
+  if(si<cs)return"done";if(si===cs)return cur==="PUBLISHED"?"done":"active";return"";
+}
+function railHTML(cur){return`<div class="rail">${STATIONS.map((s,i)=>{const c=station(s,cur);
+  return`<div class="station ${c}">${i<STATIONS.length-1?'<div class="link"></div>':''}<div class="node">${c==="done"?"✓":(c==="na"?"∅":(i+1))}</div><div class="lbl">${s.replace('_',' ')}</div></div>`;}).join("")}</div>`;}
+
+function processHTML(curMacro){
+  const steps=S.process.steps;
+  return `<div class="panel"><h3>Step-by-step disclosure process</h3>
+    <div class="lead" style="margin:0 0 16px">The enterprise workflow each vulnerability follows. Disclosure artifacts use the <b>CSAF 2.0 / VEX</b> format that vendors submit to CISA. Diamonds mark human-in-the-loop decisions; SLA is the target time per step.</div>
+    <div class="proc">${steps.map((s,i)=>`
+      <div class="pstep ${curMacro===s.key?'cur':''}">
+        <div class="pnum">${i+1}</div>
+        <div class="pbody"><div class="plabel">${esc(s.label)}</div><div class="pdesc">${esc(s.desc)}</div>
+          <div class="pmeta">${s.hitl?`<span class="m hitl">◇ human-in-the-loop · ${esc(s.hitl)}</span>`:`<span class="m">automated</span>`}<span class="m sla">SLA ${s.sla_days}d</span></div>
+        </div></div>`).join("")}</div>
+    <div class="row" style="margin-top:6px;color:var(--muted);font-size:12px">Validation roles: <span class="mono">${S.process.required_roles.join(" · ")}</span></div>
+  </div>`;
+}
+
+function setTab(t){S.tab=t;renderDetail();}
+function crossrefHTML(a){
+  const cisa=a.cisa_url?`<a href="${a.cisa_url}" target="_blank">${esc(a.authority||'advisory')} ↗</a>`:'—';
+  let vendorBox;
+  if(a.ext_vendor){
+    const yn=a.vendor_disclosed===true?'<span class="yn y">YES — disclosed</span>':a.vendor_disclosed===false?'<span class="yn n">NO — not on trust center</span>':'<span class="yn u">unknown</span>';
+    vendorBox=`<div class="xbox"><div class="xh">Vendor disclosure (${esc(a.ext_vendor)})</div>${yn} ${a.vendor_disclosure_url?`<a href="${a.vendor_disclosure_url}" target="_blank" style="margin-left:8px">trust center ↗</a>`:''}</div>`;
+  } else {
+    vendorBox=`<div class="xbox"><div class="xh">Origin</div><span class="mono" style="font-size:12px">Org product advisory — this disclosure</span></div>`;
+  }
+  return `<div class="panel"><h3>Cross-reference</h3><div class="xref">
+    <div class="xbox"><div class="xh">Impacted per CISA / authority</div>${cisa}</div>${vendorBox}</div></div>`;
+}
+function timelineHTML(tl,cur){
+  if(!tl)return"";
+  const maxSla=Math.max(...tl.steps.map(s=>s.sla_seconds));
+  const rows=tl.steps.map(s=>{
+    const cls=s.seconds==null?"":(s.within_sla?"ok":"over");
+    const w=s.seconds==null?0:Math.min(100,100*s.seconds/maxSla);
+    const slaPct=100*s.sla_seconds/maxSla;
+    return `<div class="tlrow"><div class="tllabel ${s.current?'cur':''}">${esc(s.label)}</div>
+      <div class="tlbar"><div class="tlfill ${cls}" style="width:${w}%"></div><div class="tlsla" style="left:${slaPct}%" title="SLA ${s.sla_seconds/86400}d"></div></div>
+      <div class="tltime">${fday(s.seconds)} / ${s.sla_seconds/86400}d</div></div>`;}).join("");
+  const total=tl.total_seconds!=null?` · total cycle ${fday(tl.total_seconds)}`:"";
+  const sla=S.detail&&S.detail.sla;
+  const breach=(sla&&sla.overdue)?`<div class="notice" style="margin:0 0 12px">⚠ Overdue: in "${esc(sla.macro_label)}" for ${fday(sla.elapsed_seconds)} — over the ${sla.sla_seconds/86400}d SLA by ${fday(sla.over_by_seconds)}.</div>`:"";
+  return `<div class="panel"><h3>Timeline per step${total?` <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">${total}</span>`:''}</h3>${breach}${rows}
+    <div style="font-size:11px;color:var(--faint);margin-top:6px">Bar = elapsed; red marker = SLA target. Green within SLA, amber over.</div></div>`;
+}
+function stepCard(a,det,tr,ver,doc){const s=a.state,id=a.id;
+  if(s==="INGESTED")return`<div class="panel"><h3>Step · Validate impact (triage)</h3><p style="color:var(--muted);margin:0 0 12px">Run the triage agent to match this CVE against device SBOMs.</p><button class="primary" onclick="act('${id}','triage')">Run triage agent</button></div>`;
+  if(s==="TRIAGED")return`<div class="panel"><h3>Validate impact — Impacted? <span class="mono" style="color:${tr.applicable?'var(--amber)':'var(--green)'}">${tr.applicable?"YES":"NO"}</span></h3>
+    <div class="kv"><div class="k">VEX status</div><div class="v">${tr.vex_status}</div></div>
+    <p style="color:var(--muted);margin:12px 0">${esc(tr.rationale||"")}</p>${affHTML(tr.affected_devices)}
+    <div class="row">${tr.applicable?`<button class="primary" onclick="act('${id}','start-verification')">Confirm in environment →</button>`:''}<button class="ghost" onclick="act('${id}','not-applicable')">Not applicable (file known_not_affected VEX)</button></div></div>`;
+  if(s==="VERIFYING")return`<div class="panel"><h3>Validate impact — confirm in your environment</h3>${affHTML(tr.affected_devices)}
+    <div class="fld" style="margin-top:12px"><label>Impacted? (human-in-the-loop)</label><select id="vstatus"><option value="confirmed">YES — reproduced / impacted</option><option value="mitigated">YES — mitigated by compensating control</option><option value="not_reproducible">NO — not reproducible / not impacted</option></select></div>
+    <div class="fld"><label>Evidence</label><textarea id="vevidence" rows="3" placeholder="Lab unit, firmware, PoC, scan ref…"></textarea></div>
+    <div class="fld"><label>Analyst</label><input id="vactor" value="p.sharma"></div><button class="primary" onclick="submitVerify('${id}')">Record decision</button></div>`;
+  if(s==="VERIFIED")return`<div class="panel"><h3>Create disclosure (CISA format)</h3><div class="kv"><div class="k">Impact decision</div><div class="v">${ver.status}</div></div><p style="color:var(--muted);margin:12px 0">${esc(ver.evidence||"")}</p><button class="primary" onclick="act('${id}','draft')">Generate CSAF/VEX advisory + FDA draft</button></div>`;
+  if(s==="CHANGES_REQUESTED")return`<div class="panel"><h3>Changes requested</h3><p style="color:var(--muted)">A validator rejected this round. Regenerate and resubmit.</p><button class="primary" onclick="act('${id}','draft')">Regenerate draft</button></div>`;
+  if(s==="DRAFT_READY")return`<div class="panel"><h3>Submit for validation</h3><p style="color:var(--muted);margin:0 0 12px">Validators: <span class="mono">${S.health.required_roles.join(", ")}</span></p><button class="primary" onclick="act('${id}','submit-review')">Submit for sign-off</button></div>`;
+  if(s==="IN_REVIEW"){const sum=a.signoff_summary||{roles:{}};return`<div class="panel"><h3>Validate — sign-off gates (human-in-the-loop)</h3><div class="gates">${S.health.required_roles.map(r=>{const st=sum.roles[r]||"pending";return`<div class="gate"><div class="gr">${r}</div><span class="gs ${st}">${st}</span>${st==="pending"?`<div class="ga"><button class="primary" onclick="signoff('${id}','${r}','approved')">Approve</button><button class="danger" onclick="signoff('${id}','${r}','rejected')">Reject</button></div>`:''}</div>`;}).join("")}</div>
+    <div class="secthead" style="margin:16px 0 6px">Signed off by</div>${rosterHTML(a)}
+    <p style="color:var(--faint);font-size:12px;margin-top:12px">All validators must approve. Any rejection resets the round.</p></div>`;}
+  if(s==="APPROVED")return`<div class="panel"><h3>Publish disclosure draft</h3><p style="color:var(--muted);margin:0 0 12px">Writes advisory.md, CSAF/VEX, and the FDA report draft.</p><button class="primary" onclick="act('${id}','publish')">Publish</button></div>`;
+  if(s==="PUBLISHED")return`<div class="panel"><h3 style="color:var(--green)">✓ Published</h3><p style="color:var(--muted);margin:0 0 12px">Disclosure complete. You can log this as a tracked incident with patch timing.</p><button class="primary" onclick="toIncident('${id}')">Log as incident</button></div>`;
+  if(s==="NOT_APPLICABLE")return`<div class="panel"><h3 style="color:var(--amber)">∅ Not impacting</h3><p style="color:var(--muted)">No affected products. Filed as known_not_affected (a CSAF/VEX disclosure is still appropriate for transparency).</p></div>`;
+  return"";
+}
+function affHTML(devs){if(!devs||!devs.length)return`<div style="color:var(--faint)">No affected devices identified.</div>`;
+  return devs.map(dv=>`<div class="dev"><div class="dn">${dv.device_name} <span class="mono" style="color:var(--muted);font-size:11px">${dv.submission||""} ${dv.fda_number||""}</span></div><div class="dc">↳ ${dv.matched_components.map(m=>m.component+(m.version?(" "+m.version):"")).join(", ")}</div></div>`).join("");}
+function docBody(a,doc){
+  if(S.tab==="advisory")return`<div class="md">${mdToHtml(doc.advisory_md)}</div><div class="row"><a href="/api/advisories/${a.id}/advisory.md" target="_blank"><button class="ghost">Open advisory.md</button></a><a href="/api/advisories/${a.id}/csaf.json" download="${a.cve_id}.csaf.json"><button class="ghost">⤓ Download CSAF/VEX</button></a></div>`;
+  if(S.tab==="csaf")return`<pre class="code">${esc(JSON.stringify(doc.csaf,null,2))}</pre>`;
+  return`<div class="disclaimer">${esc(doc.fda_report.disclaimer)}</div><pre class="code">${esc(JSON.stringify(doc.fda_report,null,2))}</pre>`;
+}
+async function act(id,verb){try{await api(`/api/advisories/${id}/${verb}`,{method:"POST"});toast(verb.replace('-',' ')+" ✓");await refresh();}catch(e){toast(e.message,true);}}
+async function submitVerify(id){const status=val("vstatus"),evidence=val("vevidence"),actor=val("vactor")||"analyst";
+  if(!evidence)return toast("Add evidence first",true);
+  try{await api(`/api/advisories/${id}/verify`,{method:"POST",body:JSON.stringify({status,evidence,actor})});toast("Decision recorded ✓");await refresh();}catch(e){toast(e.message,true);}}
+async function signoff(id,role,decision){let comment="";if(decision==="rejected"){comment=prompt(`Reason for ${role} rejection:`)||"";if(!comment)return;}
+  try{await api(`/api/advisories/${id}/signoff`,{method:"POST",body:JSON.stringify({role,decision,actor:role+"-lead",comment})});toast(`${role} ${decision} ✓`);await refresh();}catch(e){toast(e.message,true);}}
+async function toIncident(id){try{const r=await api(`/api/advisories/${id}/to-incident`,{method:"POST"});toast("Logged incident "+r.id+" ✓");}catch(e){toast(e.message,true);}}
+async function scan(){toast("Scanning NVD + CISA KEV…");try{const r=await api("/api/scan",{method:"POST",body:JSON.stringify({days:3})});toast(`Ingested ${r.count} new CVE(s) ✓`);await refresh();}catch(e){toast("Feed error: "+e.message,true);}}
+
+async function loadIncidents(){S.incidents=await api("/api/incidents");renderIncidents();}
+function statusBadge(s){const m={resolved:"low",patch_available:"med",mitigated:"high",monitoring:"none"};return`<span class="b ${m[s]||'none'}">${(s||'—').replace('_',' ')}</span>`;}
+function renderIncidents(){
+  const tw=document.getElementById("incsectoggle");if(tw)tw.innerHTML=secToggle("setSectorInc")+scopeToggle("setScopeInc");
+  const rows=S.incidents.filter(i=>(S.sector==="ALL"||i.sector===S.sector) && incMine(i));
+  document.getElementById("inctbody").innerHTML=rows.map(i=>{
+    const vd=i.vendor_disclosed===true?`<span class="yn y">YES</span>${i.vendor_disclosure_url?` <a href="${i.vendor_disclosure_url}" target="_blank">↗</a>`:''}`:i.vendor_disclosed===false?'<span class="yn n">NO</span>':'<span class="yn u">—</span>';
+    return `<tr>
+      <td><div class="vend">${esc(i.vendor)}</div><div class="prod">${esc(i.product||"—")}</div></td>
+      <td>${esc(i.title)}${i.cve?`<br><span class="mono" style="color:var(--teal-ink);font-size:11px">${i.cve}</span>`:''}${i.seeded?'<span class="seedtag">sourced</span>':''}</td>
+      <td>${secBadge(i.sector)}</td>
+      <td><span class="b ${SEV(i.severity)}">${i.severity||"—"}${i.cvss?(" "+i.cvss):""}</span><br>${statusBadge(i.status)}</td>
+      <td><span class="date">${i.disclosed_date||"—"}</span></td>
+      <td class="patchcol"><span class="deployed ${i.patch_deployed?'':'none'}">${esc(i.patch_deployed||"not deployed")}</span></td>
+      <td class="src">${i.cisa_url?`<a href="${i.cisa_url}" target="_blank">CISA ↗</a>`:'—'}${i.source_url&&i.source_url!==i.cisa_url?`<br><a href="${i.source_url}" target="_blank">source ↗</a>`:''}</td>
+      <td>${vd}${i.trust_center&&i.vendor_disclosed!==true?`<br><a href="${i.trust_center}" target="_blank" style="font-size:11px">trust center ↗</a>`:''}</td>
+      <td><button class="ghost" style="padding:6px 9px;font-size:12px" onclick="openPatch('${i.id}')">Set deployed</button></td>
+    </tr>`;}).join("")||`<tr><td colspan="9" class="empty">${S.scope==="mine"?"No incidents logged by your organization yet. Seeded rows are third-party / industry examples — switch to <b>All data</b> to see them, or log your own with <b>+ Log incident</b>.":"No incidents in this sector."}</td></tr>`;
+}
+function openPatch(id){const inc=S.incidents.find(x=>x.id===id);
+  document.getElementById("modalRoot").innerHTML=`<div class="modal"><div class="box"><h3>Patch deployment</h3>
+    <div style="color:var(--muted);font-size:12px;margin-bottom:14px">${esc(inc.vendor)} — ${esc(inc.title)}</div>
+    <div class="fld"><label>Patch deployed (date and/or how)</label><input id="pd" value="${esc(inc.patch_deployed||'')}" placeholder="2026-06-27 — fleet update via service portal"></div>
+    <div class="fld"><label>Status</label><select id="pstat"><option value="">(unchanged)</option><option value="resolved">resolved</option><option value="patch_available">patch_available</option><option value="mitigated">mitigated</option><option value="monitoring">monitoring</option></select></div>
+    <div class="row" style="justify-content:flex-end"><button class="ghost" onclick="closeModal()">Cancel</button><button class="primary" onclick="savePatch('${id}')">Save</button></div></div></div>`;}
+async function savePatch(id){const patch_deployed=val("pd"),status=val("pstat");if(!patch_deployed)return toast("Enter a deployment date/note",true);
+  try{await api(`/api/incidents/${id}/patch`,{method:"PUT",body:JSON.stringify({patch_deployed,status:status||null})});closeModal();toast("Saved ✓");await loadIncidents();}catch(e){toast(e.message,true);}}
+function openIncident(){const vendors=(S.trust?S.trust.trust_centers.map(t=>t.company):["Medtronic","Philips","BD (Becton Dickinson)","GE HealthCare","Baxter","Siemens Healthineers","Contec Health"]);
+  document.getElementById("modalRoot").innerHTML=`<div class="modal"><div class="box"><h3>Log security incident</h3>
+    <div class="fld"><label>Vendor</label><select id="ivendor">${vendors.map(v=>`<option>${v}</option>`).join("")}</select></div>
+    <div class="fld"><label>Product</label><input id="iproduct"></div>
+    <div class="fld"><label>Incident title</label><input id="ititle"></div>
+    <div class="row"><div class="fld" style="flex:2"><label>CVE</label><input id="icve" placeholder="CVE-2026-…"></div>
+      <div class="fld" style="flex:1"><label>Severity</label><select id="isev"><option>CRITICAL</option><option selected>HIGH</option><option>MEDIUM</option><option>LOW</option></select></div>
+      <div class="fld" style="flex:1"><label>CVSS</label><input id="icvss"></div></div>
+    <div class="row"><div class="fld" style="flex:1"><label>Disclosed date</label><input id="idisc" placeholder="2026-06-20"></div>
+      <div class="fld" style="flex:1"><label>Status</label><select id="istat"><option value="monitoring">monitoring</option><option value="mitigated">mitigated</option><option value="patch_available">patch_available</option><option value="resolved">resolved</option></select></div></div>
+    <div class="fld"><label>Patch deployed</label><input id="ipdep"></div>
+    <div class="fld"><label>CISA advisory URL</label><input id="isrc" placeholder="https://www.cisa.gov/…"></div>
+    <div class="row" style="justify-content:flex-end"><button class="ghost" onclick="closeModal()">Cancel</button><button class="primary" onclick="saveIncident()">Log incident</button></div></div></div>`;}
+async function saveIncident(){const body={vendor:val("ivendor"),product:val("iproduct"),title:val("ititle"),cve:val("icve")||null,severity:val("isev"),cvss:parseFloat(val("icvss"))||null,status:val("istat"),disclosed_date:val("idisc")||null,patch_deployed:val("ipdep")||null,source_url:val("isrc")||null};
+  if(!body.title)return toast("Title required",true);
+  try{await api("/api/incidents",{method:"POST",body:JSON.stringify(body)});closeModal();toast("Incident logged ✓");await loadIncidents();}catch(e){toast(e.message,true);}}
+
+async function loadTrust(){if(!S.trust)S.trust=await api("/api/trust-centers");renderTrust();}
+function renderTrust(){const t=S.trust;
+  document.getElementById("tcsectoggle").innerHTML=secToggle("setSectorTc")+scopeToggle("setScopeTc");
+  const mine=myVendorSet();
+  const relevant=x=>{if(S.scope==="all")return true;const c=x.company.toLowerCase();
+    for(const v of mine){const v0=v.split(" ")[0];if(c.includes(v0)||v.includes(c.split(" ")[0]))return true;}return false;};
+  const list=t.trust_centers.filter(x=>(S.sector==="ALL"||x.sector===S.sector)&&relevant(x));
+  const cats={};list.forEach(x=>{(cats[x.category]=cats[x.category]||[]).push(x);});
+  let h="";for(const cat of Object.keys(cats)){h+=`<div class="secthead">${cat}</div><div class="grid">`+cats[cat].map(x=>`
+    <div class="tc"><div class="co">${esc(x.company)} ${secBadge(x.sector)}</div><div class="cat">${esc(x.category)}</div><div class="note">${esc(x.note||"")}</div>
+      <div class="tags">${(x.tags||[]).map(tg=>`<span class="tg">${esc(tg)}</span>`).join("")}</div>
+      <div class="links"><a href="${x.trust_center}" target="_blank">Trust center ↗</a>${x.advisories&&x.advisories!==x.trust_center?`<a href="${x.advisories}" target="_blank">Advisories ↗</a>`:''}</div></div>`).join("")+`</div>`;}
+  document.getElementById("tcgrid").innerHTML=h||`<div class="empty"><div class="big">No matching trust centers</div>${S.scope==="mine"?"These are the vendors referenced by your organization's advisories and incidents. Log incidents or add third-party CVEs to populate this view.":"Adjust the sector filter."}</div>`;
+  document.getElementById("tclead").innerHTML=S.scope==="mine"
+    ? `Trust centers for the vendors your organization actually references (from your advisories and logged incidents). Switch to <b>All data</b> for the full directory.`
+    : `Authoritative product-security source for each manufacturer — used when triaging a third-party component and when checking whether a vendor disclosed a CVE. URLs verified against vendor pages, the <a href="${t.directory_source}" target="_blank">Health-ISAC MDM directory ↗</a>, and each vendor's PSIRT/CERT.`;
+}
+
+async function loadMetrics(){const m=await api("/api/metrics");renderMetrics(m);}
+function renderMetrics(m){
+  const fa=S.advisories.filter(a=>(S.sector==="ALL"||a.sector===S.sector)&&advMine(a));
+  let disclosed=0,nimp=0,inprog=0,overdue=0; const sevd={},sb={};
+  fa.forEach(a=>{ if(a.state==="PUBLISHED")disclosed++; else if(a.state==="NOT_APPLICABLE")nimp++; else inprog++;
+    if(a.sla&&a.sla.overdue)overdue++; const s=a.severity||"NONE"; sevd[s]=(sevd[s]||0)+1;
+    const sc=a.sector||"Unspecified"; const d=sb[sc]||(sb[sc]={disclosed:0,not_impacting:0,in_progress:0,total:0});
+    d.total++; if(a.state==="PUBLISHED")d.disclosed++; else if(a.state==="NOT_APPLICABLE")d.not_impacting++; else d.in_progress++; });
+  const scoped=(S.scope!=="all"||S.sector!=="ALL");
+  const toggles=`<div class="row" style="margin:0 0 14px;gap:8px">${secToggle("setSectorMet")}${scopeToggle("setScopeMet")}</div>`;
+  const cards=`<div class="mcards">
+    <div class="mcard good"><div class="mn">${disclosed}</div><div class="ml">CVEs disclosed (published)</div></div>
+    <div class="mcard"><div class="mn">${nimp}</div><div class="ml">Not impacting (known_not_affected)</div></div>
+    <div class="mcard info"><div class="mn">${inprog}</div><div class="ml">In progress</div></div>
+    <div class="mcard ${overdue?'warn':'good'}"><div class="mn">${overdue}</div><div class="ml">Overdue (current step &gt; SLA)</div></div>
+    <div class="mcard"><div class="mn">${fa.length}</div><div class="ml">Tracked${scoped?" (filtered)":""}</div></div>
+  </div>
+  <div class="row" style="margin:0 0 16px"><button class="ghost" onclick="dlReport&&dlReport()">⤓ Export board report (Markdown)</button>
+    <span style="font-size:11px;color:var(--faint);align-self:center">report covers the full program</span></div>`;
+  const sevTot=Object.values(sevd).reduce((a,b)=>a+b,0)||1;
+  const sevOrder=["CRITICAL","HIGH","MEDIUM","LOW","NONE"].filter(k=>sevd[k]);
+  const sectorPanel=`<div class="panel"><h3>By sector — MedTech vs IT/OT</h3>
+    <div class="tlrow" style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em"><div>Sector</div><div>Disclosed · Not impacting · In progress</div><div style="text-align:right">total</div></div>
+    ${Object.keys(sb).length?Object.entries(sb).map(([sec,d])=>{const t=d.total||1;
+      return `<div class="tlrow"><div class="tllabel">${secBadge(sec)}</div>
+        <div class="tlbar" style="display:flex">
+          <div style="width:${100*d.disclosed/t}%;background:var(--green)"></div>
+          <div style="width:${100*d.not_impacting/t}%;background:var(--faint)"></div>
+          <div style="width:${100*d.in_progress/t}%;background:var(--teal)"></div>
+        </div><div class="tltime">${d.disclosed} · ${d.not_impacting} · ${d.in_progress}</div></div>`;}).join(""):'<div style="color:var(--faint);font-size:12px">No advisories in this view.</div>'}
+    <div style="font-size:11px;color:var(--faint);margin-top:6px">Green = disclosed · grey = not impacting · teal = in progress.</div></div>`;
+  const sev=`<div class="panel"><h3>Severity distribution</h3>${sevOrder.length?sevOrder.map(k=>`
+    <div class="bar"><div class="bl">${k.toLowerCase()}</div><div class="bt"><div class="bf ${SEV(k)}" style="width:${100*sevd[k]/sevTot}%"></div></div><div class="bv">${sevd[k]}</div></div>`).join(""):'<div style="color:var(--faint);font-size:12px">No advisories in this view.</div>'}</div>`;
+  const steps=`<div class="panel"><h3>Timeline per step — avg vs SLA &amp; adherence <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· full program</span></h3>
+    <div class="tlrow" style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em"><div>Step</div><div>avg / SLA</div><div style="text-align:right">adherence</div></div>
+    ${m.step_metrics.map(s=>{const over=s.avg_days!=null&&s.avg_days>s.sla_days;const w=s.avg_days!=null?Math.min(100,100*s.avg_days/(s.sla_days*1.5)):0;const slaPct=100*s.sla_days/(s.sla_days*1.5);
+      return `<div class="tlrow"><div class="tllabel">${esc(s.label)}</div>
+        <div class="tlbar"><div class="tlfill ${over?'over':'ok'}" style="width:${w}%"></div><div class="tlsla" style="left:${slaPct}%"></div></div>
+        <div class="tltime">${s.avg_days??"—"}d / ${s.sla_days}d · ${s.sla_adherence??"—"}%</div></div>`;}).join("")}
+    <div style="font-size:11px;color:var(--faint);margin-top:6px">Red marker = SLA target. Per-step timing is computed across the full program.</div></div>`;
+  document.getElementById("metbody").innerHTML=toggles+cards+sectorPanel+sev+steps;
+}
+function setSectorMet(x){S.sector=x;loadMetrics();}
+
+function closeModal(){document.getElementById("modalRoot").innerHTML="";}
+function openManual(){document.getElementById("modalRoot").innerHTML=`<div class="modal"><div class="box"><h3>Add CVE manually</h3>
+    <div class="fld"><label>CVE ID</label><input id="mid" placeholder="CVE-2024-12345"></div>
+    <div class="fld"><label>Title / description</label><input id="mtitle"></div>
+    <div class="fld"><label>CPEs (comma-sep, drives SBOM match)</label><input id="mcpe" placeholder="cpe:2.3:a:openssl:openssl:3.0.8:*:*:*:*:*:*:*"></div>
+    <div class="row"><div class="fld" style="flex:1"><label>Severity</label><select id="msev"><option>CRITICAL</option><option selected>HIGH</option><option>MEDIUM</option><option>LOW</option></select></div>
+      <div class="fld" style="flex:1"><label>CVSS</label><input id="mcvss" value="8.0"></div>
+      <div class="fld" style="flex:1"><label>In KEV</label><select id="mkev"><option value="false">No</option><option value="true">Yes</option></select></div></div>
+    <div class="row" style="justify-content:flex-end"><button class="ghost" onclick="closeModal()">Cancel</button><button class="primary" onclick="addManual()">Add to queue</button></div></div></div>`;}
+async function addManual(){const body={cve_id:val("mid"),title:val("mtitle"),severity:val("msev"),cvss:parseFloat(val("mcvss"))||8.0,in_kev:val("mkev")==="true",cpes:val("mcpe")?val("mcpe").split(",").map(s=>s.trim()).filter(Boolean):[],cwes:[]};
+  if(!body.cve_id||!body.title)return toast("CVE ID and title required",true);
+  try{const r=await api("/api/advisories/manual",{method:"POST",body:JSON.stringify(body)});closeModal();toast("CVE added ✓");await refresh();select(r.id);}catch(e){toast(e.message,true);}}
+function mdToHtml(md){return esc(md).replace(/^# (.*)$/gm,"<h1>$1</h1>").replace(/^## (.*)$/gm,"<h2>$1</h2>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/^- (.*)$/gm,"• $1<br>").replace(/_([^_]+)_/g,"<em>$1</em>").replace(/\n\n/g,"<br><br>");}
+boot();
+</script>
+</body>
+</html>

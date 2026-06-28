@@ -1,0 +1,20 @@
+services:
+  cvd:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=llama3.1:8b
+      - LLM_ENABLED=1
+      # - NVD_API_KEY=your_key_here   # optional: higher NVD rate limits
+    volumes: ["cvd_data:/data"]
+    depends_on: [ollama]
+  ollama:
+    image: ollama/ollama:latest
+    ports: ["11434:11434"]
+    volumes: ["ollama_data:/root/.ollama"]
+    # After first start, pull the model:
+    #   docker compose exec ollama ollama pull llama3.1:8b
+volumes:
+  cvd_data:
+  ollama_data:
