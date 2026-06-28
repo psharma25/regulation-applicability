@@ -34,7 +34,10 @@ class ActorScore(BaseModel):
     model: str = "Unknown"
     status: str = "active"                  # active | defunct
     nation_state_class: str = "criminal"   # directed | tolerated | criminal
+    first_seen: int | None = None           # year the actor was first observed
     discovered: bool = False                # True if found by scan, not in seed config
+    sectors: list[str] = Field(default_factory=list)
+    notable_victims: list[str] = Field(default_factory=list)
     notes: str = ""
 
     criteria: dict[str, CriterionScore] = Field(default_factory=dict)

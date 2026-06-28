@@ -79,9 +79,10 @@ def build_workbook(result: ScanResult, out_dir: Path) -> Path:
     ws["A2"].font = Font(italic=True, color="555049", size=9)
 
     headers = (
-        ["Actor", "Source", "Status", "Origin", "Model", "Nation-state",
-         "Recent victims", "Threat severity", "Severity band",
-         "Deal reliability", "Reliability band", "Confidence"]
+        ["Actor", "Source", "Status", "First seen", "Origin", "Model", "Sectors",
+         "Reported victims", "Nation-state", "Recent victims",
+         "Threat severity", "Severity band", "Deal reliability",
+         "Reliability band", "Confidence"]
         + [crit_cfg[k]["label"] for k in crit_keys]
         + ["Notes"]
     )
@@ -103,8 +104,11 @@ def build_workbook(result: ScanResult, out_dir: Path) -> Path:
         if a.status == "defunct":
             st.font = Font(italic=True, color="7A8290")
         col += 1
+        ws.cell(row=r, column=col, value=a.first_seen); col += 1
         ws.cell(row=r, column=col, value=a.origin); col += 1
         ws.cell(row=r, column=col, value=a.model); col += 1
+        ws.cell(row=r, column=col, value=", ".join(a.sectors)); col += 1
+        ws.cell(row=r, column=col, value=", ".join(a.notable_victims)); col += 1
         ns = ws.cell(row=r, column=col, value=a.nation_state_class)
         if a.nation_state_class == "directed":
             ns.fill = PatternFill("solid", fgColor="F1D2CD")
