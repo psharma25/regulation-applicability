@@ -11,8 +11,7 @@
 <style>
   :root{
     --bg:#F7F6FB; --panel:#FFFFFF; --panel2:#F2EFF7; --line:#E9E4F1; --line2:#DBD4E7;
-    --ink:#4B4E61; --ink2:#6B6E80; --mute:#9D9BB0;
-    --accent:#7E84C4;
+    --ink:#4B4E61; --ink2:#6B6E80; --mute:#9D9BB0; --accent:#7E84C4;
     --sev:#D98A6E; --sev-fill:#E8A48C; --sev-fill2:#F2C7B4; --sev-soft:#FBEEE7;
     --rel:#5FA585; --rel-fill:#9FD0B6; --rel-fill2:#C8E6D6; --rel-soft:#E9F4EE;
     --dir:#B074A0; --dir-soft:#F4E9F1;
@@ -25,15 +24,24 @@
   .eyebrow{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;font-weight:600}
   h1{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:clamp(26px,4vw,40px);line-height:1.04;margin:0;color:var(--ink);letter-spacing:-.01em}
   h1 .slash{color:var(--accent)}
-  .sub{color:var(--ink2);margin:12px 0 0;max-width:62ch;font-size:13px}
-  .notice{margin-top:18px;font-size:12px;color:var(--ink2);background:#EFF0FA;border:1px solid #DADCF2;border-radius:6px;padding:11px 14px;max-width:80ch}
-  .notice b{color:var(--ink)}
-  .notice code{background:#fff;border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-size:11px}
+  .sub{color:var(--ink2);margin:12px 0 0;max-width:64ch;font-size:13px}
+  .controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:22px}
+  button.run{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:15px;letter-spacing:.02em;cursor:pointer;border:none;border-radius:6px;padding:13px 24px;color:#FFFFFF;background:var(--accent);transition:transform .08s ease, box-shadow .2s}
+  button.run:hover{transform:translateY(-1px);box-shadow:0 6px 20px -8px var(--accent)}
+  button.run:disabled{opacity:.45;cursor:wait;transform:none;box-shadow:none}
+  a.dl{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:14px;text-decoration:none;color:var(--rel);border:1px solid var(--rel);border-radius:6px;padding:12px 18px;transition:background .2s}
+  a.dl:hover{background:var(--rel-soft)}
+  a.dl.off{opacity:.4;pointer-events:none;color:var(--mute);border-color:var(--line2)}
+  .status{font-size:12px;color:var(--mute)}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mute);margin-right:7px;vertical-align:middle}
+  .dot.run{background:var(--accent);animation:pulse 1s infinite}
+  .dot.ok{background:var(--rel)}
+  .dot.err{background:var(--dir)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   .filters{margin-top:22px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
   .field{display:flex;flex-direction:column;gap:5px}
   .field label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:600}
-  select{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink);background:var(--panel);
-    border:1px solid var(--line2);border-radius:6px;padding:9px 11px;min-width:142px;cursor:pointer;transition:border-color .15s, box-shadow .15s}
+  select{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);border-radius:6px;padding:9px 11px;min-width:142px;cursor:pointer;transition:border-color .15s, box-shadow .15s}
   select:hover{border-color:var(--accent)}
   select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(126,132,196,.16)}
   .filtermeta{display:flex;align-items:center;gap:14px;margin:18px 2px 4px;font-size:12px;color:var(--ink2)}
@@ -72,9 +80,13 @@
   .foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:11px;color:var(--mute)}
   .foot b{color:var(--ink);font-weight:600}
   .notes{font-size:11.5px;color:var(--ink2);margin-top:10px;line-height:1.45}
-  .none{grid-column:1/-1;text-align:center;color:var(--mute);font-size:13px;padding:48px 4px}
+  .none,.empty{grid-column:1/-1;text-align:center;color:var(--mute);font-size:13px;padding:48px 4px}
+  .logwrap{margin-top:30px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+  .logwrap h3{font-family:"Space Grotesk",sans-serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin:0;padding:13px 16px;border-bottom:1px solid var(--line)}
+  pre.log{margin:0;padding:14px 16px;max-height:230px;overflow:auto;font-size:11.5px;color:var(--ink2)}
+  pre.log .be{color:var(--accent);font-weight:600}
   .caveat{margin-top:26px;font-size:11.5px;color:var(--mute);border-left:2px solid var(--accent);padding-left:14px;max-width:80ch}
-  footer{margin-top:34px;font-size:11px;color:var(--mute);border-top:1px solid var(--line);padding-top:16px}
+  footer{margin-top:26px;font-size:11px;color:var(--mute);border-top:1px solid var(--line);padding-top:16px}
   footer a{color:var(--rel);text-decoration:none}
 </style>
 </head>
@@ -84,38 +96,27 @@
     <p class="eyebrow">Defensive threat intelligence &middot; scoring workbook + live tracker</p>
     <h1>Threat actor reputation<span class="slash">/</span>board</h1>
     <p class="sub">Ranks ransomware &amp; extortion actors on two axes &mdash; how dangerous they are, and whether they honor a payment &mdash; from analyst priors enriched with live public reporting.</p>
-    <div class="notice"><b>This is the static showcase.</b> It displays the preloaded roster with scores computed from analyst priors, so it runs anywhere with no backend. The full <b>agentic scan</b> &mdash; live evidence collection, new-actor discovery, local-LLM reasoning, and Excel export &mdash; runs in the Python app: <code>pip install -r requirements.txt</code> then <code>uvicorn app.main:app</code>.</div>
-
+    <div class="controls">
+      <button class="run" id="runBtn">Run tracker</button>
+      <a class="dl off" id="dlBtn" href="#">Download workbook (.xlsx)</a>
+      <span class="status" id="status"><span class="dot ok" id="dot"></span><span id="statusText">Preloaded roster</span></span>
+    </div>
     <div class="filters" id="filters">
       <div class="field"><label for="f-name">Threat actor</label><select id="f-name"></select></div>
       <div class="field"><label for="f-year">First seen</label><select id="f-year"></select></div>
       <div class="field"><label for="f-sector">Sector</label><select id="f-sector"></select></div>
       <div class="field"><label for="f-company">Company impacted</label><select id="f-company"></select></div>
       <div class="field"><label for="f-sev">Threat severity</label><select id="f-sev">
-        <option value="0">All</option>
-        <option value="8.5">Critical (&ge;8.5)</option>
-        <option value="7">High (&ge;7)</option>
-        <option value="5">Elevated (&ge;5)</option>
-        <option value="3">Moderate (&ge;3)</option>
+        <option value="0">All</option><option value="8.5">Critical (&ge;8.5)</option><option value="7">High (&ge;7)</option><option value="5">Elevated (&ge;5)</option><option value="3">Moderate (&ge;3)</option>
       </select></div>
       <div class="field"><label for="f-rel">Deal reliability</label><select id="f-rel">
-        <option value="all">All</option>
-        <option value="honor">Often honors (&ge;7)</option>
-        <option value="mixed">Mixed (5&ndash;7)</option>
-        <option value="cheat">Frequently cheats (3&ndash;5)</option>
-        <option value="none">Assume no recovery (&lt;3)</option>
+        <option value="all">All</option><option value="honor">Often honors (&ge;7)</option><option value="mixed">Mixed (5&ndash;7)</option><option value="cheat">Frequently cheats (3&ndash;5)</option><option value="none">Assume no recovery (&lt;3)</option>
       </select></div>
       <div class="field"><label for="f-state">Nation-state</label><select id="f-state">
-        <option value="all">All</option>
-        <option value="directed">State-directed</option>
-        <option value="tolerated">State-tolerated</option>
-        <option value="criminal">Criminal</option>
+        <option value="all">All</option><option value="directed">State-directed</option><option value="tolerated">State-tolerated</option><option value="criminal">Criminal</option>
       </select></div>
     </div>
-    <div class="filtermeta">
-      <span class="count" id="count"></span>
-      <button class="clear" id="clearBtn">Clear filters</button>
-    </div>
+    <div class="filtermeta"><span class="count" id="count"></span><button class="clear" id="clearBtn">Clear filters</button></div>
   </header>
 
   <div class="legend">
@@ -125,516 +126,122 @@
   </div>
 
   <div class="board" id="board"></div>
+  <div class="logwrap" id="logwrap" style="display:none"><h3>Scan log</h3><pre class="log" id="log"></pre></div>
 
   <p class="caveat">Scores are a planning aid, not an endorsement &mdash; every listed actor is a criminal operation. "First seen" is the year the group was first publicly observed; reported victims show the incident year and are well-known public attributions, illustrative not exhaustive. Ransoms actually paid and payer identities are mostly undisclosed; reliability reflects reputation and incentive structure, not a verified success rate.</p>
-  <footer>Threat Actor Reputation Tracker &mdash; defensive tooling, MIT licensed. Static page reflects the seeded roster in <a href="config/actors.yaml">config/actors.yaml</a>. Run the Python app for live scans and the scoring workbook.</footer>
+  <footer>Threat Actor Reputation Tracker &mdash; defensive tooling, MIT licensed. Roster seeded from <a href="config/actors.yaml">config/actors.yaml</a>.</footer>
 </div>
 
 <script>
-const DATA = {
-  "actors": [
-    {
-      "name": "Qilin",
-      "origin": "Russia-nexus",
-      "model": "RaaS",
-      "status": "active",
-      "first_seen": 2022,
-      "nation_state_class": "tolerated",
-      "discovered": false,
-      "notes": "Most active group for multiple consecutive quarters. Double extortion; threatens leak even if paid.",
-      "sectors": [
-        "Healthcare",
-        "Manufacturing",
-        "Professional Services"
-      ],
-      "notable_victims": [
-        "Synnovis (NHS pathology) (2024)",
-        "CES Imaging (2026)"
-      ],
-      "threat_severity": 8.4,
-      "deal_reliability": 5.1,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "Lazarus Group",
-      "origin": "North Korea",
-      "model": "State-directed",
-      "status": "active",
-      "first_seen": 2009,
-      "nation_state_class": "directed",
-      "discovered": false,
-      "notes": "True nation-state actor. Ransomware + crypto theft as state revenue. OFAC sanctions risk on payment.",
-      "sectors": [
-        "Financial Services",
-        "Cryptocurrency"
-      ],
-      "notable_victims": [
-        "Upbit (2025)",
-        "Bybit (2025)"
-      ],
-      "threat_severity": 8.2,
-      "deal_reliability": 4.0,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "Cl0p",
-      "origin": "Russia-nexus",
-      "model": "Closed / mass-exploitation",
-      "status": "active",
-      "first_seen": 2019,
-      "nation_state_class": "tolerated",
-      "discovered": false,
-      "notes": "Supply-chain mass exploitation (file-transfer software). Often data-theft-only extortion.",
-      "sectors": [
-        "Financial Services",
-        "Government",
-        "Technology"
-      ],
-      "notable_victims": [
-        "MOVEit campaign (600+ orgs) (2023)",
-        "GoAnywhere campaign (2023)"
-      ],
-      "threat_severity": 7.5,
-      "deal_reliability": 4.7,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "LockBit",
-      "origin": "Russia-nexus",
-      "model": "RaaS",
-      "status": "active",
-      "first_seen": 2019,
-      "nation_state_class": "tolerated",
-      "discovered": false,
-      "notes": "Reputation eroded after Operation Cronos (Feb 2024). LockBit 5.0 resurgence late 2025.",
-      "sectors": [
-        "Financial Services",
-        "Manufacturing",
-        "Government"
-      ],
-      "notable_victims": [
-        "Boeing (2023)",
-        "ICBC (2023)",
-        "Royal Mail (2023)"
-      ],
-      "threat_severity": 7.1,
-      "deal_reliability": 4.2,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "Akira",
-      "origin": "Russia-nexus",
-      "model": "RaaS",
-      "status": "active",
-      "first_seen": 2023,
-      "nation_state_class": "tolerated",
-      "discovered": false,
-      "notes": "Consistent, stable operator since 2023. ~$42M estimated lifetime take. ESXi/Nutanix focus.",
-      "sectors": [
-        "Manufacturing",
-        "Professional Services",
-        "Education"
-      ],
-      "notable_victims": [
-        "Nissan Oceania (2023)",
-        "Stanford University (2023)"
-      ],
-      "threat_severity": 7.0,
-      "deal_reliability": 6.2,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "Play",
-      "origin": "Russia-nexus",
-      "model": "Closed",
-      "status": "active",
-      "first_seen": 2022,
-      "nation_state_class": "tolerated",
-      "discovered": false,
-      "notes": "Government, police, critical infrastructure focus. Email-based negotiation, no countdown site.",
-      "sectors": [
-        "Government",
-        "Critical Infrastructure",
-        "IT Services"
-      ],
-      "notable_victims": [
-        "City of Oakland (2023)",
-        "Rackspace (2022)"
-      ],
-      "threat_severity": 7.0,
-      "deal_reliability": 5.5,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "The Gentlemen",
-      "origin": "Ex-Qilin affiliate",
-      "model": "RaaS",
-      "status": "active",
-      "first_seen": 2025,
-      "nation_state_class": "tolerated",
-      "discovered": false,
-      "notes": "Emerged late 2025, scaled fast on pre-staged FortiGate access. Reliability not yet established.",
-      "sectors": [
-        "Manufacturing",
-        "Professional Services"
-      ],
-      "notable_victims": [
-        "Undisclosed (emerging)"
-      ],
-      "threat_severity": 6.7,
-      "deal_reliability": 5.0,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "Black Basta",
-      "origin": "Russia-nexus",
-      "model": "RaaS",
-      "status": "active",
-      "first_seen": 2022,
-      "nation_state_class": "tolerated",
-      "discovered": false,
-      "notes": "Conti-lineage. Leaked internal chats in 2025 exposed operations; activity since fragmented.",
-      "sectors": [
-        "Healthcare",
-        "Manufacturing"
-      ],
-      "notable_victims": [
-        "Ascension Health (2024)",
-        "Capita (2023)"
-      ],
-      "threat_severity": 6.2,
-      "deal_reliability": 4.7,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "DragonForce",
-      "origin": "RaaS",
-      "model": "RaaS",
-      "status": "active",
-      "first_seen": 2023,
-      "nation_state_class": "criminal",
-      "discovered": false,
-      "notes": "Collaborates with Scattered Spider. Retail-sector campaigns.",
-      "sectors": [
-        "Retail",
-        "Consumer Goods"
-      ],
-      "notable_victims": [
-        "Marks & Spencer (2025)",
-        "Co-op (2025)",
-        "Harrods (2025)"
-      ],
-      "threat_severity": 6.1,
-      "deal_reliability": 4.6,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "Medusa",
-      "origin": "Unknown",
-      "model": "RaaS",
-      "status": "active",
-      "first_seen": 2021,
-      "nation_state_class": "criminal",
-      "discovered": false,
-      "notes": "Double extortion; has targeted healthcare and education. Subject of FBI/CISA advisory.",
-      "sectors": [
-        "Healthcare",
-        "Education"
-      ],
-      "notable_victims": [
-        "Minneapolis Public Schools (2023)",
-        "Toyota Financial Services (2023)"
-      ],
-      "threat_severity": 5.8,
-      "deal_reliability": 4.2,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "BlackSuit",
-      "origin": "Russia-nexus",
-      "model": "Closed",
-      "status": "defunct",
-      "first_seen": 2023,
-      "nation_state_class": "tolerated",
-      "discovered": false,
-      "notes": "Royal rebrand. Infrastructure disrupted in 2025 (Operation Checkmate). Critical-infra history.",
-      "sectors": [
-        "Critical Infrastructure",
-        "Government",
-        "Automotive"
-      ],
-      "notable_victims": [
-        "CDK Global (2024)",
-        "City of Dallas (2023)"
-      ],
-      "threat_severity": 5.8,
-      "deal_reliability": 4.7,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "ALPHV/BlackCat",
-      "origin": "Russia-nexus",
-      "model": "RaaS",
-      "status": "defunct",
-      "first_seen": 2021,
-      "nation_state_class": "tolerated",
-      "discovered": false,
-      "notes": "Collapsed early 2024 after an exit-scam against an affiliate (Change Healthcare). Cautionary reliability case.",
-      "sectors": [
-        "Healthcare",
-        "Hospitality"
-      ],
-      "notable_victims": [
-        "Change Healthcare (2024)",
-        "MGM Resorts (2023)",
-        "Caesars (2023)"
-      ],
-      "threat_severity": 5.8,
-      "deal_reliability": 3.0,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "Rhysida",
-      "origin": "Unknown",
-      "model": "RaaS",
-      "status": "active",
-      "first_seen": 2023,
-      "nation_state_class": "criminal",
-      "discovered": false,
-      "notes": "Healthcare and public-sector focus. Decryptor weakness was briefly exploitable by researchers.",
-      "sectors": [
-        "Public Sector",
-        "Healthcare",
-        "Media"
-      ],
-      "notable_victims": [
-        "British Library (2023)",
-        "Insomniac Games (2023)"
-      ],
-      "threat_severity": 5.7,
-      "deal_reliability": 5.1,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "INC Ransom",
-      "origin": "Unknown",
-      "model": "RaaS",
-      "status": "active",
-      "first_seen": 2023,
-      "nation_state_class": "criminal",
-      "discovered": false,
-      "notes": "Steady mid-tier operator. Linked by tradecraft overlap to Lynx.",
-      "sectors": [
-        "Healthcare",
-        "Government"
-      ],
-      "notable_victims": [
-        "NHS Dumfries & Galloway (2024)",
-        "Yamaha Motor Philippines (2024)"
-      ],
-      "threat_severity": 5.5,
-      "deal_reliability": 4.6,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "SafePay",
-      "origin": "Unknown",
-      "model": "Closed",
-      "status": "active",
-      "first_seen": 2024,
-      "nation_state_class": "criminal",
-      "discovered": false,
-      "notes": "Fast-rising 2025 operator. LockBit/ALPHV builder lineage suspected.",
-      "sectors": [
-        "Manufacturing",
-        "Professional Services"
-      ],
-      "notable_victims": [
-        "Ingram Micro (2025)"
-      ],
-      "threat_severity": 5.5,
-      "deal_reliability": 4.6,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "RansomHub",
-      "origin": "Russia-nexus",
-      "model": "RaaS",
-      "status": "defunct",
-      "first_seen": 2024,
-      "nation_state_class": "tolerated",
-      "discovered": false,
-      "notes": "Ceased April 2025; affiliates migrated to Qilin/DragonForce. Low historical payment rate, 90% affiliate split.",
-      "sectors": [
-        "Healthcare",
-        "Financial Services"
-      ],
-      "notable_victims": [
-        "Halliburton (2024)",
-        "Christie's (2024)"
-      ],
-      "threat_severity": 5.2,
-      "deal_reliability": 4.7,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "Hunters International",
-      "origin": "Unknown",
-      "model": "RaaS",
-      "status": "defunct",
-      "first_seen": 2023,
-      "nation_state_class": "criminal",
-      "discovered": false,
-      "notes": "Hive-lineage tooling. Announced shutdown/rebrand toward extortion-only (World Leaks) in 2025.",
-      "sectors": [
-        "Technology",
-        "Manufacturing"
-      ],
-      "notable_victims": [
-        "Tata Technologies (2025)"
-      ],
-      "threat_severity": 5.0,
-      "deal_reliability": 4.6,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "NightSpire",
-      "origin": "Unknown",
-      "model": "In-house (not RaaS)",
-      "status": "active",
-      "first_seen": 2025,
-      "nation_state_class": "criminal",
-      "discovered": false,
-      "notes": "Exfil-first, evolved to double extortion. In-house ops limit scale but tighten control.",
-      "sectors": [
-        "Manufacturing",
-        "Electronics"
-      ],
-      "notable_victims": [
-        "Nippon Ceramic (2025)"
-      ],
-      "threat_severity": 4.9,
-      "deal_reliability": 4.6,
-      "confidence": 0.5,
-      "recent_victims": 0
-    },
-    {
-      "name": "Lynx",
-      "origin": "Unknown",
-      "model": "RaaS",
-      "status": "active",
-      "first_seen": 2024,
-      "nation_state_class": "criminal",
-      "discovered": false,
-      "notes": "INC-lineage. Affiliate program with curated targeting rules.",
-      "sectors": [
-        "Manufacturing",
-        "Retail"
-      ],
-      "notable_victims": [
-        "Undisclosed (SMB focus)"
-      ],
-      "threat_severity": 4.9,
-      "deal_reliability": 4.6,
-      "confidence": 0.5,
-      "recent_victims": 0
-    }
-  ]
-};
-const ACTORS = DATA.actors;
+const SEED = {"actors": [{"name": "Qilin", "origin": "Russia-nexus", "model": "RaaS", "status": "active", "first_seen": 2022, "nation_state_class": "tolerated", "discovered": false, "notes": "Most active group for multiple consecutive quarters. Double extortion; threatens leak even if paid.", "sectors": ["Healthcare", "Manufacturing", "Professional Services"], "notable_victims": ["Synnovis (NHS pathology) (2024)", "CES Imaging (2026)"], "threat_severity": 8.4, "deal_reliability": 5.1, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Lazarus Group", "origin": "North Korea", "model": "State-directed", "status": "active", "first_seen": 2009, "nation_state_class": "directed", "discovered": false, "notes": "True nation-state actor. Ransomware + crypto theft as state revenue. OFAC sanctions risk on payment.", "sectors": ["Financial Services", "Cryptocurrency"], "notable_victims": ["Upbit (2025)", "Bybit (2025)"], "threat_severity": 8.2, "deal_reliability": 4.0, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Cl0p", "origin": "Russia-nexus", "model": "Closed / mass-exploitation", "status": "active", "first_seen": 2019, "nation_state_class": "tolerated", "discovered": false, "notes": "Supply-chain mass exploitation (file-transfer software). Often data-theft-only extortion.", "sectors": ["Financial Services", "Government", "Technology"], "notable_victims": ["MOVEit campaign (600+ orgs) (2023)", "GoAnywhere campaign (2023)"], "threat_severity": 7.5, "deal_reliability": 4.7, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "LockBit", "origin": "Russia-nexus", "model": "RaaS", "status": "active", "first_seen": 2019, "nation_state_class": "tolerated", "discovered": false, "notes": "Reputation eroded after Operation Cronos (Feb 2024). LockBit 5.0 resurgence late 2025.", "sectors": ["Financial Services", "Manufacturing", "Government"], "notable_victims": ["Boeing (2023)", "ICBC (2023)", "Royal Mail (2023)"], "threat_severity": 7.1, "deal_reliability": 4.2, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Akira", "origin": "Russia-nexus", "model": "RaaS", "status": "active", "first_seen": 2023, "nation_state_class": "tolerated", "discovered": false, "notes": "Consistent, stable operator since 2023. ~$42M estimated lifetime take. ESXi/Nutanix focus.", "sectors": ["Manufacturing", "Professional Services", "Education"], "notable_victims": ["Nissan Oceania (2023)", "Stanford University (2023)"], "threat_severity": 7.0, "deal_reliability": 6.2, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Play", "origin": "Russia-nexus", "model": "Closed", "status": "active", "first_seen": 2022, "nation_state_class": "tolerated", "discovered": false, "notes": "Government, police, critical infrastructure focus. Email-based negotiation, no countdown site.", "sectors": ["Government", "Critical Infrastructure", "IT Services"], "notable_victims": ["City of Oakland (2023)", "Rackspace (2022)"], "threat_severity": 7.0, "deal_reliability": 5.5, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "The Gentlemen", "origin": "Ex-Qilin affiliate", "model": "RaaS", "status": "active", "first_seen": 2025, "nation_state_class": "tolerated", "discovered": false, "notes": "Emerged late 2025, scaled fast on pre-staged FortiGate access. Reliability not yet established.", "sectors": ["Manufacturing", "Professional Services"], "notable_victims": ["Undisclosed (emerging)"], "threat_severity": 6.7, "deal_reliability": 5.0, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Black Basta", "origin": "Russia-nexus", "model": "RaaS", "status": "active", "first_seen": 2022, "nation_state_class": "tolerated", "discovered": false, "notes": "Conti-lineage. Leaked internal chats in 2025 exposed operations; activity since fragmented.", "sectors": ["Healthcare", "Manufacturing"], "notable_victims": ["Ascension Health (2024)", "Capita (2023)"], "threat_severity": 6.2, "deal_reliability": 4.7, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "DragonForce", "origin": "RaaS", "model": "RaaS", "status": "active", "first_seen": 2023, "nation_state_class": "criminal", "discovered": false, "notes": "Collaborates with Scattered Spider. Retail-sector campaigns.", "sectors": ["Retail", "Consumer Goods"], "notable_victims": ["Marks & Spencer (2025)", "Co-op (2025)", "Harrods (2025)"], "threat_severity": 6.1, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Medusa", "origin": "Unknown", "model": "RaaS", "status": "active", "first_seen": 2021, "nation_state_class": "criminal", "discovered": false, "notes": "Double extortion; has targeted healthcare and education. Subject of FBI/CISA advisory.", "sectors": ["Healthcare", "Education"], "notable_victims": ["Minneapolis Public Schools (2023)", "Toyota Financial Services (2023)"], "threat_severity": 5.8, "deal_reliability": 4.2, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "BlackSuit", "origin": "Russia-nexus", "model": "Closed", "status": "defunct", "first_seen": 2023, "nation_state_class": "tolerated", "discovered": false, "notes": "Royal rebrand. Infrastructure disrupted in 2025 (Operation Checkmate). Critical-infra history.", "sectors": ["Critical Infrastructure", "Government", "Automotive"], "notable_victims": ["CDK Global (2024)", "City of Dallas (2023)"], "threat_severity": 5.8, "deal_reliability": 4.7, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "ALPHV/BlackCat", "origin": "Russia-nexus", "model": "RaaS", "status": "defunct", "first_seen": 2021, "nation_state_class": "tolerated", "discovered": false, "notes": "Collapsed early 2024 after an exit-scam against an affiliate (Change Healthcare). Cautionary reliability case.", "sectors": ["Healthcare", "Hospitality"], "notable_victims": ["Change Healthcare (2024)", "MGM Resorts (2023)", "Caesars (2023)"], "threat_severity": 5.8, "deal_reliability": 3.0, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Rhysida", "origin": "Unknown", "model": "RaaS", "status": "active", "first_seen": 2023, "nation_state_class": "criminal", "discovered": false, "notes": "Healthcare and public-sector focus. Decryptor weakness was briefly exploitable by researchers.", "sectors": ["Public Sector", "Healthcare", "Media"], "notable_victims": ["British Library (2023)", "Insomniac Games (2023)"], "threat_severity": 5.7, "deal_reliability": 5.1, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "INC Ransom", "origin": "Unknown", "model": "RaaS", "status": "active", "first_seen": 2023, "nation_state_class": "criminal", "discovered": false, "notes": "Steady mid-tier operator. Linked by tradecraft overlap to Lynx.", "sectors": ["Healthcare", "Government"], "notable_victims": ["NHS Dumfries & Galloway (2024)", "Yamaha Motor Philippines (2024)"], "threat_severity": 5.5, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "SafePay", "origin": "Unknown", "model": "Closed", "status": "active", "first_seen": 2024, "nation_state_class": "criminal", "discovered": false, "notes": "Fast-rising 2025 operator. LockBit/ALPHV builder lineage suspected.", "sectors": ["Manufacturing", "Professional Services"], "notable_victims": ["Ingram Micro (2025)"], "threat_severity": 5.5, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "RansomHub", "origin": "Russia-nexus", "model": "RaaS", "status": "defunct", "first_seen": 2024, "nation_state_class": "tolerated", "discovered": false, "notes": "Ceased April 2025; affiliates migrated to Qilin/DragonForce. Low historical payment rate, 90% affiliate split.", "sectors": ["Healthcare", "Financial Services"], "notable_victims": ["Halliburton (2024)", "Christie's (2024)"], "threat_severity": 5.2, "deal_reliability": 4.7, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Hunters International", "origin": "Unknown", "model": "RaaS", "status": "defunct", "first_seen": 2023, "nation_state_class": "criminal", "discovered": false, "notes": "Hive-lineage tooling. Announced shutdown/rebrand toward extortion-only (World Leaks) in 2025.", "sectors": ["Technology", "Manufacturing"], "notable_victims": ["Tata Technologies (2025)"], "threat_severity": 5.0, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "NightSpire", "origin": "Unknown", "model": "In-house (not RaaS)", "status": "active", "first_seen": 2025, "nation_state_class": "criminal", "discovered": false, "notes": "Exfil-first, evolved to double extortion. In-house ops limit scale but tighten control.", "sectors": ["Manufacturing", "Electronics"], "notable_victims": ["Nippon Ceramic (2025)"], "threat_severity": 4.9, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Lynx", "origin": "Unknown", "model": "RaaS", "status": "active", "first_seen": 2024, "nation_state_class": "criminal", "discovered": false, "notes": "INC-lineage. Affiliate program with curated targeting rules.", "sectors": ["Manufacturing", "Retail"], "notable_victims": ["Undisclosed (SMB focus)"], "threat_severity": 4.9, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}]};
 const $ = (id) => document.getElementById(id);
-const uniqSorted = (arr) => [...new Set(arr)].sort((a,b)=>a.localeCompare(b));
+const uniqSorted = (arr) => [...new Set(arr)].sort((a,b)=>String(a).localeCompare(String(b)));
+let ACTORS = SEED.actors.slice();   // current dataset (seed until a live scan returns)
+let pollTimer = null;
 
+function setStatus(state, text){ $("dot").className="dot "+(state||""); $("statusText").innerHTML=text; }
 function sevBand(s){ return s>=8.5?"Critical":s>=7?"High":s>=5?"Elevated":s>=3?"Moderate":"Low"; }
 function relBand(s){ return s>=7?"Often honors payment":s>=5?"Mixed / inconsistent":s>=3?"Frequently cheats":"Assume no recovery"; }
-function stampClass(ns){ return ns === "directed" ? "directed" : ns === "tolerated" ? "tolerated" : "criminal"; }
-function stampText(ns){ return ns === "directed" ? "State-directed" : ns === "tolerated" ? "State-tolerated" : "Criminal"; }
-
+function stampClass(ns){ return ns==="directed"?"directed":ns==="tolerated"?"tolerated":"criminal"; }
+function stampText(ns){ return ns==="directed"?"State-directed":ns==="tolerated"?"State-tolerated":"Criminal"; }
 function fillSelect(sel, values, allLabel){
-  sel.innerHTML = `<option value="">${allLabel}</option>` + values.map(v=>`<option value="${String(v).replace(/"/g,'&quot;')}">${v}</option>`).join("");
+  const cur=sel.value;
+  sel.innerHTML=`<option value="">${allLabel}</option>`+values.map(v=>`<option value="${String(v).replace(/"/g,'&quot;')}">${v}</option>`).join("");
+  if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
 }
-function gauge(label, value, cls, band){
-  const pct = Math.max(0, Math.min(100, (value/10)*100));
-  return `<div class="gauge"><div class="glabel"><span class="gk">${label}</span><span class="gv">${value.toFixed(1)}/10</span></div>
-    <div class="track"><div class="fill ${cls}" data-w="${pct}"></div></div><div class="band">${band}</div></div>`;
+function gauge(label,value,cls,band){
+  const pct=Math.max(0,Math.min(100,(value/10)*100));
+  return `<div class="gauge"><div class="glabel"><span class="gk">${label}</span><span class="gv">${value.toFixed(1)}/10</span></div><div class="track"><div class="fill ${cls}" data-w="${pct}"></div></div><div class="band">${band}</div></div>`;
 }
-function passesReliability(v, mode){
-  if(mode==="all") return true;
-  if(mode==="honor") return v>=7;
-  if(mode==="mixed") return v>=5 && v<7;
-  if(mode==="cheat") return v>=3 && v<5;
-  if(mode==="none") return v<3;
-  return true;
+function passesReliability(v,mode){ if(mode==="all")return true; if(mode==="honor")return v>=7; if(mode==="mixed")return v>=5&&v<7; if(mode==="cheat")return v>=3&&v<5; if(mode==="none")return v<3; return true; }
+function buildOptions(){
+  fillSelect($("f-name"), uniqSorted(ACTORS.map(a=>a.name)), "All actors");
+  fillSelect($("f-year"), [...new Set(ACTORS.map(a=>a.first_seen).filter(Boolean))].sort((a,b)=>b-a), "All years");
+  fillSelect($("f-sector"), uniqSorted(ACTORS.flatMap(a=>a.sectors||[])), "All sectors");
+  fillSelect($("f-company"), uniqSorted(ACTORS.flatMap(a=>a.notable_victims||[])), "All companies");
 }
-function apply(){
-  const f = {
-    name:$("f-name").value, year:$("f-year").value, sector:$("f-sector").value,
-    company:$("f-company").value, sevMin:parseFloat($("f-sev").value)||0,
-    rel:$("f-rel").value, state:$("f-state").value,
-  };
-  const rows = ACTORS.filter(a =>
-    (!f.name || a.name === f.name) &&
-    (!f.year || String(a.first_seen) === f.year) &&
-    (!f.sector || (a.sectors||[]).includes(f.sector)) &&
-    (!f.company || (a.notable_victims||[]).includes(f.company)) &&
-    (a.threat_severity >= f.sevMin) &&
-    passesReliability(a.deal_reliability, f.rel) &&
-    (f.state === "all" || a.nation_state_class === f.state)
-  );
+function applyFilters(){
+  const f={name:$("f-name").value,year:$("f-year").value,sector:$("f-sector").value,company:$("f-company").value,sevMin:parseFloat($("f-sev").value)||0,rel:$("f-rel").value,state:$("f-state").value};
+  const rows=ACTORS.filter(a =>
+    (!f.name||a.name===f.name) && (!f.year||String(a.first_seen)===f.year) &&
+    (!f.sector||(a.sectors||[]).includes(f.sector)) && (!f.company||(a.notable_victims||[]).includes(f.company)) &&
+    (a.threat_severity>=f.sevMin) && passesReliability(a.deal_reliability,f.rel) &&
+    (f.state==="all"||a.nation_state_class===f.state));
   render(rows);
-  $("count").innerHTML = `Showing <b>${rows.length}</b> of ${ACTORS.length} actors`;
+  $("count").innerHTML=`Showing <b>${rows.length}</b> of ${ACTORS.length} actors`;
 }
 function render(actors){
-  const board = $("board");
-  if(!actors.length){ board.innerHTML = `<div class="none">No actors match these filters. Try clearing one.</div>`; return; }
-  board.innerHTML = actors.map((a,i) => `
-    <div class="card${a.status === 'defunct' ? ' defunct' : ''}" style="animation-delay:${i*30}ms">
+  const board=$("board");
+  if(!actors.length){ board.innerHTML=`<div class="none">No actors match these filters. Try clearing one.</div>`; return; }
+  board.innerHTML=actors.map((a,i)=>`
+    <div class="card${a.status==='defunct'?' defunct':''}" style="animation-delay:${i*28}ms">
       <span class="rank">#${String(i+1).padStart(2,"0")}</span>
-      <p class="name">${a.name}${a.discovered ? '<span class="badge-new">NEW</span>' : ''}${a.status === 'defunct' ? '<span class="badge-defunct">DEFUNCT</span>' : ''}</p>
-      <p class="meta">${a.origin} &middot; ${a.model}${a.first_seen ? " &middot; since "+a.first_seen : ""}</p>
+      <p class="name">${a.name}${a.discovered?'<span class="badge-new">NEW</span>':''}${a.status==='defunct'?'<span class="badge-defunct">DEFUNCT</span>':''}</p>
+      <p class="meta">${a.origin} &middot; ${a.model}${a.first_seen?" &middot; since "+a.first_seen:""}${a.recent_victims?" &middot; "+a.recent_victims+" recent":""}</p>
       <span class="stamp ${stampClass(a.nation_state_class)}">${stampText(a.nation_state_class)}</span>
       <div class="gauges">
-        ${gauge("Threat severity", a.threat_severity, "sev", sevBand(a.threat_severity))}
-        ${gauge("Deal reliability", a.deal_reliability, "rel", relBand(a.deal_reliability))}
+        ${gauge("Threat severity",a.threat_severity,"sev",sevBand(a.threat_severity))}
+        ${gauge("Deal reliability",a.deal_reliability,"rel",relBand(a.deal_reliability))}
       </div>
-      ${(a.sectors&&a.sectors.length)||(a.notable_victims&&a.notable_victims.length) ? `<div class="tags">
+      ${(a.sectors&&a.sectors.length)||(a.notable_victims&&a.notable_victims.length)?`<div class="tags">
         ${(a.sectors||[]).map(s=>`<span class="tag">${s}</span>`).join("")}
         ${(a.notable_victims||[]).map(v=>`<span class="tag vic">${v}</span>`).join("")}
-      </div>` : ""}
-      ${a.notes ? `<p class="notes">${a.notes}</p>` : ""}
-      <div class="foot"><span>confidence <b>${(a.confidence*100|0)}%</b></span><span>analyst prior</span></div>
+      </div>`:""}
+      ${a.notes?`<p class="notes">${a.notes}</p>`:""}
+      <div class="foot"><span>confidence <b>${(a.confidence*100|0)}%</b></span><span>${a.evidence&&a.evidence.length?a.evidence.length+" sources":"analyst prior"}</span></div>
     </div>`).join("");
-  requestAnimationFrame(() => { document.querySelectorAll(".fill").forEach(f => f.style.width = f.dataset.w + "%"); });
+  requestAnimationFrame(()=>{document.querySelectorAll(".fill").forEach(f=>f.style.width=f.dataset.w+"%");});
 }
+function renderLog(scan){
+  $("logwrap").style.display="block";
+  const log=$("log");
+  log.innerHTML=(scan.log||[]).map(l=>l.replace(/(backend:.*)/,'<span class="be">$1</span>')).join("\n")||"&hellip;";
+  log.scrollTop=log.scrollHeight;
+}
+function ingest(scan){ if(scan.actors&&scan.actors.length){ ACTORS=scan.actors; buildOptions(); } applyFilters(); if(scan.log)renderLog(scan); }
 
-fillSelect($("f-name"), uniqSorted(ACTORS.map(a=>a.name)), "All actors");
-fillSelect($("f-year"), [...new Set(ACTORS.map(a=>a.first_seen).filter(Boolean))].sort((a,b)=>b-a), "All years");
-fillSelect($("f-sector"), uniqSorted(ACTORS.flatMap(a=>a.sectors||[])), "All sectors");
-fillSelect($("f-company"), uniqSorted(ACTORS.flatMap(a=>a.notable_victims||[])), "All companies");
-
-["f-name","f-year","f-sector","f-company","f-sev","f-rel","f-state"].forEach(id => $(id).addEventListener("change", apply));
-$("clearBtn").addEventListener("click", () => {
-  ["f-name","f-year","f-sector","f-company"].forEach(id=>$(id).value="");
-  $("f-sev").value="0"; $("f-rel").value="all"; $("f-state").value="all"; apply();
+async function poll(id){
+  try{
+    const r=await fetch(`/api/scan/${id}`); const scan=await r.json();
+    ingest(scan);
+    if(scan.status==="running"){ setStatus("run","Scanning&hellip; backend: "+(scan.llm_backend||"detecting")); }
+    else if(scan.status==="complete"){
+      const disc=scan.discovered_count?` &middot; ${scan.discovered_count} new`:"";
+      setStatus("ok",`Live scan complete &mdash; ${scan.actors.length} actors${disc} &middot; backend ${scan.llm_backend}`);
+      const dl=$("dlBtn"); dl.href=`/api/scan/${id}/xlsx`; dl.classList.remove("off");
+      $("runBtn").disabled=false; clearInterval(pollTimer);
+    } else if(scan.status==="error"){ setStatus("err","Error &mdash; "+(scan.error||"see log")); $("runBtn").disabled=false; clearInterval(pollTimer); }
+  }catch(e){ /* keep polling */ }
+}
+$("runBtn").addEventListener("click", async () => {
+  $("runBtn").disabled=true; $("dlBtn").classList.add("off");
+  setStatus("run","Starting tracker&hellip;");
+  try{
+    const r=await fetch("/api/scan",{method:"POST"});
+    if(!r.ok) throw new Error("no backend");
+    const {scan_id}=await r.json();
+    if(pollTimer)clearInterval(pollTimer); poll(scan_id); pollTimer=setInterval(()=>poll(scan_id),1200);
+  }catch(e){
+    setStatus("err","No backend detected &mdash; showing preloaded roster. Start the app (<code>uvicorn app.main:app</code>) to run a live scan.");
+    $("runBtn").disabled=false;
+  }
 });
-apply();
+["f-name","f-year","f-sector","f-company","f-sev","f-rel","f-state"].forEach(id=>$(id).addEventListener("change",applyFilters));
+$("clearBtn").addEventListener("click",()=>{ ["f-name","f-year","f-sector","f-company"].forEach(id=>$(id).value=""); $("f-sev").value="0";$("f-rel").value="all";$("f-state").value="all"; applyFilters(); });
+
+// Initial render from preloaded roster; if a backend has a prior scan, fold it in.
+buildOptions(); applyFilters();
+(async () => {
+  try{
+    const r=await fetch("/api/latest"); if(!r.ok) return; const scan=await r.json();
+    if(scan && scan.status==="complete"){
+      ingest(scan);
+      const disc=scan.discovered_count?` &middot; ${scan.discovered_count} new`:"";
+      setStatus("ok",`Last live scan &mdash; ${scan.actors.length} actors${disc} &middot; backend ${scan.llm_backend}`);
+      const dl=$("dlBtn"); dl.href=`/api/scan/${scan.scan_id}/xlsx`; dl.classList.remove("off");
+    }
+  }catch(e){ /* static hosting: stay on preloaded roster */ }
+})();
 </script>
 </body>
 </html>
