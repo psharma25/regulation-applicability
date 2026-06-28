@@ -1,1 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Metrics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#FFFFFF;--ink2:#F4F6F8;--panel:#FFFFFF;--line:#DCE2E8;--line2:#EAEEF2;
+  --text:#16202B;--muted:#566472;--faint:#8A98A4;
+  --signal:#0D9488;--signal-dim:#0d948814;--signal-line:#0d948855;
+  --good:#15803D;--good-dim:#15803d12;--risk:#B45309;--risk-dim:#b4530912;--flat:#7C8B99;
+  --reg:#B45309;--ops:#2563EB;--cmp:#0D9488;--rep:#7C3AED;
+  --r:6px;--maxw:1240px;
+  --disp:'Space Grotesk',sans-serif;--body:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+b{font-weight:600}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
 
+/* top */
+.top{position:sticky;top:0;z-index:30;background:#ffffffe9;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:16px;padding:14px 24px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--disp);font-weight:600}
+.brand .glyph{position:relative;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--signal)}
+.brand .glyph::after{content:"";position:absolute;inset:6px;border-radius:50%;border:1.5px solid var(--signal);border-top-color:transparent;border-right-color:transparent;transform:rotate(-30deg)}
+.brand small{display:block;font-family:var(--mono);font-size:9px;font-weight:400;color:var(--faint);letter-spacing:.15em;text-transform:uppercase;margin-top:1px}
+.top .sp{flex:1}
+.expbtns{display:flex;gap:8px}
+.expbtns button{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:var(--r);padding:8px 13px;font-family:var(--mono);font-size:11.5px;cursor:pointer;transition:.15s}
+.expbtns button:hover{border-color:var(--signal);color:var(--signal)}
+.expbtns .pr{background:var(--signal);color:#fff;border-color:var(--signal)}
+.expbtns .pr:hover{color:#fff;opacity:.92}
+
+/* hero */
+.hero{padding:34px 0 6px}
+.hero h1{font-family:var(--disp);font-weight:600;font-size:clamp(28px,4.4vw,42px);margin:0;letter-spacing:-.01em}
+.hero p{color:var(--muted);margin:10px 0 0;max-width:680px}
+
+/* controls bar */
+.controls{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 0 6px}
+.seg{display:inline-flex;background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);padding:3px}
+.seg button{border:none;background:transparent;color:var(--muted);font-family:var(--mono);font-size:11.5px;padding:6px 13px;border-radius:4px;cursor:pointer}
+.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 2px #16202b14;font-weight:600}
+.ctl-lab{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-right:-8px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip-sec{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:6px 13px;font-size:12.5px;cursor:pointer;transition:.15s;user-select:none}
+.chip-sec .dotc{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.chip-sec.on{border-color:var(--signal);background:var(--signal-dim);color:var(--text)}
+.chip-sec.on .dotc{background:var(--signal)}
+
+/* regulation banner */
+.regbar{margin-top:12px;background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);padding:11px 15px;font-size:12.5px;color:var(--muted);line-height:1.6}
+.regbar b{color:var(--text)}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:24px;overflow-x:auto}
+.tab{border:none;background:transparent;padding:13px 18px 14px;font-family:var(--disp);font-weight:600;font-size:15px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tab .ts{display:block;font-family:var(--body);font-weight:400;font-size:11px;color:var(--faint);margin-top:1px}
+.tab.on{color:var(--text);border-bottom-color:var(--signal)}
+.tab.on .ts{color:var(--signal)}
+
+main{padding:24px 0 70px}
+
+/* risk panel + nist */
+.toprow{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-bottom:8px}
+@media(max-width:880px){.toprow{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.phead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line2)}
+.phead h2{font-family:var(--disp);font-size:15px;font-weight:600;margin:0}
+.phead .tagn{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--signal);font-weight:600}
+.risk{border-bottom:1px solid var(--line2)}
+.risk:last-child{border-bottom:none}
+.risk .rhead{display:flex;align-items:center;gap:11px;padding:12px 16px;cursor:pointer;transition:.12s}
+.risk .rhead:hover{background:var(--ink2)}
+.risk .rn{width:22px;height:22px;flex:0 0 auto;border-radius:6px;background:var(--risk-dim);color:var(--risk);font-family:var(--mono);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.risk .rt{flex:1;font-weight:600;font-size:13.5px}
+.risk .rsev{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:3px;border:1px solid #b4530944;color:var(--risk);background:var(--risk-dim)}
+.risk .rcar{color:var(--faint);font-size:12px;transition:transform .15s}
+.risk.open .rcar{transform:rotate(90deg)}
+.risk .rbody{display:none;padding:0 16px 14px 49px;font-size:12.5px;color:var(--muted);line-height:1.6}
+.risk.open .rbody{display:block}
+.risk .rbody .lab{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);display:block;margin:9px 0 3px}
+.risk .caps{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.risk .cap{background:var(--signal-dim);border:1px solid var(--signal-line);color:var(--signal);border-radius:20px;padding:3px 9px;font-size:11px;font-weight:500}
+
+.nist .nbody{padding:14px 16px}
+.nrow{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2)}
+.nrow:last-child{border-bottom:none}
+.nrow .nlab{flex:1}
+.nrow .nlab .nt{font-weight:600;font-size:13px}
+.nrow .nlab .nsub{font-size:11px;color:var(--faint)}
+.nrow .nsc{font-family:var(--mono);font-weight:700;font-size:20px}
+.nrow .nspark{width:84px}
+.tier{font-family:var(--mono);font-size:10px;color:var(--muted)}
+
+/* domain sections */
+.domsec{margin-top:20px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.dhead{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;user-select:none}
+.dhead:hover{background:var(--ink2)}
+.dhead .dcar{color:var(--faint);transition:transform .15s}
+.domsec.open .dcar{transform:rotate(90deg)}
+.dhead h3{font-family:var(--disp);font-size:16px;font-weight:600;margin:0}
+.dhead .dsub{font-size:12px;color:var(--muted)}
+.dhead .dcount{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.dbody{display:none;padding:4px 16px 18px}
+.domsec.open .dbody{display:block}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:12px}
+
+/* metric tile */
+.tile{border:1px solid var(--line);border-radius:9px;padding:13px 14px 11px;background:#fff;transition:.15s}
+.tile:hover{border-color:var(--signal-line);box-shadow:0 4px 14px #16202b10}
+.tile.attn{box-shadow:inset 0 0 0 1px var(--risk-dim)}
+.t-name{font-size:13px;font-weight:600;line-height:1.3;min-height:34px}
+.t-mid{display:flex;align-items:flex-end;gap:9px;margin:6px 0 8px}
+.t-val{font-family:var(--mono);font-weight:700;font-size:23px;line-height:1}
+.tile.attn .t-val{color:var(--risk)}
+.t-dir{font-family:var(--mono);font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:3px;padding-bottom:2px}
+.t-dir.up{color:var(--good)}.t-dir.down{color:var(--good)} /* colored by good/bad below */
+.t-dir.bad{color:var(--risk)}.t-dir.good{color:var(--good)}.t-dir.side{color:var(--flat)}
+.t-spark{margin-left:auto}
+.t-fin{font-family:var(--mono);font-size:11px;margin-top:2px}
+.t-fin.loss{color:var(--risk)}.t-fin.gain{color:var(--good)}
+.t-foot{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid var(--line2)}
+.rtag{font-family:var(--mono);font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;padding:2px 7px;border-radius:3px;border:1px solid}
+.rtag.Regulatory{color:var(--reg);border-color:#b4530944;background:var(--risk-dim)}
+.rtag.Operational{color:var(--ops);border-color:#2563eb44;background:#2563eb0d}
+.rtag.Compliance{color:var(--cmp);border-color:#0d948844;background:var(--signal-dim)}
+.rtag.Reputational{color:var(--rep);border-color:#7c3aed44;background:#7c3aed0d}
+.t-reg{font-size:10.5px;color:var(--muted)}
+.t-tgt{font-family:var(--mono);font-size:9px;color:var(--faint);margin-left:auto}
+
+.spark{display:block}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:18px;font-size:11.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{font-style:normal;font-family:var(--mono);font-weight:700}
+
+footer{border-top:1px solid var(--line);color:var(--faint);font-size:11.5px;line-height:1.7;padding:26px 0 50px;margin-top:36px}
+
+/* toast */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#16202b;color:#fff;font-size:13px;padding:11px 18px;border-radius:8px;box-shadow:0 12px 30px #0004;opacity:0;pointer-events:none;transition:.25s;z-index:60}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <div class="brand"><span class="glyph"></span><div>Security Metrics<small>board · c-suite · ciso · developers</small></div></div>
+  <div class="sp"></div>
+  <div class="expbtns">
+    <button id="exp-xls">⤓ Excel</button>
+    <button id="exp-ppt" class="pr">⤓ Slides</button>
+  </div>
+</div></div>
+
+<div class="wrap">
+  <section class="hero">
+    <h1>Security Metrics</h1>
+    <p>A board-to-developer view of security &amp; privacy posture — risks, financial exposure, regulatory mapping, and trends you can take into any room.</p>
+  </section>
+
+  <div class="controls">
+    <span class="ctl-lab">Period</span>
+    <div class="seg" id="period">
+      <button data-p="month" class="on">Month</button>
+      <button data-p="quarter">Quarter</button>
+      <button data-p="year">Year</button>
+    </div>
+    <span class="ctl-lab">Sectors</span>
+    <div class="chips" id="sectors"></div>
+  </div>
+  <div class="regbar" id="regbar"></div>
+
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<main class="wrap" id="view"></main>
+
+<div class="wrap"><footer id="foot"></footer></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================== DATA ============================== */
+const SECTORS={
+  finance:{label:'Finance',regs:{Regulatory:'SEC cyber disclosure · DORA',Compliance:'PCI-DSS · SOX · GLBA',Operational:'FFIEC · NYDFS 500',Reputational:'GDPR · CCPA'},note:'Fraud loss, operational resilience (DORA), and third-party concentration dominate.'},
+  medical:{label:'Medical / Health',regs:{Regulatory:'FDA 524B · EU MDR/IVDR',Compliance:'HIPAA · ISO 13485',Operational:'IEC 62304 · IEC 80001',Reputational:'HHS OCR breach rules'},note:'Patient safety + PHI liability; device cyber (FDA 524B) gates market access.'},
+  itot:{label:'IT / OT',regs:{Regulatory:'NERC CIP · NIS2',Compliance:'IEC 62443 · TSA SDs',Operational:'CISA CIRCIA reporting',Reputational:'State breach laws'},note:'OT resilience + safety; mandatory incident reporting raises board accountability.'},
+  manufacturing:{label:'Manufacturing',regs:{Regulatory:'EU CRA',Compliance:'IEC 62443 · ISO 27001',Operational:'NIST CSF 2.0',Reputational:'Customer security SLAs'},note:'OT/IT convergence, IP protection, connected-product cyber (EU CRA) market access.'},
+};
+const TABMETA={
+  board:{label:'Board',ts:'Oversight',blurb:'Money, materiality, and risk appetite.'},
+  csuite:{label:'C-Suite',ts:'Finance · Ops',blurb:'Cost, return, and resilience.'},
+  ciso:{label:'CISO',ts:'Program',blurb:'Controls, coverage, and exposure.'},
+  dev:{label:'Developers',ts:'Product',blurb:'Secure SDLC, SBOM, and PSIRT.'},
+};
+const DOMAINS={all:'All-encompassing',enterprise:'Enterprise Security',product:'Product Security'};
+const DOMSUB={all:'Cross-cutting posture, governance & resilience',enterprise:'Identity, endpoint, cloud, data & human layer',product:'Secure SDLC, supply chain & shipped-product cyber'};
+
+const RISKS={
+  board:[
+    {t:'Undisclosed material cyber incident',sev:'High',why:'Sector disclosure rules (SEC, NIS2, OCR) demand a timely materiality call; a missed or late disclosure creates legal, regulatory, and reputational exposure.',mit:'Pre-agreed materiality thresholds, a tested disclosure runbook, and standing quarterly board reporting.',cap:['IR retainer','Materiality framework','Board cyber dashboard']},
+    {t:'Risk exposure beyond appetite',sev:'High',why:'Aggregate residual risk (quantified loss) can drift past the board-approved tolerance without a single visible event.',mit:'Quantify Cyber Value-at-Risk (FAIR), set a numeric appetite, and treat/transfer the tail with insurance.',cap:['FAIR risk quantification','Risk register','Cyber insurance']},
+    {t:'Third-party / supply-chain concentration',sev:'Med',why:'A single critical provider (cloud, software, AI) failing can become a systemic, board-level event.',cap:['TPRM program','SBOM + VEX','Concentration mapping'],mit:'Map concentration, require attestations from critical vendors, and rehearse provider-failure scenarios.'},
+  ],
+  csuite:[
+    {t:'Unquantified loss exposure',sev:'High',why:'Without a loss model, security spend can\'t be defended and risk transfer is guesswork.',mit:'Stand up loss-avoidance / ROSI modeling and report it next to spend.',cap:['FAIR model','ROSI tracking','Spend benchmarking']},
+    {t:'Resilience gaps (RTO/RPO)',sev:'High',why:'Untested recovery turns an incident into a prolonged, revenue-impacting outage.',mit:'Test RTO/RPO for crown-jewel services; close the gap to target each quarter.',cap:['BC/DR testing','Immutable backups','Crisis runbook']},
+    {t:'Rising compliance cost',sev:'Med',why:'Manual evidence and audits scale cost faster than risk reduction.',mit:'Automate evidence collection and control mapping across frameworks.',cap:['GRC automation','Continuous control monitoring','Unified control map']},
+  ],
+  ciso:[
+    {t:'Identity & access compromise',sev:'High',why:'Phishing-resistant MFA gaps and over-privileged accounts remain the top initial-access vector.',mit:'Drive MFA + PAM coverage to target; right-size cloud entitlements (CIEM).',cap:['Phishing-resistant MFA','PAM','CIEM']},
+    {t:'Unremediated known-exploited vulns',sev:'High',why:'KEV-listed and critical vulns past SLA are actively exploited and dwell on the attack surface.',mit:'Gate on KEV, cut critical vuln MTTR, and expand EDR/runtime coverage.',cap:['Risk-based VM','EDR/CNAPP','KEV gating']},
+    {t:'Cloud misconfiguration & exposure',sev:'Med',why:'Public exposure and benchmark drift create data-loss paths that scale instantly.',mit:'Enforce CIS benchmarks, kill public exposure, and gate IaC pre-merge.',cap:['CSPM/DSPM','IaC policy','Encryption + KMS']},
+  ],
+  dev:[
+    {t:'Vulnerable / unverified dependencies',sev:'High',why:'Most product risk now enters through open-source and third-party components (KEV, transitive CVEs).',mit:'Enforce SCA + SBOM/VEX, gate on critical, and patch within SLA.',cap:['SCA + SBOM','VEX issuance','Dependency firewall']},
+    {t:'Secrets & pipeline compromise',sev:'High',why:'Leaked secrets and unguarded CI/CD give attackers a direct path to production.',mit:'Scan for secrets pre-commit, harden the pipeline, and rotate on exposure.',cap:['Secrets scanning','Signed builds (SLSA)','OIDC, no static keys']},
+    {t:'Shipping non-conformant product',sev:'Med',why:'Regulated-product cyber (FDA 524B, EU CRA, IEC 62443) gates market access and recalls.',mit:'Bake conformity into the SDLC; ship SBOM + PSIRT process with each release.',cap:['Threat modeling','PSIRT/CVD','Conformity evidence']},
+  ],
+};
+const NIST={
+  board:{csf:3.1,ai:2.6},csuite:{csf:3.2,ai:2.7},ciso:{csf:3.4,ai:2.9},dev:{csf:3.3,ai:2.8},
+};
+
+// metric authoring: {id,name,domain,goal,unit,tv, risk?(board), fin?, finNote?}
+const M={
+  board:[
+    {id:'b-var',name:'Cyber Value-at-Risk',domain:'all',goal:'down',unit:'$M',tv:null,risk:'Operational',fin:-7.8,finNote:'annualized loss exposure'},
+    {id:'b-mat',name:'Material incidents (disclosable)',domain:'all',goal:'down',unit:'count',tv:0,risk:'Regulatory',fin:-12.0,finNote:'disclosure + legal exposure'},
+    {id:'b-reg',name:'Regulatory posture',domain:'all',goal:'up',unit:'%',tv:100,risk:'Compliance',fin:-4.5,finNote:'fine exposure if unmet'},
+    {id:'b-priv',name:'Privacy rights fulfillment',domain:'all',goal:'up',unit:'%',tv:98,risk:'Reputational',fin:-6.0,finNote:'brand + privacy fines'},
+    {id:'b-tpa',name:'Critical third-party attestation',domain:'all',goal:'up',unit:'%',tv:95,risk:'Operational',fin:-3.2,finNote:'supply-chain exposure'},
+    {id:'b-ins',name:'Insurance coverage adequacy',domain:'all',goal:'up',unit:'x',tv:1,risk:'Operational',fin:25,finNote:'risk transferred'},
+    {id:'b-ranr',name:'Ransomware recovery readiness',domain:'all',goal:'up',unit:'%',tv:95,risk:'Reputational',fin:-9.0,finNote:'downtime + brand exposure'},
+    {id:'b-aud',name:'Open audit findings (material)',domain:'all',goal:'down',unit:'count',tv:0,risk:'Compliance',fin:-2.0,finNote:'remediation + penalty'},
+  ],
+  csuite:[
+    {id:'c-rosi',name:'Loss avoidance (ROSI)',domain:'all',goal:'up',unit:'$M',tv:null,fin:18,finNote:'modeled loss avoided'},
+    {id:'c-spend',name:'Security spend (% of IT)',domain:'all',goal:'up',unit:'%',tv:11},
+    {id:'c-mttr',name:'Mean time to respond',domain:'enterprise',goal:'down',unit:'h',tv:4,fin:-1.5,finNote:'cost per hour of incident'},
+    {id:'c-avail',name:'Resilience: RTO/RPO met',domain:'all',goal:'up',unit:'%',tv:100},
+    {id:'c-cov',name:'Crown-jewel control coverage',domain:'enterprise',goal:'up',unit:'%',tv:98},
+    {id:'c-cost',name:'Audit & compliance cost',domain:'all',goal:'down',unit:'$M',tv:null,fin:-2.4,finNote:'annual program cost'},
+  ],
+  ciso:[
+    {id:'k-mfa',name:'MFA coverage (phishing-resistant)',domain:'enterprise',goal:'up',unit:'%',tv:99},
+    {id:'k-pam',name:'Privileged access coverage (PAM)',domain:'enterprise',goal:'up',unit:'%',tv:100},
+    {id:'k-edr',name:'EDR endpoint coverage',domain:'enterprise',goal:'up',unit:'%',tv:98},
+    {id:'k-vmttr',name:'Critical/High vuln MTTR',domain:'enterprise',goal:'down',unit:'d',tv:7},
+    {id:'k-cis',name:'Cloud CIS benchmark pass',domain:'enterprise',goal:'up',unit:'%',tv:90},
+    {id:'k-pub',name:'Public data exposure',domain:'enterprise',goal:'down',unit:'count',tv:0},
+    {id:'k-phish',name:'Phishing click rate',domain:'all',goal:'down',unit:'%',tv:5},
+    {id:'k-kev',name:'KEV components exposed',domain:'product',goal:'down',unit:'count',tv:0},
+    {id:'k-sbom',name:'SBOM & VEX coverage',domain:'product',goal:'up',unit:'%',tv:100},
+    {id:'k-tm',name:'Threat models completed',domain:'product',goal:'up',unit:'%',tv:100},
+  ],
+  dev:[
+    {id:'d-scan',name:'Pipeline scan coverage (SAST/DAST/SCA)',domain:'product',goal:'up',unit:'%',tv:95},
+    {id:'d-sbom',name:'SBOM coverage & VEX issuance',domain:'product',goal:'up',unit:'%',tv:100},
+    {id:'d-kev',name:'KEV components in releases',domain:'product',goal:'down',unit:'count',tv:0},
+    {id:'d-ttf',name:'Critical vuln time-to-fix',domain:'product',goal:'down',unit:'d',tv:30},
+    {id:'d-psirt',name:'PSIRT triage SLA',domain:'product',goal:'down',unit:'d',tv:3},
+    {id:'d-sec',name:'Secrets scanning coverage',domain:'product',goal:'up',unit:'%',tv:100},
+    {id:'d-pen',name:'Pentest finding closure',domain:'product',goal:'up',unit:'%',tv:90},
+    {id:'d-conf',name:'Regulated product conformity',domain:'product',goal:'up',unit:'%',tv:100},
+  ],
+};
+
+/* ============================== STATE ============================== */
+let TAB='board', PERIOD='month';
+let SECS=new Set(['finance','medical']);
+
+/* ============================== SERIES ============================== */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function round(u,v){if(u==='count'||u==='idx')return Math.max(0,Math.round(v));if(u==='x')return Math.max(0,+v.toFixed(2));if(u==='%')return Math.min(100,Math.max(0,+v.toFixed(1)));return Math.max(0,+v.toFixed(1));}
+const SERIES={};
+function monthly(m){ // 36 pts oldest->newest
+  if(SERIES[m.id])return SERIES[m.id];
+  const rnd=mulberry32(hash(m.id)); const tv=m.tv; let start,end;
+  if(m.goal==='up'){const cap=m.unit==='%'?100:m.unit==='x'?1.6:(tv||100);const ceil=tv==null?cap:tv;end=ceil-rnd()*(m.unit==='x'?0.15:m.unit==='%'?6:8);start=end-(10+rnd()*16)*(m.unit==='x'?0.05:1);}
+  else{const base=tv==null?(m.unit==='$M'?8:100):tv;end=base+(rnd()<0.5?0:rnd()*(m.unit==='count'?3:m.unit==='d'?6:m.unit==='$M'?1.6:12));start=end+(5+rnd()*12)*(m.unit==='$M'?0.4:m.unit==='count'?0.8:1);}
+  const out=[];for(let i=0;i<36;i++){const t=i/35;const noise=(rnd()-0.5)*((Math.abs(end-start)||4)*0.16);out.push(round(m.unit,start+(end-start)*t+noise));}
+  SERIES[m.id]=out;return out;
+}
+function avg(a){return a.reduce((x,y)=>x+y,0)/a.length;}
+function agg(m){const s=monthly(m);
+  if(PERIOD==='month')return s.slice(-12);
+  if(PERIOD==='quarter'){const q=[];for(let i=0;i<s.length;i+=3)q.push(round(m.unit,avg(s.slice(i,i+3))));return q.slice(-8);}
+  const y=[];for(let i=0;i<s.length;i+=12)y.push(round(m.unit,avg(s.slice(i,i+12))));return y; // year: 3 pts
+}
+function dirOf(m){const v=agg(m);if(v.length<2)return{dir:'side',cls:'side'};const a=v[v.length-2],b=v[v.length-1];const ch=(b-a)/(Math.abs(a)||1);
+  let dir=ch>0.02?'up':ch<-0.02?'down':'side';let cls='side';if(dir!=='side'){const good=m.goal==='up'?dir==='up':dir==='down';cls=good?'good':'bad';}return{dir,cls,cur:b,prev:a,vals:v};}
+function fmt(u,v){if(v==null)return'—';if(u==='%')return v+'%';if(u==='$M')return'$'+v+'M';if(u==='x')return v+'×';if(u==='d')return v+'d';if(u==='h')return v+'h';if(u==='idx')return String(v);return String(v);}
+function meets(m,v){if(m.tv==null)return null;return m.goal==='up'?v>=m.tv:v<=m.tv;}
+
+/* sparkline */
+function spark(vals,goal,tv,unit,w,h){w=w||96;h=h||26;if(!vals||vals.length<2)return'';
+  const min=Math.min(...vals),max=Math.max(...vals),pad=(max-min)*0.12||1,lo=min-pad,hi=max+pad,rng=hi-lo||1;
+  const x=i=>(i/(vals.length-1))*(w-2)+1,y=v=>h-1-((v-lo)/rng)*(h-2);
+  const pts=vals.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+  const last=vals[vals.length-1],prev=vals.length>1?vals[vals.length-2]:last;
+  const good=(last-prev)===0?null:(goal==='up'?last>prev:last<prev);
+  const col=good==null?'var(--flat)':(good?'var(--good)':'var(--risk)');
+  let tl='';if(tv!=null&&tv>=lo&&tv<=hi){const ty=y(tv).toFixed(1);tl=`<line x1="1" y1="${ty}" x2="${w-1}" y2="${ty}" stroke="var(--signal-line)" stroke-width="1" stroke-dasharray="2 2"/>`;}
+  const area=`M${x(0).toFixed(1)},${y(vals[0]).toFixed(1)} `+pts.slice(1).map(p=>'L'+p).join(' ')+` L${x(vals.length-1).toFixed(1)},${h-1} L${x(0).toFixed(1)},${h-1} Z`;
+  const uid='s'+Math.random().toString(36).slice(2,7);
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none"><defs><linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".16"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>${tl}<path d="${area}" fill="url(#${uid})"/><polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${x(vals.length-1).toFixed(1)}" cy="${y(last).toFixed(1)}" r="2.2" fill="${col}"/></svg>`;
+}
+const ARROW={up:'↑',down:'↓',side:'→'};
+
+/* regulation union for a risk type across active sectors */
+function regFor(riskType){const set=[...SECS].map(s=>SECTORS[s].regs[riskType]).filter(Boolean);return[...new Set(set)].join(' · ');}
+function finStr(m){if(m.fin==null)return'';const g=m.fin>=0;const v=Math.abs(m.fin);return`<div class="t-fin ${g?'gain':'loss'}">${g?'+':'−'}$${v}M · ${m.finNote||''}</div>`;}
+
+/* ============================== RENDER ============================== */
+const el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
+function renderChrome(){
+  // sectors
+  const sc=document.getElementById('sectors');sc.innerHTML='';
+  Object.entries(SECTORS).forEach(([k,v])=>{const c=el('div','chip-sec'+(SECS.has(k)?' on':''));c.innerHTML=`<span class="dotc"></span>${v.label}`;
+    c.onclick=()=>{if(SECS.has(k)){if(SECS.size>1)SECS.delete(k);}else SECS.add(k);renderChrome();render();};sc.appendChild(c);});
+  // regbar
+  const types=['Regulatory','Compliance','Operational','Reputational'];
+  document.getElementById('regbar').innerHTML=`<b>Active sectors:</b> ${[...SECS].map(s=>SECTORS[s].label).join(', ')} &nbsp;·&nbsp; `+
+    types.map(t=>`<b>${t}:</b> ${regFor(t)}`).join(' &nbsp;|&nbsp; ');
+  // tabs
+  const tb=document.getElementById('tabs');tb.innerHTML='';
+  Object.entries(TABMETA).forEach(([k,v])=>{const b=el('button','tab'+(k===TAB?' on':''));b.innerHTML=`${v.label}<span class="ts">${v.ts}</span>`;b.onclick=()=>{TAB=k;renderChrome();render();};tb.appendChild(b);});
+  // period
+  document.querySelectorAll('#period button').forEach(b=>{b.classList.toggle('on',b.dataset.p===PERIOD);b.onclick=()=>{PERIOD=b.dataset.p;renderChrome();render();};});
+  document.getElementById('foot').innerHTML=`<b>Security Metrics</b> — illustrative example values and financial figures for demonstration; trends are seeded. Regulatory mappings reflect the selected sectors. Calibrate to your organization before use. NIST CSF tiers are 1–4; AI governance score is an illustrative 0–4 maturity proxy. Period: <b>${PERIOD}</b>.`;
+}
+function nistSpark(score,seed){const rnd=mulberry32(seed);const out=[];let v=score-0.6;for(let i=0;i<10;i++){v+=(score-v)*0.25+(rnd()-0.5)*0.08;out.push(+v.toFixed(2));}out[out.length-1]=score;return out;}
+function render(){
+  const root=document.getElementById('view');root.innerHTML='';
+  const meta=TABMETA[TAB];
+  // top row: risks + nist
+  const top=el('div','toprow');
+  const rp=el('div','panel');
+  rp.innerHTML=`<div class="phead"><span class="tagn">Top risks</span><h2>${meta.label} — three to watch</h2></div>`;
+  RISKS[TAB].forEach((r,i)=>{
+    const d=el('div','risk');
+    d.innerHTML=`<div class="rhead"><span class="rn">${i+1}</span><span class="rt">${r.t}</span><span class="rsev">${r.sev}</span><span class="rcar">▸</span></div>
+      <div class="rbody"><span class="lab">Why it matters</span>${r.why}<span class="lab">How to mitigate</span>${r.mit}<span class="lab">Capabilities to use</span><div class="caps">${r.cap.map(c=>`<span class="cap">${c}</span>`).join('')}</div></div>`;
+    d.querySelector('.rhead').onclick=()=>d.classList.toggle('open');
+    if(i===0)d.classList.add('open');
+    rp.appendChild(d);
+  });
+  top.appendChild(rp);
+  // nist
+  const np=el('div','panel nist');
+  const n=NIST[TAB];
+  np.innerHTML=`<div class="phead"><span class="tagn">Maturity</span><h2>NIST CSF / AI trend</h2></div><div class="nbody">
+    <div class="nrow"><div class="nlab"><div class="nt">NIST CSF 2.0</div><div class="nsub">Govern · Identify · Protect · Detect · Respond · Recover</div><div class="tier">Tier ${Math.round(n.csf)} of 4 · trending up</div></div><div class="nspark">${spark(nistSpark(n.csf,hash(TAB+'csf')),'up',null,'idx',84,30)}</div><div class="nsc">${n.csf.toFixed(1)}</div></div>
+    <div class="nrow"><div class="nlab"><div class="nt">AI governance</div><div class="nsub">NIST AI RMF · ISO 42001 readiness</div><div class="tier">${n.ai.toFixed(1)} of 4 · trending up</div></div><div class="nspark">${spark(nistSpark(n.ai,hash(TAB+'ai')),'up',null,'idx',84,30)}</div><div class="nsc">${n.ai.toFixed(1)}</div></div>
+  </div>`;
+  top.appendChild(np);
+  root.appendChild(top);
+
+  // domain sections
+  const metrics=M[TAB];
+  const byDom={};metrics.forEach(m=>{(byDom[m.domain]=byDom[m.domain]||[]).push(m);});
+  Object.keys(DOMAINS).forEach((dk,di)=>{
+    const list=byDom[dk];if(!list||!list.length)return;
+    const sec=el('div','domsec'+(di===0||Object.keys(byDom).length===1?' open':(byDom[Object.keys(byDom)[0]]?'':' open')));
+    if(dk===Object.keys(byDom).find(k=>byDom[k]&&byDom[k].length))sec.classList.add('open'); // open first non-empty
+    sec.innerHTML=`<div class="dhead"><span class="dcar">▸</span><h3>${DOMAINS[dk]}</h3><span class="dsub">${DOMSUB[dk]}</span><span class="dcount">${list.length} metric${list.length===1?'':'s'}</span></div><div class="dbody"></div>`;
+    sec.querySelector('.dhead').onclick=()=>sec.classList.toggle('open');
+    const grid=el('div','tiles');
+    list.forEach(m=>grid.appendChild(tile(m)));
+    sec.querySelector('.dbody').appendChild(grid);
+    root.appendChild(sec);
+  });
+
+  // legend
+  const lg=el('div','legend');
+  lg.innerHTML=`<span><i style="color:var(--good)">↑</i> improving vs target direction</span><span><i style="color:var(--risk)">↓</i> worsening</span><span><i style="color:var(--flat)">→</i> sideways</span>`+
+    (TAB==='board'?`<span><b class="rtag Regulatory" style="border:none;background:none;padding:0">Regulatory</b> / <b class="rtag Operational" style="border:none;background:none;padding:0">Operational</b> / <b class="rtag Compliance" style="border:none;background:none;padding:0">Compliance</b> / <b class="rtag Reputational" style="border:none;background:none;padding:0">Reputational</b> risk</span>`:'');
+  root.appendChild(lg);
+}
+function tile(m){
+  const t=dirOf(m);const off=meets(m,t.cur)===false;
+  const d=el('div','tile'+(off?' attn':''));
+  const dirChip=`<span class="t-dir ${t.cls}">${ARROW[t.dir]} ${t.dir}</span>`;
+  const board=TAB==='board';
+  const foot=board
+    ? `<span class="rtag ${m.risk}">${m.risk}</span><span class="t-reg">${regFor(m.risk)}</span>`
+    : `<span class="t-tgt">${m.tv==null?'appetite':'target '+fmt(m.unit,m.tv)}</span>`;
+  d.innerHTML=`<div class="t-name">${m.name}</div>
+    <div class="t-mid"><span class="t-val">${fmt(m.unit,t.cur)}</span>${dirChip}<span class="t-spark">${spark(t.vals,m.goal,m.tv,m.unit)}</span></div>
+    ${finStr(m)}
+    <div class="t-foot">${foot}${board?`<span class="t-tgt">${m.tv==null?'appetite':'tgt '+fmt(m.unit,m.tv)}</span>`:''}</div>`;
+  return d;
+}
+
+/* ============================== EXPORTS ============================== */
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);}
+function rowsForTab(tab){return M[tab].map(m=>{const t=dirOf(m);return{
+  audience:TABMETA[tab].label,domain:DOMAINS[m.domain],metric:m.name,value:fmt(m.unit,t.cur),unit:m.unit,
+  trend:t.dir,risk:m.risk||'',regulation:m.risk?regFor(m.risk):'',fin:(m.fin==null?'':(m.fin>=0?'+':'-')+'$'+Math.abs(m.fin)+'M'),
+  finNote:m.finNote||'',target:m.tv==null?'appetite':fmt(m.unit,m.tv),period:PERIOD};});}
+function xmlEsc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function exportExcel(){
+  const cols=['audience','domain','metric','value','unit','trend','risk','regulation','fin','finNote','target','period'];
+  const head=['Audience','Domain','Metric','Value','Unit','Trend','Risk type','Regulation (sectors)','Financial ≈','Financial note','Target','Period'];
+  function sheet(name,rows){
+    let r=`<Worksheet ss:Name="${xmlEsc(name)}"><Table>`;
+    r+='<Row>'+head.map(h=>`<Cell><Data ss:Type="String">${xmlEsc(h)}</Data></Cell>`).join('')+'</Row>';
+    rows.forEach(o=>{r+='<Row>'+cols.map(c=>`<Cell><Data ss:Type="String">${xmlEsc(o[c])}</Data></Cell>`).join('')+'</Row>';});
+    return r+'</Table></Worksheet>';
+  }
+  let body='';Object.keys(M).forEach(tab=>body+=sheet(TABMETA[tab].label,rowsForTab(tab)));
+  // risks sheet
+  let rs=`<Worksheet ss:Name="Top Risks"><Table><Row>`+['Suite','#','Risk','Severity','Why','Mitigation','Capabilities'].map(h=>`<Cell><Data ss:Type="String">${h}</Data></Cell>`).join('')+'</Row>';
+  Object.keys(RISKS).forEach(tab=>RISKS[tab].forEach((r,i)=>{rs+='<Row>'+[TABMETA[tab].label,i+1,r.t,r.sev,r.why,r.mit,r.cap.join(', ')].map(v=>`<Cell><Data ss:Type="String">${xmlEsc(v)}</Data></Cell>`).join('')+'</Row>';}));
+  rs+='</Table></Worksheet>';
+  const xml=`<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${body}${rs}</Workbook>`;
+  dl(new Blob([xml],{type:'application/vnd.ms-excel'}),'security-metrics.xls');
+  toast('Excel workbook downloaded (5 sheets).');
+}
+function dl(blob,name){const a=el('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('load fail'));document.head.appendChild(s);});}
+async function exportSlides(){
+  toast('Building slides…');
+  try{
+    if(!window.PptxGenJS) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js');
+    buildPptx();
+  }catch(e){ buildHtmlDeck(); }
+}
+function buildPptx(){
+  const P=new PptxGenJS();P.defineLayout({name:'W',width:13.333,height:7.5});P.layout='W';
+  const T='15212C',MU='566472',SG='0D9488',RK='B45309',GD='15803D',LN='DCE2E8';
+  // title
+  let s=P.addSlide();s.background={color:'FFFFFF'};
+  s.addText('Security Metrics',{x:0.7,y:1.0,w:11,h:1,fontFace:'Cambria',fontSize:46,bold:true,color:T});
+  s.addText(`Board · C-Suite · CISO · Developers   |   Sectors: ${[...SECS].map(k=>SECTORS[k].label).join(', ')}   |   Period: ${PERIOD}`,{x:0.72,y:2.0,w:11,h:0.5,fontFace:'Calibri',fontSize:14,color:MU});
+  s.addText('Illustrative example values — calibrate before use.',{x:0.72,y:6.7,w:11,h:0.3,fontFace:'Calibri',fontSize:10,color:'8A98A4'});
+  // per-tab slide
+  Object.keys(TABMETA).forEach(tab=>{
+    const sl=P.addSlide();sl.background={color:'FFFFFF'};
+    sl.addText(TABMETA[tab].label,{x:0.5,y:0.4,w:8,h:0.6,fontFace:'Cambria',fontSize:28,bold:true,color:T});
+    sl.addText('TOP RISKS',{x:0.5,y:1.15,w:6,h:0.3,fontFace:'Calibri',fontSize:11,bold:true,color:SG,charSpacing:2});
+    RISKS[tab].forEach((r,i)=>{
+      const y=1.5+i*1.0;
+      sl.addShape(P.shapes.ROUNDED_RECTANGLE,{x:0.5,y,w:6.0,h:0.88,rectRadius:0.06,fill:{color:'F7F9FA'},line:{color:LN,width:0.75}});
+      sl.addText(`${i+1}. ${r.t}`,{x:0.65,y:y+0.08,w:5.2,h:0.3,fontFace:'Calibri',fontSize:12.5,bold:true,color:T});
+      sl.addText('Mitigate: '+r.mit,{x:0.65,y:y+0.38,w:5.7,h:0.45,fontFace:'Calibri',fontSize:9.5,color:MU});
+    });
+    // metrics table
+    sl.addText('METRICS',{x:6.9,y:1.15,w:6,h:0.3,fontFace:'Calibri',fontSize:11,bold:true,color:SG,charSpacing:2});
+    const rows=[[{text:'Metric',options:{bold:true,color:'FFFFFF',fill:{color:SG}}},{text:'Value',options:{bold:true,color:'FFFFFF',fill:{color:SG}}},{text:'Trend',options:{bold:true,color:'FFFFFF',fill:{color:SG}}}]];
+    M[tab].forEach(m=>{const t=dirOf(m);const col=t.cls==='good'?GD:t.cls==='bad'?RK:MU;rows.push([{text:m.name,options:{fontSize:9,color:T}},{text:fmt(m.unit,t.cur),options:{fontSize:9,bold:true,color:T}},{text:({up:'▲',down:'▼',side:'▬'})[t.dir],options:{fontSize:9,color:col,align:'center'}}]);});
+    sl.addTable(rows,{x:6.9,y:1.5,w:5.9,colW:[3.9,1.1,0.9],border:{pt:0.5,color:LN},rowH:0.26,valign:'middle'});
+    sl.addText(`NIST CSF ${NIST[tab].csf.toFixed(1)} / 4  ·  AI governance ${NIST[tab].ai.toFixed(1)} / 4  ·  trending up`,{x:6.9,y:6.7,w:6,h:0.3,fontFace:'Calibri',fontSize:10,italic:true,color:MU});
+  });
+  P.writeFile({fileName:'security-metrics.pptx'}).then(()=>toast('Slides (.pptx) downloaded.'));
+}
+function buildHtmlDeck(){
+  // offline fallback: a pretty self-contained HTML deck (open + print to PDF)
+  let slides=`<section class="sl title"><h1>Security Metrics</h1><p>Sectors: ${[...SECS].map(k=>SECTORS[k].label).join(', ')} · Period: ${PERIOD}</p></section>`;
+  Object.keys(TABMETA).forEach(tab=>{
+    slides+=`<section class="sl"><h2>${TABMETA[tab].label}</h2><div class="cols"><div><h3>Top risks</h3>${RISKS[tab].map((r,i)=>`<div class="rk"><b>${i+1}. ${r.t}</b><div>${r.mit}</div></div>`).join('')}</div><div><h3>Metrics</h3><table>${M[tab].map(m=>{const t=dirOf(m);return `<tr><td>${m.name}</td><td><b>${fmt(m.unit,t.cur)}</b></td><td>${({up:'▲',down:'▼',side:'▬'})[t.dir]}</td></tr>`;}).join('')}</table><p class="nist">NIST CSF ${NIST[tab].csf.toFixed(1)}/4 · AI ${NIST[tab].ai.toFixed(1)}/4</p></div></div></section>`;
+  });
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Security Metrics — Slides</title><style>
+  body{font-family:Inter,Arial,sans-serif;margin:0;color:#16202b;background:#eef1f4}
+  .sl{width:1100px;min-height:620px;margin:24px auto;background:#fff;border:1px solid #dce2e8;border-radius:10px;padding:48px;page-break-after:always;box-shadow:0 6px 24px #0001}
+  .title{display:flex;flex-direction:column;justify-content:center}
+  h1{font-size:54px;margin:0} h2{font-size:34px;margin:0 0 18px} h3{color:#0d9488;font-size:14px;letter-spacing:1px;text-transform:uppercase}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+  .rk{border:1px solid #dce2e8;border-radius:8px;padding:12px;margin-bottom:10px} .rk div{color:#566472;font-size:13px;margin-top:4px}
+  table{width:100%;border-collapse:collapse} td{padding:7px 6px;border-bottom:1px solid #eaeef2;font-size:13px} td:nth-child(2){text-align:right} td:nth-child(3){text-align:center;color:#15803d}
+  .nist{color:#566472;font-style:italic;margin-top:14px}
+  @media print{body{background:#fff}.sl{margin:0;border:none;box-shadow:none}}
+  </style></head><body>${slides}</body></html>`;
+  dl(new Blob([html],{type:'text/html'}),'security-metrics-slides.html');
+  toast('Slides downloaded as HTML (offline) — open & print to PDF.');
+}
+
+/* ============================== INIT ============================== */
+document.getElementById('exp-xls').onclick=exportExcel;
+document.getElementById('exp-ppt').onclick=exportSlides;
+renderChrome();render();
+</script>
+</body>
+</html>
