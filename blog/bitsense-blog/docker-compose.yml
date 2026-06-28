@@ -1,0 +1,12 @@
+services:
+  blog:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      # Uncomment to lock down publishing before exposing publicly:
+      # ADMIN_TOKEN: "change-me-to-a-long-random-string"
+      MAX_UPLOAD_MB: "200"
+    volumes:
+      - blog-data:/data
+volumes:
+  blog-data:

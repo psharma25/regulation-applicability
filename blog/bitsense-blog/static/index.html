@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BitSense — Signal</title>
+<meta name="description" content="Security intelligence, writing, and field notes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="site-inner">
+    <div class="brand" onclick="App.home()">
+      <span class="mark">BITSENSE</span>
+      <div>
+        <h1>Signal</h1>
+        <div class="tag">security intelligence · field notes</div>
+      </div>
+    </div>
+    <nav>
+      <button class="btn btn-ghost" onclick="App.openEditor()">＋ New post</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- FEED VIEW -->
+  <div id="feed-view" class="cols">
+    <aside class="rail">
+      <div class="search">
+        <input id="search" type="search" placeholder="search posts…" autocomplete="off">
+      </div>
+      <div class="lbl">Filter by tag</div>
+      <div id="taglist" class="taglist"></div>
+    </aside>
+    <section>
+      <div class="feed-head">
+        <div class="scope" id="scope">Latest</div>
+        <div style="display:flex;gap:14px;align-items:center">
+          <button id="clear" class="clear" style="display:none" onclick="App.clearFilters()">clear filter</button>
+          <span class="count" id="count"></span>
+        </div>
+      </div>
+      <div id="feed"><div class="loading"><span class="spin"></span>Loading posts…</div></div>
+    </section>
+  </div>
+
+  <!-- POST VIEW -->
+  <div id="post-view" style="display:none"></div>
+</main>
+
+<!-- EDITOR -->
+<div class="overlay" id="overlay">
+  <div class="editor">
+    <header>
+      <h2 id="editor-title">New post</h2>
+      <button class="x" onclick="App.closeEditor()" aria-label="Close">×</button>
+    </header>
+    <div class="pad">
+      <div class="field">
+        <label for="f-title">Title</label>
+        <input id="f-title" placeholder="What's the signal?">
+      </div>
+      <div class="field">
+        <label for="f-summary">Summary</label>
+        <input id="f-summary" placeholder="One line that says why this matters.">
+      </div>
+
+      <div class="field">
+        <label>Media — drag in images or video, or click to browse</label>
+        <div class="dropzone" id="dropzone">
+          Drop files here or <b>browse</b>. Inserts a Markdown reference at your cursor.
+          <input id="file-input" type="file" accept="image/*,video/*" multiple hidden>
+        </div>
+        <div class="thumbs" id="thumbs"></div>
+      </div>
+
+      <div class="field">
+        <label for="f-body">Body — Markdown</label>
+        <textarea id="f-body" rows="12" placeholder="Write in Markdown. **bold**, _italic_, ## headings, > quotes, `code`, [links](https://…). Uploaded media is inserted here."></textarea>
+        <div class="hint">Tip: the first uploaded image becomes the cover unless you set one below.</div>
+      </div>
+
+      <div class="row2">
+        <div class="field" style="margin:0">
+          <label for="f-tags">Tags — comma separated</label>
+          <input id="f-tags" placeholder="ciso, medtech, ai-governance">
+        </div>
+        <div class="field" style="margin:0">
+          <label for="f-status">Status</label>
+          <select id="f-status">
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
+      </div>
+      <input id="f-cover" type="hidden">
+    </div>
+    <div class="actions">
+      <button class="btn btn-danger" id="del-btn" style="display:none" onclick="App.deleteCurrent()">Delete</button>
+      <div class="right">
+        <button class="btn btn-outline" onclick="App.closeEditor()">Cancel</button>
+        <button class="btn btn-primary" id="save-btn" onclick="App.save()">Publish</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

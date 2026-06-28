@@ -1,0 +1,205 @@
+/* BitSense Blog — design tokens
+   ink slate console + warm reading paper, single copper signal accent,
+   monospace metadata as the recurring "signal" motif. */
+:root{
+  --ink:        #0E1626;   /* deep slate — chrome, header */
+  --ink-soft:   #1B2A3F;
+  --paper:      #F6F4EE;   /* warm reading surface */
+  --card:       #FFFFFF;
+  --text:       #15202E;   /* body ink */
+  --text-dim:   #5C6675;
+  --line:       #E2DDD0;   /* hairline */
+  --line-ink:   #2B3a52;
+  --signal:     #BF5A26;   /* copper — links, tags, primary action */
+  --signal-ink: #8F4015;
+  --teal:       #2E6E6A;   /* secondary signal */
+  --ok:         #2E7D54;
+  --danger:     #B23A3A;
+  --radius:     4px;
+  --shadow:     0 1px 2px rgba(15,22,38,.06), 0 8px 24px rgba(15,22,38,.06);
+  --display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --body:    "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono:    "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--paper); color:var(--text);
+  font-family:var(--body); font-size:18px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--signal-ink); text-decoration:none}
+a:hover{text-decoration:underline}
+button{font-family:var(--display); cursor:pointer}
+img,video{max-width:100%}
+
+/* ---- header ------------------------------------------------------------ */
+header.site{
+  background:var(--ink); color:#EDEAE0;
+  border-bottom:3px solid var(--signal);
+}
+.site-inner{
+  max-width:1140px; margin:0 auto; padding:20px 24px;
+  display:flex; align-items:baseline; justify-content:space-between; gap:16px;
+}
+.brand{display:flex; align-items:baseline; gap:12px; cursor:pointer}
+.brand .mark{
+  font-family:var(--mono); font-size:13px; letter-spacing:.18em;
+  color:var(--signal); border:1px solid var(--signal); padding:3px 7px; border-radius:3px;
+}
+.brand h1{
+  font-family:var(--display); font-weight:600; font-size:22px; margin:0;
+  letter-spacing:-.01em;
+}
+.brand .tag{font-family:var(--mono); font-size:11px; color:#8893A4; letter-spacing:.06em}
+.site nav{display:flex; gap:10px; align-items:center}
+
+/* ---- layout ------------------------------------------------------------ */
+.wrap{max-width:1140px; margin:0 auto; padding:32px 24px 80px}
+.cols{display:grid; grid-template-columns:230px 1fr; gap:40px; align-items:start}
+@media(max-width:840px){ .cols{grid-template-columns:1fr; gap:24px} }
+
+/* ---- tag rail ---------------------------------------------------------- */
+.rail{position:sticky; top:24px}
+.rail h2, .rail .lbl{
+  font-family:var(--mono); font-size:11px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--text-dim); margin:0 0 12px;
+}
+.search{position:relative; margin-bottom:24px}
+.search input{
+  width:100%; padding:10px 12px 10px 32px; font-family:var(--mono); font-size:13px;
+  border:1px solid var(--line); border-radius:var(--radius); background:var(--card);
+  color:var(--text);
+}
+.search input:focus{outline:2px solid var(--signal); outline-offset:-1px}
+.search::before{content:"⌕"; position:absolute; left:10px; top:8px; color:var(--text-dim); font-size:16px}
+.taglist{display:flex; flex-direction:column; gap:2px}
+.taglist button{
+  display:flex; justify-content:space-between; align-items:center; gap:8px;
+  width:100%; text-align:left; background:none; border:0; padding:6px 8px;
+  border-radius:var(--radius); color:var(--text); font-size:13px; font-family:var(--mono);
+}
+.taglist button:hover{background:#ECE8DD}
+.taglist button.active{background:var(--ink); color:#fff}
+.taglist button.active .n{color:var(--signal)}
+.taglist .n{color:var(--text-dim); font-size:11px}
+@media(max-width:840px){
+  .rail{position:static}
+  .taglist{flex-direction:row; flex-wrap:wrap}
+  .taglist button{width:auto}
+}
+
+/* ---- feed -------------------------------------------------------------- */
+.feed-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:20px}
+.feed-head .scope{font-family:var(--display); font-size:26px; font-weight:600; letter-spacing:-.02em}
+.feed-head .count{font-family:var(--mono); font-size:12px; color:var(--text-dim)}
+.clear{font-family:var(--mono); font-size:12px; color:var(--signal-ink); background:none; border:0; padding:0}
+
+article.card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  overflow:hidden; margin-bottom:22px; box-shadow:var(--shadow); transition:transform .15s, box-shadow .15s;
+}
+article.card:hover{transform:translateY(-2px); box-shadow:0 4px 8px rgba(15,22,38,.08),0 16px 36px rgba(15,22,38,.10)}
+.card .cover{aspect-ratio:16/7; background:var(--ink-soft); overflow:hidden}
+.card .cover img,.card .cover video{width:100%; height:100%; object-fit:cover; display:block}
+.card .pad{padding:22px 26px 20px}
+.card .meta{font-family:var(--mono); font-size:11px; color:var(--text-dim); letter-spacing:.04em; margin-bottom:8px; display:flex; gap:12px; align-items:center}
+.card .draft{color:var(--danger); border:1px solid var(--danger); padding:0 5px; border-radius:3px}
+.card h3{font-family:var(--display); font-weight:600; font-size:24px; line-height:1.18; margin:0 0 8px; letter-spacing:-.015em; cursor:pointer}
+.card h3:hover{color:var(--signal-ink)}
+.card .summary{color:#33404f; margin:0 0 16px}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{
+  font-family:var(--mono); font-size:11px; letter-spacing:.02em; color:var(--signal-ink);
+  background:#FBEFE5; border:1px solid #EBD3BF; padding:3px 8px; border-radius:3px; cursor:pointer;
+}
+.chip::before{content:"#"; opacity:.5}
+.chip:hover{background:var(--signal); color:#fff; border-color:var(--signal)}
+
+/* ---- share row --------------------------------------------------------- */
+.share{display:flex; gap:6px; align-items:center; margin-top:16px; padding-top:14px; border-top:1px dashed var(--line)}
+.share .lbl{font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); margin-right:4px}
+.share button{
+  font-family:var(--mono); font-size:11px; border:1px solid var(--line); background:var(--card);
+  color:var(--text); padding:4px 9px; border-radius:3px;
+}
+.share button:hover{border-color:var(--ink); background:var(--ink); color:#fff}
+
+/* ---- buttons ----------------------------------------------------------- */
+.btn{font-family:var(--display); font-weight:500; font-size:14px; padding:9px 16px; border-radius:var(--radius); border:1px solid transparent}
+.btn-primary{background:var(--signal); color:#fff}
+.btn-primary:hover{background:var(--signal-ink)}
+.btn-ghost{background:transparent; color:#EDEAE0; border-color:#3A4A63}
+.btn-ghost:hover{border-color:var(--signal); color:#fff}
+.btn-outline{background:var(--card); color:var(--text); border-color:var(--line)}
+.btn-outline:hover{border-color:var(--ink)}
+.btn-danger{background:transparent; color:var(--danger); border-color:var(--danger)}
+.btn-danger:hover{background:var(--danger); color:#fff}
+
+/* ---- post view --------------------------------------------------------- */
+.post{max-width:760px; margin:0 auto; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow)}
+.post .hero{aspect-ratio:16/8; background:var(--ink-soft); overflow:hidden}
+.post .hero img,.post .hero video{width:100%; height:100%; object-fit:cover}
+.post .body{padding:36px 48px 48px}
+@media(max-width:640px){ .post .body{padding:26px 22px 36px} }
+.post .meta{font-family:var(--mono); font-size:12px; color:var(--text-dim); margin-bottom:14px; display:flex; gap:14px; flex-wrap:wrap}
+.post h1{font-family:var(--display); font-weight:600; font-size:40px; line-height:1.1; letter-spacing:-.025em; margin:0 0 16px}
+@media(max-width:640px){ .post h1{font-size:30px} }
+.prose{font-size:19px; line-height:1.7}
+.prose h2{font-family:var(--display); font-size:27px; letter-spacing:-.01em; margin:34px 0 12px}
+.prose h3{font-family:var(--display); font-size:21px; margin:26px 0 10px}
+.prose p{margin:0 0 18px}
+.prose a{text-decoration:underline; text-underline-offset:2px}
+.prose img,.prose video{border-radius:var(--radius); margin:20px 0; display:block}
+.prose code{font-family:var(--mono); font-size:.85em; background:#EFEDE4; padding:2px 5px; border-radius:3px}
+.prose pre{background:var(--ink); color:#E6E1D5; padding:16px 18px; border-radius:var(--radius); overflow:auto; font-family:var(--mono); font-size:14px; line-height:1.5}
+.prose pre code{background:none; padding:0; color:inherit}
+.prose blockquote{border-left:3px solid var(--signal); margin:18px 0; padding:2px 0 2px 18px; color:#3a4654; font-style:italic}
+.prose ul,.prose ol{margin:0 0 18px; padding-left:24px}
+.prose li{margin:4px 0}
+.back{font-family:var(--mono); font-size:12px; color:var(--signal-ink); display:inline-block; margin-bottom:18px}
+
+/* ---- editor / modal ---------------------------------------------------- */
+.overlay{position:fixed; inset:0; background:rgba(8,12,22,.55); display:none; align-items:flex-start; justify-content:center; padding:40px 16px; overflow:auto; z-index:50}
+.overlay.open{display:flex}
+.editor{background:var(--paper); width:100%; max-width:820px; border-radius:6px; box-shadow:0 20px 60px rgba(0,0,0,.4); overflow:hidden}
+.editor header{background:var(--ink); color:#fff; padding:16px 24px; display:flex; justify-content:space-between; align-items:center}
+.editor header h2{font-family:var(--display); font-size:18px; margin:0; font-weight:600}
+.editor .x{background:none; border:0; color:#9aa6b8; font-size:22px; line-height:1}
+.editor .pad{padding:24px}
+.field{margin-bottom:18px}
+.field label{display:block; font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px}
+.field input,.field textarea,.field select{
+  width:100%; font-family:var(--body); font-size:16px; padding:10px 12px;
+  border:1px solid var(--line); border-radius:var(--radius); background:var(--card); color:var(--text);
+}
+.field textarea{font-family:var(--mono); font-size:14px; line-height:1.55; resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{outline:2px solid var(--signal); outline-offset:-1px}
+.field .hint{font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-top:5px}
+.row2{display:grid; grid-template-columns:1fr 200px; gap:18px}
+@media(max-width:560px){ .row2{grid-template-columns:1fr} }
+
+.dropzone{
+  border:2px dashed var(--line); border-radius:var(--radius); padding:20px; text-align:center;
+  font-family:var(--mono); font-size:13px; color:var(--text-dim); background:var(--card); transition:.15s;
+}
+.dropzone.drag{border-color:var(--signal); background:#FBEFE5; color:var(--signal-ink)}
+.dropzone b{color:var(--signal-ink)}
+.thumbs{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+.thumb{position:relative; width:90px; height:64px; border-radius:3px; overflow:hidden; border:1px solid var(--line); background:var(--ink-soft)}
+.thumb img,.thumb video{width:100%; height:100%; object-fit:cover}
+.thumb button{position:absolute; top:2px; right:2px; background:rgba(0,0,0,.6); color:#fff; border:0; border-radius:3px; font-size:10px; padding:1px 5px}
+.editor .actions{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:18px 24px; border-top:1px solid var(--line); background:var(--paper)}
+.editor .actions .right{display:flex; gap:10px}
+
+/* ---- toast / empty ----------------------------------------------------- */
+.toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(120%); background:var(--ink); color:#fff; font-family:var(--mono); font-size:13px; padding:11px 18px; border-radius:var(--radius); box-shadow:var(--shadow); transition:transform .25s; z-index:100; border-left:3px solid var(--signal)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.empty{text-align:center; padding:64px 20px; color:var(--text-dim); font-family:var(--mono); font-size:14px}
+.empty b{color:var(--text); display:block; font-size:16px; margin-bottom:6px}
+.loading{font-family:var(--mono); font-size:13px; color:var(--text-dim); padding:40px; text-align:center}
+.spin{display:inline-block; width:13px; height:13px; border:2px solid var(--line); border-top-color:var(--signal); border-radius:50%; animation:s .7s linear infinite; vertical-align:-2px; margin-right:6px}
+@keyframes s{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px}
