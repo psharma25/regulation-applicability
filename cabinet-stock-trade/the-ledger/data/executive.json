@@ -1,0 +1,7 @@
+{
+  "status": "info",
+  "source": "U.S. Office of Government Ethics (OGE)",
+  "note": "The President and Cabinet secretaries do NOT file periodic transaction reports. No dated weekly buy/sell feed exists for them. They file annual OGE Form 278e disclosures showing assets and broad income ranges.",
+  "filings_portal": "https://extapps2.oge.gov/201/Presiden.nsf",
+  "search": "https://www.oge.gov/web/oge.nsf/Officials%20Individual%20Disclosures%20Search%20Collection"
+}

@@ -1,0 +1,215 @@
+{
+  "status": "preloaded",
+  "source": "Compiled from public aggregators (Quiver Quantitative congressional-trading breakdowns, May\u2013Jun 2026) \u2014 trailing ~12 months. Buy counts are real purchase events; sells are documented named transactions. Run tracker.py for a raw 45-day PTR parse with per-trade option flags.",
+  "transactions": [],
+  "summary": {
+    "totals": {
+      "buys": 218,
+      "sells": 4,
+      "options": 0,
+      "transactions": 222,
+      "tickers": 15
+    },
+    "by_ticker": [
+      {
+        "ticker": "MSFT",
+        "name": "Microsoft",
+        "buy": 79,
+        "sell": 0,
+        "options": 0,
+        "net": 79,
+        "traders": 21,
+        "total": 79,
+        "min_value": 3576000
+      },
+      {
+        "ticker": "TSM",
+        "name": "Taiwan Semiconductor",
+        "buy": 39,
+        "sell": 0,
+        "options": 0,
+        "net": 39,
+        "traders": 8,
+        "total": 39,
+        "min_value": 1297000
+      },
+      {
+        "ticker": "AMD",
+        "name": "Advanced Micro Devices",
+        "buy": 26,
+        "sell": 0,
+        "options": 0,
+        "net": 26,
+        "traders": 10,
+        "total": 26,
+        "min_value": 173000
+      },
+      {
+        "ticker": "T",
+        "name": "AT&T",
+        "buy": 18,
+        "sell": 0,
+        "options": 0,
+        "net": 18,
+        "traders": 6,
+        "total": 18,
+        "min_value": 137000
+      },
+      {
+        "ticker": "TDG",
+        "name": "TransDigm Group",
+        "buy": 15,
+        "sell": 0,
+        "options": 0,
+        "net": 15,
+        "traders": 3,
+        "total": 15,
+        "min_value": 29000
+      },
+      {
+        "ticker": "BIIB",
+        "name": "Biogen",
+        "buy": 8,
+        "sell": 0,
+        "options": 0,
+        "net": 8,
+        "traders": 3,
+        "total": 8,
+        "min_value": 57000
+      },
+      {
+        "ticker": "HUBB",
+        "name": "Hubbell",
+        "buy": 8,
+        "sell": 0,
+        "options": 0,
+        "net": 8,
+        "traders": 3,
+        "total": 8,
+        "min_value": 22000
+      },
+      {
+        "ticker": "BWXT",
+        "name": "BWX Technologies",
+        "buy": 7,
+        "sell": 0,
+        "options": 0,
+        "net": 7,
+        "traders": 3,
+        "total": 7,
+        "min_value": 49000
+      },
+      {
+        "ticker": "GLW",
+        "name": "Corning",
+        "buy": 6,
+        "sell": 0,
+        "options": 0,
+        "net": 6,
+        "traders": 3,
+        "total": 6,
+        "min_value": 34000
+      },
+      {
+        "ticker": "RH",
+        "name": "RH (Restoration Hardware)",
+        "buy": 6,
+        "sell": 0,
+        "options": 0,
+        "net": 6,
+        "traders": 2,
+        "total": 6,
+        "min_value": 160000
+      },
+      {
+        "ticker": "FN",
+        "name": "Fabrinet",
+        "buy": 6,
+        "sell": 0,
+        "options": 0,
+        "net": 6,
+        "traders": 4,
+        "total": 6,
+        "min_value": 20000
+      },
+      {
+        "ticker": "NVDA",
+        "name": "NVIDIA \u2014 Sen. Whitehouse sale up to $250K (Jun 2026)",
+        "buy": 0,
+        "sell": 1,
+        "options": 0,
+        "net": -1,
+        "traders": 1,
+        "total": 1,
+        "min_value": null
+      },
+      {
+        "ticker": "ASML",
+        "name": "ASML Holding \u2014 Rep. Khanna semiconductor trimming",
+        "buy": 0,
+        "sell": 1,
+        "options": 0,
+        "net": -1,
+        "traders": 1,
+        "total": 1,
+        "min_value": null
+      },
+      {
+        "ticker": "MU",
+        "name": "Micron \u2014 Rep. Khanna reduction",
+        "buy": 0,
+        "sell": 1,
+        "options": 0,
+        "net": -1,
+        "traders": 1,
+        "total": 1,
+        "min_value": null
+      },
+      {
+        "ticker": "UCTT",
+        "name": "Ultra Clean Holdings \u2014 Rep. Khanna sale",
+        "buy": 0,
+        "sell": 1,
+        "options": 0,
+        "net": -1,
+        "traders": 1,
+        "total": 1,
+        "min_value": null
+      }
+    ],
+    "most_active": [
+      {
+        "name": "Ro Khanna (D-CA)",
+        "trades": 4653
+      },
+      {
+        "name": "Michael McCaul (R-TX)",
+        "trades": 1064
+      },
+      {
+        "name": "Gilbert Cisneros (D-CA)",
+        "trades": 1089
+      },
+      {
+        "name": "Lisa McClain (R-MI)",
+        "trades": 882
+      },
+      {
+        "name": "Cleo Fields (D-LA)",
+        "trades": 190
+      },
+      {
+        "name": "Markwayne Mullin (R-OK, Sen.)",
+        "trades": 111
+      },
+      {
+        "name": "Tim Moore (R-NC)",
+        "trades": 104
+      },
+      {
+        "name": "Nancy Pelosi (D-CA)",
+        "trades": 21
+      }
+    ]
+  }
+}

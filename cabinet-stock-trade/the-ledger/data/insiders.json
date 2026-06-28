@@ -1,0 +1,18 @@
+{
+  "status": "seed",
+  "source": "SEED SAMPLE \u2014 SEC EDGAR Form 4",
+  "filings": [
+    {
+      "company": "Sample Corp (TICKER)",
+      "form": "4",
+      "filed": "2026-06-23",
+      "accession": "0000000000-26-000000"
+    },
+    {
+      "company": "Example Inc (EXMP)",
+      "form": "4",
+      "filed": "2026-06-17",
+      "accession": "0000000000-26-000001"
+    }
+  ]
+}

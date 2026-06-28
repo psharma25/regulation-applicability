@@ -1,0 +1,34 @@
+{
+  "status": "seed",
+  "source": "SEED SAMPLE \u2014 USASpending.gov",
+  "agencies": {
+    "DHS": [
+      {
+        "recipient": "Sample Defense Contractor LLC",
+        "amount": 48200000,
+        "description": "Border surveillance systems integration",
+        "award_id": "SAMPLE-DHS-001"
+      },
+      {
+        "recipient": "Example Security Systems Inc",
+        "amount": 21500000,
+        "description": "Cybersecurity operations support",
+        "award_id": "SAMPLE-DHS-002"
+      }
+    ],
+    "DoD": [
+      {
+        "recipient": "Sample Aerospace Corp",
+        "amount": 312000000,
+        "description": "Tactical systems sustainment",
+        "award_id": "SAMPLE-DOD-001"
+      },
+      {
+        "recipient": "Example Logistics Inc",
+        "amount": 97400000,
+        "description": "Maintenance and supply chain services",
+        "award_id": "SAMPLE-DOD-002"
+      }
+    ]
+  }
+}

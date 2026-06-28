@@ -1,0 +1,18 @@
+{
+  "generated_utc": "2026-06-28T14:13:16.424526+00:00",
+  "lookback_days": 365,
+  "sources": {
+    "congress": "preloaded",
+    "insiders": "sample",
+    "contracts": "sample",
+    "executive": "info"
+  },
+  "headline": {
+    "congress_buys": 218,
+    "congress_sells": 4,
+    "congress_options": 0,
+    "congress_transactions": 222
+  },
+  "disclaimer": "Amounts are disclosed ranges, not exact figures. Filings lag up to 45 days. Executive branch has no trade stream. Informational only \u2014 not investment advice.",
+  "ai_summary": "Over the trailing ~12 months the dominant pattern is accumulation in tech and defense-adjacent industrials. Microsoft (MSFT) is the clear leader \u2014 ~79 disclosed purchases across 21 members \u2014 followed by chip exposure via TSM (~39) and AMD (~26). Defense/industrials show up through TransDigm (TDG), BWX Technologies (BWXT, nuclear), Hubbell (HUBB) and Corning (GLW). On the sell side, the notable moves are semiconductor trimming \u2014 Sen. Whitehouse's NVDA sale (up to $250K, Jun 2026) and Rep. Khanna unloading ASML, Micron (MU) and Ultra Clean (UCTT). Net: buying AI/compute and defense, lightening richly-valued chip names. Amounts are disclosed ranges and filings lag up to 45 days, so treat this as a lagging signal, not real-time. Not investment advice."
+}
