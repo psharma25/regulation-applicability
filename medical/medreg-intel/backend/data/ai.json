@@ -1,0 +1,50 @@
+[
+  {
+    "id": "ai-pccp",
+    "name": "Predetermined Change Control Plan",
+    "detail": "Description of modifications + modification protocol + impact assessment, authorized at clearance.",
+    "cite": "FDA PCCP final guidance (2024)"
+  },
+  {
+    "id": "ai-gmlp",
+    "name": "GMLP \u2014 10 guiding principles",
+    "detail": "Multidisciplinary expertise, good software engineering & security, representative datasets, independent train/test, reference standards, model design tailored to data/use, human-AI team focus, testing in clinically relevant conditions, clear user info, deployed-model monitoring.",
+    "cite": "FDA/MHRA/Health Canada (2021)"
+  },
+  {
+    "id": "ai-transparency",
+    "name": "Transparency",
+    "detail": "Intended use, logic, inputs/outputs, performance, and limitations communicated to users (model card-style).",
+    "cite": "FDA AI transparency principles (2024)"
+  },
+  {
+    "id": "ai-bias",
+    "name": "Bias & generalizability",
+    "detail": "Representative data and subgroup performance to characterize and mitigate bias.",
+    "cite": "FDA AI lifecycle draft (2025)"
+  },
+  {
+    "id": "ai-data",
+    "name": "Data management",
+    "detail": "Provenance, quality, independence of training vs test data, and reference-standard rationale.",
+    "cite": "GMLP / AI lifecycle"
+  },
+  {
+    "id": "ai-monitoring",
+    "name": "Real-world performance monitoring",
+    "detail": "Drift detection, performance dashboards, and retraining/notification triggers within the PCCP.",
+    "cite": "FDA AI lifecycle draft (2025)"
+  },
+  {
+    "id": "ai-euact",
+    "name": "EU AI Act (high-risk) overlay",
+    "detail": "Risk management, data governance, technical documentation, logging, human oversight, accuracy/robustness/cybersecurity on top of MDR/IVDR.",
+    "cite": "Regulation (EU) 2024/1689"
+  },
+  {
+    "id": "ai-cyber",
+    "name": "AI-specific cybersecurity",
+    "detail": "Address adversarial ML, data poisoning, and model/inference integrity within the security risk file.",
+    "cite": "FDA 2025 cyber guidance + AAMI SW96"
+  }
+]

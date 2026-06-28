@@ -1,0 +1,309 @@
+[
+  {
+    "id": "510k-traditional",
+    "region": "US",
+    "name": "510(k) \u2014 Traditional",
+    "pathway": "Premarket Notification",
+    "when": "Most Class II devices; demonstrate substantial equivalence (SE) to a predicate.",
+    "form": "eSTAR",
+    "review": "~90 FDA days (MDUFA goal)",
+    "cyber": "Required for cyber devices (\u00a7524B)",
+    "ai": "PCCP optional",
+    "reqs": [
+      "Indications for use & device description",
+      "Substantial-equivalence comparison + predicate",
+      "Performance testing (bench/clinical as needed)",
+      "Software documentation (per Software guidance)",
+      "Cybersecurity documentation (SBOM, threat model, security risk mgmt, architecture, testing) for cyber devices",
+      "Labeling incl. security labeling"
+    ],
+    "url": "https://www.fda.gov/medical-devices/premarket-notification-510k",
+    "tech": [
+      "Hardware",
+      "Software",
+      "Firmware",
+      "Connected",
+      "SaMD",
+      "SiMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "us": true,
+    "intl": false
+  },
+  {
+    "id": "510k-special",
+    "region": "US",
+    "name": "510(k) \u2014 Special",
+    "pathway": "Premarket Notification",
+    "when": "Modification to your own legally-marketed device where SE is well-established.",
+    "form": "eSTAR",
+    "review": "~30 FDA days (goal)",
+    "cyber": "Cyber docs if change impacts cybersecurity",
+    "ai": "PCCP optional",
+    "reqs": [
+      "Declaration of conformity to design controls",
+      "Description of the modification",
+      "Risk analysis of the change",
+      "Cyber: Vulnerability Mgmt Plan + no-critical-vuln attestation + SBOM (even for legacy)"
+    ],
+    "url": "https://www.fda.gov/medical-devices/premarket-notification-510k/types-510k-submissions",
+    "tech": [
+      "Software",
+      "Firmware",
+      "Connected",
+      "SaMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "us": true,
+    "intl": false
+  },
+  {
+    "id": "510k-abbreviated",
+    "region": "US",
+    "name": "510(k) \u2014 Abbreviated",
+    "pathway": "Premarket Notification",
+    "when": "Reliance on guidance documents, special controls, or recognized consensus standards.",
+    "form": "eSTAR",
+    "review": "~90 FDA days",
+    "cyber": "Required for cyber devices",
+    "ai": "PCCP optional",
+    "reqs": [
+      "Summary reports relying on standards/special controls",
+      "Declarations of conformity",
+      "Cyber documentation as applicable"
+    ],
+    "url": "https://www.fda.gov/medical-devices/premarket-notification-510k/types-510k-submissions",
+    "tech": [
+      "Hardware",
+      "Software",
+      "Connected"
+    ],
+    "us": true,
+    "intl": false
+  },
+  {
+    "id": "pma",
+    "region": "US",
+    "name": "PMA \u2014 Premarket Approval",
+    "pathway": "Premarket Approval",
+    "when": "Class III / highest-risk devices; valid scientific evidence of safety & effectiveness.",
+    "form": "eCopy/CDRH Portal",
+    "review": "~180 FDA days",
+    "cyber": "Required for cyber devices",
+    "ai": "PCCP optional",
+    "reqs": [
+      "Clinical & non-clinical evidence",
+      "Manufacturing information (QMS)",
+      "Full risk/benefit",
+      "Cybersecurity documentation package",
+      "Postmarket study commitments as applicable"
+    ],
+    "url": "https://www.fda.gov/medical-devices/premarket-submissions-selecting-and-preparing-correct-submission/premarket-approval-pma",
+    "tech": [
+      "Hardware",
+      "Software",
+      "Connected",
+      "SaMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "us": true,
+    "intl": false
+  },
+  {
+    "id": "pma-supplement",
+    "region": "US",
+    "name": "PMA Supplement",
+    "pathway": "Premarket Approval",
+    "when": "Changes to an approved PMA device (panel-track, 180-day, real-time, 30-day notice).",
+    "form": "CDRH Portal",
+    "review": "Varies by type",
+    "cyber": "Cyber docs if change impacts cybersecurity",
+    "ai": "PCCP-governed changes",
+    "reqs": [
+      "Description & justification of change",
+      "Verification/validation",
+      "Updated risk & cyber documentation"
+    ],
+    "url": "https://www.fda.gov/medical-devices/premarket-approval-pma/pma-supplements-and-amendments",
+    "tech": [
+      "Software",
+      "Connected",
+      "AI"
+    ],
+    "us": true,
+    "intl": false
+  },
+  {
+    "id": "denovo-req",
+    "region": "US",
+    "name": "De Novo Classification Request",
+    "pathway": "De Novo",
+    "when": "Novel low/moderate-risk device with no predicate.",
+    "form": "eSTAR",
+    "review": "~150 FDA days",
+    "cyber": "Required for cyber devices",
+    "ai": "PCCP optional",
+    "reqs": [
+      "Device description & classification rationale",
+      "Proposed special controls",
+      "Benefit-risk",
+      "Cybersecurity documentation",
+      "Labeling"
+    ],
+    "url": "https://www.fda.gov/medical-devices/premarket-submissions-selecting-and-preparing-correct-submission/de-novo-classification-request",
+    "tech": [
+      "Hardware",
+      "Software",
+      "SaMD",
+      "SiMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "us": true,
+    "intl": false
+  },
+  {
+    "id": "hde",
+    "region": "US",
+    "name": "HDE \u2014 Humanitarian Device Exemption",
+    "pathway": "HDE",
+    "when": "Humanitarian Use Devices (HUD) for conditions affecting \u22648,000 patients/yr in the US.",
+    "form": "CDRH Portal",
+    "review": "~75 FDA days",
+    "cyber": "Required for cyber devices",
+    "ai": "PCCP optional",
+    "reqs": [
+      "HUD designation",
+      "Probable benefit",
+      "Cybersecurity documentation as applicable"
+    ],
+    "url": "https://www.fda.gov/medical-devices/premarket-submissions-selecting-and-preparing-correct-submission/humanitarian-device-exemption",
+    "tech": [
+      "Hardware",
+      "Software",
+      "Connected"
+    ],
+    "us": true,
+    "intl": false
+  },
+  {
+    "id": "presub",
+    "region": "US",
+    "name": "Pre-Submission (Q-Sub)",
+    "pathway": "Q-Submission",
+    "when": "Get FDA feedback before a submission \u2014 strongly advised for novel cyber/AI devices.",
+    "form": "Q-Sub",
+    "review": "~70\u201375 days to meeting",
+    "cyber": "Recommended to align cyber strategy early",
+    "ai": "Recommended to align PCCP",
+    "reqs": [
+      "Specific questions for FDA",
+      "Device & development context",
+      "Proposed testing/PCCP/cyber approach"
+    ],
+    "url": "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/requests-feedback-and-meetings-medical-device-submissions-q-submission-program",
+    "tech": [
+      "Software",
+      "SaMD",
+      "SiMD",
+      "AI",
+      "Connected",
+      "Cloud",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "us": true,
+    "intl": false
+  },
+  {
+    "id": "513g",
+    "region": "US",
+    "name": "513(g) \u2014 Request for classification",
+    "pathway": "513(g)",
+    "when": "Ask FDA for the classification/regulatory status of a device.",
+    "form": "513(g)",
+    "review": "~60 days",
+    "cyber": "N/A",
+    "ai": "N/A",
+    "reqs": [
+      "Device description",
+      "Proposed classification/questions"
+    ],
+    "url": "https://www.fda.gov/medical-devices/premarket-submissions-selecting-and-preparing-correct-submission",
+    "tech": [
+      "Software",
+      "Hardware",
+      "SaMD",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "us": true,
+    "intl": false
+  },
+  {
+    "id": "ide",
+    "region": "US",
+    "name": "IDE \u2014 Investigational Device Exemption",
+    "pathway": "IDE",
+    "when": "Clinical investigation of a significant-risk device.",
+    "form": "CDRH Portal",
+    "review": "~30 days",
+    "cyber": "Cyber considerations for connected investigational devices",
+    "ai": "As applicable",
+    "reqs": [
+      "Investigational plan & protocol",
+      "Report of prior investigations",
+      "IRB approval",
+      "Risk analysis"
+    ],
+    "url": "https://www.fda.gov/medical-devices/premarket-submissions-selecting-and-preparing-correct-submission/investigational-device-exemption-ide",
+    "tech": [
+      "Hardware",
+      "Software",
+      "Connected",
+      "AI"
+    ],
+    "us": true,
+    "intl": false
+  },
+  {
+    "id": "eu-ce",
+    "region": "EU",
+    "name": "CE marking (MDR) \u2014 Technical Documentation",
+    "pathway": "Conformity assessment",
+    "when": "Placing a device on the EU market; Notified Body involvement by class.",
+    "form": "Annex II/III Tech Doc",
+    "review": "Varies by Notified Body",
+    "cyber": "MDR Annex I \u00a717 + MDCG 2019-16",
+    "ai": "EU AI Act (high-risk)",
+    "reqs": [
+      "Annex II technical documentation",
+      "GSPR checklist incl. \u00a717 security",
+      "Clinical evaluation (Annex XIV)",
+      "Cybersecurity per MDCG 2019-16",
+      "Post-market surveillance & PSUR"
+    ],
+    "url": "https://health.ec.europa.eu/medical-devices-sector_en",
+    "tech": [
+      "Hardware",
+      "Software",
+      "Firmware",
+      "Connected",
+      "Cloud",
+      "SaMD",
+      "SiMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "us": false,
+    "intl": true
+  }
+]

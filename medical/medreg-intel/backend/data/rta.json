@@ -1,0 +1,112 @@
+[
+  {
+    "id": "fca-cyber",
+    "trigger": "False Claims Act exposure for cyber deficiencies",
+    "since": "2025",
+    "what": "Selling devices to federal programs while non-compliant with \u00a7524B cyber obligations is being scrutinized under the FCA.",
+    "lesson": "Cyber non-compliance is now a legal/financial risk beyond the submission itself.",
+    "source": "https://www.morganlewis.com/blogs/asprescribed/2025/11/from-vulnerability-to-violation-fda-cybersecurity-requirements-for-medical-devices-and-fca-enforcement",
+    "date": "2025-11-05",
+    "why": "Selling to federal programs while non-compliant with cyber obligations creates False Claims Act exposure \u2014 a financial, not just regulatory, risk.",
+    "region": "US"
+  },
+  {
+    "id": "rta-legacy-change",
+    "trigger": "RTA \u2014 legacy device change without cyber docs",
+    "since": "2023+",
+    "what": "A change to a pre-2023 device claiming equivalence still needs a Vulnerability Mgmt Plan, no-critical-vuln attestation, and SBOM.",
+    "lesson": "Even Special 510(k)s for old devices now need a minimum cyber baseline.",
+    "source": "https://blog.cm-dm.com/post/2025/07/04/2025-update-of-FDA-Premarket-Cybersecurity-guidance",
+    "date": "2025-06-27",
+    "why": "The 2025 final guidance clarified that even legacy-device changes must carry a minimum cyber baseline, closing a gap exploited by 'minor change' claims.",
+    "region": "US"
+  },
+  {
+    "id": "recall-cyber-806",
+    "trigger": "Field correction/recall for unpatched vulnerability",
+    "since": "ongoing",
+    "what": "Unaddressed exploitable vulnerabilities can force a 21 CFR 806 correction/removal or recall (e.g., Baxter Life2000 Class I).",
+    "lesson": "A weak postmarket plan turns a vulnerability into a recall.",
+    "source": "https://www.healthcare-brew.com/stories/2025/06/02/recall-roundup-fda-medical-device-recalls-may-2025",
+    "date": "2025-05-09",
+    "why": "When postmarket monitoring fails, an exploitable vulnerability can escalate into a 21 CFR 806 correction/removal or recall (e.g., Baxter Life2000).",
+    "region": "US"
+  },
+  {
+    "id": "ai-pccp-scope",
+    "trigger": "AI change outside an authorized PCCP",
+    "since": "2024+",
+    "what": "Modifying an AI model beyond what an authorized PCCP covers requires a new marketing submission.",
+    "lesson": "Scope the PCCP modification protocol carefully \u2014 or re-submit.",
+    "source": "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/marketing-submission-recommendations-predetermined-change-control-plan-artificial-intelligence",
+    "date": "2024-12-04",
+    "why": "Changing an AI model beyond an authorized PCCP requires a new submission \u2014 scoping the modification protocol is what avoids re-filing.",
+    "region": "US"
+  },
+  {
+    "id": "mhra-fsn",
+    "trigger": "MHRA Field Safety Notice / corrective action (UK)",
+    "since": "ongoing",
+    "what": "MHRA requires manufacturers to issue Field Safety Notices and corrective actions for device safety/cyber issues affecting the UK market.",
+    "lesson": "Postmarket cyber issues trigger FSNs and MHRA reporting, mirroring FDA 806.",
+    "source": "https://www.gov.uk/drug-device-alerts",
+    "date": "2024-01-01",
+    "why": "Issued to inform users and require corrective action when a marketed device poses a safety/security risk.",
+    "region": "International"
+  },
+  {
+    "id": "rta-cyber-524b",
+    "trigger": "RTA \u2014 missing \u00a7524B cybersecurity content",
+    "since": "Oct 1, 2023",
+    "what": "Cyber-device premarket submission lacking the required vulnerability plan, secure-design processes, or SBOM is refused at acceptance review.",
+    "lesson": "Include the full cyber package (plan, processes, SBOM) at submission \u2014 not after.",
+    "source": "https://www.fda.gov/medical-devices/digital-health-center-excellence/cybersecurity-medical-devices-frequently-asked-questions-faqs",
+    "date": "2023-10-01",
+    "why": "FDA began refusing cyber-device submissions that lack \u00a7524B content, to force security in at design time rather than after market.",
+    "region": "US"
+  },
+  {
+    "id": "prohibited-act",
+    "trigger": "\u00a7524B non-compliance is a 'prohibited act'",
+    "since": "2023",
+    "what": "FDORA makes failing to meet cyber requirements a prohibited act under the FD&C Act \u2014 enabling injunctions/penalties.",
+    "lesson": "Treat cyber requirements as enforceable law, not guidance.",
+    "source": "https://www.complizen.ai/post/fda-cybersecurity-compliance-standards-2025-complete-guide",
+    "date": "2023-03-29",
+    "why": "FDORA made cyber non-compliance a prohibited act, giving FDA injunction/penalty authority.",
+    "region": "US"
+  },
+  {
+    "id": "gdpr-health-fine",
+    "trigger": "GDPR fine \u2014 inadequate security of health data",
+    "since": "2018+",
+    "what": "EU data-protection authorities have fined hospitals/providers for failing to secure patient data (Art. 32), including breaches involving connected systems.",
+    "lesson": "Device telemetry and PHI security carry GDPR exposure independent of MDR.",
+    "source": "https://edpb.europa.eu",
+    "date": "2023-01-01",
+    "why": "Reported/enforced because controllers failed to implement appropriate technical security measures for health data.",
+    "region": "International"
+  },
+  {
+    "id": "eu-mdr-noncompliance",
+    "trigger": "EU MDR Annex I \u00a717 / MDCG 2019-16 deficiency",
+    "since": "2021+",
+    "what": "Notified Bodies can withhold or suspend CE certificates where cybersecurity essential requirements or technical documentation are inadequate.",
+    "lesson": "Weak MDCG 2019-16 evidence stalls or revokes CE marking.",
+    "source": "https://health.ec.europa.eu/medical-devices-sector_en",
+    "date": "2021-05-26",
+    "why": "Raised because the conformity assessment found the security essential requirements unmet.",
+    "region": "International"
+  },
+  {
+    "id": "rta-510k-admin",
+    "trigger": "RTA \u2014 510(k) administrative completeness",
+    "since": "ongoing",
+    "what": "Missing eSTAR fields, truth-and-accuracy statement, financial certification, or indications mismatch triggers Refuse-to-Accept.",
+    "lesson": "Run the FDA RTA checklist before submitting; eSTAR enforces many fields.",
+    "source": "https://www.fda.gov/medical-devices/premarket-notification-510k",
+    "date": "2019-09-25",
+    "why": "Administrative completeness has long been an RTA gate; eSTAR now enforces it up front.",
+    "region": "US"
+  }
+]

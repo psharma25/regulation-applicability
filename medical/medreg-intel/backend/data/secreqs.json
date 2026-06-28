@@ -1,0 +1,481 @@
+[
+  {
+    "id": "sr-authn",
+    "req": "Unique user / entity authentication",
+    "mode": "Automatable + Manual",
+    "desc": "Authenticate users and connected entities before granting access to device functions, configuration, or data.",
+    "vv": "Authentication test cases (valid/invalid/locked), session-management tests, penetration test of auth flows.",
+    "tech": [
+      "Software",
+      "Connected",
+      "Cloud",
+      "SaMD",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ]
+  },
+  {
+    "id": "sr-nodefault",
+    "req": "No hardcoded or default credentials",
+    "mode": "Automatable",
+    "desc": "No shared, default, or hardcoded secrets/passwords/keys in firmware, app, or services.",
+    "vv": "Secret scanning (gitleaks/trufflehog), SAST, firmware/app binary inspection.",
+    "tech": [
+      "Software",
+      "Firmware",
+      "Connected",
+      "Mobile-iOS",
+      "Mobile-Android",
+      "Cloud"
+    ]
+  },
+  {
+    "id": "sr-mutualauth",
+    "req": "Mutual authentication for device\u2194server",
+    "mode": "Automatable + Manual",
+    "desc": "Both endpoints authenticate (e.g., mutual TLS / certificate pinning) for device-to-cloud and device-to-app links.",
+    "vv": "TLS handshake inspection, certificate-pinning bypass test, man-in-the-middle test.",
+    "tech": [
+      "Connected",
+      "Cloud",
+      "Mobile-iOS",
+      "Mobile-Android",
+      "AWS",
+      "Azure",
+      "GCP"
+    ]
+  },
+  {
+    "id": "sr-authz",
+    "req": "Authorization & least privilege (RBAC)",
+    "mode": "Automatable + Manual",
+    "desc": "Role-based access control; service and user accounts limited to least privilege.",
+    "vv": "RBAC test matrix, privilege-escalation tests, IAM policy review.",
+    "tech": [
+      "Software",
+      "Connected",
+      "Cloud",
+      "AWS",
+      "Azure",
+      "GCP",
+      "SaMD"
+    ]
+  },
+  {
+    "id": "sr-tls",
+    "req": "Data-in-transit encryption (TLS 1.2+)",
+    "mode": "Automatable",
+    "desc": "All sensitive/PHI traffic encrypted with current TLS; no plaintext protocols.",
+    "vv": "TLS scan (testssl.sh/sslyze), network capture, cipher-suite policy check.",
+    "tech": [
+      "Connected",
+      "Cloud",
+      "Mobile-iOS",
+      "Mobile-Android",
+      "AWS",
+      "Azure",
+      "GCP",
+      "SaMD"
+    ]
+  },
+  {
+    "id": "sr-rest",
+    "req": "Data-at-rest encryption & key management",
+    "mode": "Automatable + Manual",
+    "desc": "Sensitive data/credentials encrypted at rest; keys managed via KMS/HSM or platform keystore.",
+    "vv": "Storage inspection, key-management design review, KMS/HSM configuration check.",
+    "tech": [
+      "Software",
+      "Cloud",
+      "Mobile-iOS",
+      "Mobile-Android",
+      "AWS",
+      "Azure",
+      "GCP"
+    ]
+  },
+  {
+    "id": "sr-crypto",
+    "req": "Approved cryptography (no weak algorithms)",
+    "mode": "Automatable",
+    "desc": "Use vetted, current cryptographic algorithms and libraries; no MD5/SHA-1/DES/ECB for security.",
+    "vv": "Crypto/static analysis, dependency scan, cryptographic review.",
+    "tech": [
+      "Software",
+      "Firmware",
+      "Connected",
+      "Cloud",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ]
+  },
+  {
+    "id": "sr-signedupdate",
+    "req": "Signed software/firmware updates + anti-rollback",
+    "mode": "Automatable + Manual",
+    "desc": "Updates are cryptographically signed and verified; downgrade/rollback to vulnerable versions prevented.",
+    "vv": "Signature-verification test, tampered-image rejection test, anti-rollback test.",
+    "tech": [
+      "Firmware",
+      "Software",
+      "Connected",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ]
+  },
+  {
+    "id": "sr-secureboot",
+    "req": "Secure boot / boot integrity",
+    "mode": "Manual",
+    "desc": "Device boots only verified firmware via a hardware/firmware root of trust.",
+    "vv": "Boot-chain tamper test, secure-boot configuration review.",
+    "tech": [
+      "Hardware",
+      "Firmware"
+    ]
+  },
+  {
+    "id": "sr-integrity",
+    "req": "Code & data integrity protection",
+    "mode": "Automatable + Manual",
+    "desc": "Detect/prevent unauthorized modification of executable code and critical data.",
+    "vv": "Integrity-check tests, tamper tests, runtime integrity verification.",
+    "tech": [
+      "Software",
+      "Firmware",
+      "Connected",
+      "SaMD"
+    ]
+  },
+  {
+    "id": "sr-logging",
+    "req": "Security audit logging",
+    "mode": "Automatable + Manual",
+    "desc": "Record security-relevant events (auth, config change, update) and make them available to the facility/SIEM.",
+    "vv": "Log-generation tests, log-content review, SIEM ingestion test.",
+    "tech": [
+      "Software",
+      "Connected",
+      "Cloud",
+      "AWS",
+      "Azure",
+      "GCP"
+    ]
+  },
+  {
+    "id": "sr-detect",
+    "req": "Anomaly / intrusion detection",
+    "mode": "Automatable + Manual",
+    "desc": "Detect anomalous behavior or known-bad activity on the device or its services.",
+    "vv": "Detection-rule tests, simulated-attack/replay tests.",
+    "tech": [
+      "Connected",
+      "Cloud",
+      "AWS",
+      "Azure",
+      "GCP"
+    ]
+  },
+  {
+    "id": "sr-failsafe",
+    "req": "Fail-safe / safe state under attack",
+    "mode": "Manual",
+    "desc": "Device maintains or reverts to a safe clinical state during cyber disruption (DoS, loss of connectivity).",
+    "vv": "Fault injection, DoS/network-loss testing, safe-state verification.",
+    "tech": [
+      "Hardware",
+      "Firmware",
+      "Connected",
+      "SaMD"
+    ]
+  },
+  {
+    "id": "sr-backup",
+    "req": "Backup & recovery",
+    "mode": "Automatable + Manual",
+    "desc": "Recover configuration/data and restore service after a cyber event.",
+    "vv": "Restore/recovery drills, backup-integrity verification.",
+    "tech": [
+      "Software",
+      "Cloud",
+      "AWS",
+      "Azure",
+      "GCP"
+    ]
+  },
+  {
+    "id": "sr-ota",
+    "req": "Remote update capability with rollback control",
+    "mode": "Automatable + Manual",
+    "desc": "Field-updatable to remediate vulnerabilities, with controlled, signed, reversible deployment.",
+    "vv": "OTA update test (staged + rollback), update-failure handling test.",
+    "tech": [
+      "Connected",
+      "Firmware",
+      "Software",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ]
+  },
+  {
+    "id": "sr-sca",
+    "req": "Software composition analysis (SCA)",
+    "mode": "Automatable",
+    "desc": "Continuously identify third-party/OSS components and their known vulnerabilities.",
+    "vv": "SCA in CI (Grype/Dependabot/OWASP DC); fail build on critical CVEs.",
+    "tech": [
+      "Software",
+      "Firmware",
+      "Cloud",
+      "SaMD",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ]
+  },
+  {
+    "id": "sr-sbom",
+    "req": "SBOM generation & maintenance",
+    "mode": "Automatable",
+    "desc": "Produce and maintain a machine-readable SBOM with support/EOL and known-vulnerability data.",
+    "vv": "SBOM generation in CI (Syft); completeness/format validation (CycloneDX/SPDX).",
+    "tech": [
+      "Software",
+      "Firmware",
+      "Cloud",
+      "SaMD",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ]
+  },
+  {
+    "id": "sr-sast",
+    "req": "Static application security testing (SAST)",
+    "mode": "Automatable",
+    "desc": "Analyze source/binaries for security weaknesses before release.",
+    "vv": "SAST gate in CI (CodeQL/Semgrep/SonarQube); triage to closure.",
+    "tech": [
+      "Software",
+      "Firmware",
+      "SaMD",
+      "Mobile-iOS",
+      "Mobile-Android",
+      "Cloud"
+    ]
+  },
+  {
+    "id": "sr-dast",
+    "req": "Dynamic application security testing (DAST)",
+    "mode": "Automatable",
+    "desc": "Test running interfaces/APIs for exploitable vulnerabilities.",
+    "vv": "DAST scan (OWASP ZAP/Burp) of services and APIs.",
+    "tech": [
+      "Connected",
+      "Cloud",
+      "SaMD",
+      "Mobile-iOS",
+      "Mobile-Android",
+      "AWS",
+      "Azure",
+      "GCP"
+    ]
+  },
+  {
+    "id": "sr-fuzz",
+    "req": "Fuzz / robustness testing of interfaces",
+    "mode": "Automatable",
+    "desc": "Send malformed inputs to protocols/parsers (BLE, network, file/DICOM) to find crashes/weaknesses.",
+    "vv": "Protocol/API/file fuzzing with coverage tracking.",
+    "tech": [
+      "Connected",
+      "Firmware",
+      "Software",
+      "AI"
+    ]
+  },
+  {
+    "id": "sr-pentest",
+    "req": "Independent penetration test",
+    "mode": "Manual",
+    "desc": "Third-party adversarial assessment against the threat model before submission/release.",
+    "vv": "Scoped penetration test; report with findings closed or risk-accepted.",
+    "tech": [
+      "Software",
+      "Connected",
+      "Cloud",
+      "SaMD",
+      "Hardware",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ]
+  },
+  {
+    "id": "sr-mobile-hardening",
+    "req": "Mobile app hardening",
+    "mode": "Automatable + Manual",
+    "desc": "Jailbreak/root detection, certificate pinning, anti-tamper, no sensitive data in logs/backups.",
+    "vv": "MobSF scan, OWASP MASVS/MASTG tests, runtime (Frida) checks.",
+    "tech": [
+      "Mobile-iOS",
+      "Mobile-Android",
+      "SaMD"
+    ]
+  },
+  {
+    "id": "sr-mobile-storage",
+    "req": "Mobile secure storage (Keychain/Keystore)",
+    "mode": "Automatable + Manual",
+    "desc": "Sensitive data/credentials stored in iOS Keychain / Android Keystore, not plaintext files.",
+    "vv": "MobSF storage analysis, device-filesystem inspection.",
+    "tech": [
+      "Mobile-iOS",
+      "Mobile-Android"
+    ]
+  },
+  {
+    "id": "sr-mobile-ats",
+    "req": "No cleartext traffic (ATS / network security config)",
+    "mode": "Automatable",
+    "desc": "iOS App Transport Security enabled; Android network-security-config disallows cleartext.",
+    "vv": "MobSF config check, traffic capture to confirm TLS-only.",
+    "tech": [
+      "Mobile-iOS",
+      "Mobile-Android"
+    ]
+  },
+  {
+    "id": "sr-cloud-cspm",
+    "req": "Cloud configuration baseline (CIS benchmark)",
+    "mode": "Automatable",
+    "desc": "Cloud accounts/resources hardened to a CIS benchmark; drift detected continuously.",
+    "vv": "CSPM scan (Prowler/ScoutSuite/Defender for Cloud); CIS benchmark report.",
+    "tech": [
+      "Cloud",
+      "AWS",
+      "Azure",
+      "GCP"
+    ]
+  },
+  {
+    "id": "sr-cloud-iam",
+    "req": "Cloud IAM least privilege",
+    "mode": "Automatable + Manual",
+    "desc": "No wildcard/admin-by-default; scoped roles; no long-lived keys where avoidable.",
+    "vv": "IAM policy analysis (Prowler/ScoutSuite/IAM Access Analyzer); access review.",
+    "tech": [
+      "Cloud",
+      "AWS",
+      "Azure",
+      "GCP"
+    ]
+  },
+  {
+    "id": "sr-cloud-logging",
+    "req": "Cloud audit logging & monitoring",
+    "mode": "Automatable",
+    "desc": "Account-level audit trail and threat detection enabled.",
+    "vv": "Verify CloudTrail+GuardDuty (AWS) / Azure Monitor+Defender / GCP Cloud Audit Logs+SCC.",
+    "tech": [
+      "Cloud",
+      "AWS",
+      "Azure",
+      "GCP"
+    ]
+  },
+  {
+    "id": "sr-container",
+    "req": "Container/image vulnerability scanning",
+    "mode": "Automatable",
+    "desc": "Scan container images and IaC for vulnerabilities and misconfigurations before deploy.",
+    "vv": "Image scan (Trivy/Grype) + IaC scan (Checkov/tfsec) in CI.",
+    "tech": [
+      "Cloud",
+      "AWS",
+      "Azure",
+      "GCP"
+    ]
+  },
+  {
+    "id": "sr-segmentation",
+    "req": "Network segmentation / least-exposure",
+    "mode": "Automatable + Manual",
+    "desc": "Restrict device/service network exposure; segment clinical networks; minimize open ports/services.",
+    "vv": "Port/service scan, security-group/firewall review, segmentation test.",
+    "tech": [
+      "Connected",
+      "Cloud",
+      "Hardware",
+      "AWS",
+      "Azure",
+      "GCP"
+    ]
+  },
+  {
+    "id": "sr-debug",
+    "req": "Disable debug/maintenance interfaces",
+    "mode": "Manual",
+    "desc": "JTAG/UART/serial and debug services disabled or protected in production hardware.",
+    "vv": "Hardware inspection, interface probing, production-image review.",
+    "tech": [
+      "Hardware",
+      "Firmware"
+    ]
+  },
+  {
+    "id": "sr-exploit-mit",
+    "req": "Binary exploit mitigations (ASLR/DEP/canaries)",
+    "mode": "Automatable",
+    "desc": "Compile/link with modern exploit mitigations enabled.",
+    "vv": "Binary hardening check (checksec / platform equivalents).",
+    "tech": [
+      "Firmware",
+      "Software"
+    ]
+  },
+  {
+    "id": "sr-ai-adversarial",
+    "req": "AI adversarial robustness testing",
+    "mode": "Automatable + Manual",
+    "desc": "Evaluate model resilience to adversarial/perturbed inputs and out-of-distribution data.",
+    "vv": "Adversarial test suite (e.g., ART), OOD/perturbation tests, performance bounds.",
+    "tech": [
+      "AI",
+      "SaMD"
+    ]
+  },
+  {
+    "id": "sr-ai-dataintegrity",
+    "req": "AI training-data integrity & provenance",
+    "mode": "Automatable + Manual",
+    "desc": "Protect against data poisoning; record data lineage; sign/verify datasets and models.",
+    "vv": "Data-lineage audit, dataset/model signing verification, poisoning red-team.",
+    "tech": [
+      "AI",
+      "SaMD",
+      "Cloud"
+    ]
+  },
+  {
+    "id": "sr-ai-input",
+    "req": "AI inference input validation",
+    "mode": "Automatable",
+    "desc": "Validate/sanitize inputs (image format/range, metadata) before inference.",
+    "vv": "Input fuzzing, range/format validation tests, malformed-DICOM tests.",
+    "tech": [
+      "AI",
+      "SaMD",
+      "Connected"
+    ]
+  },
+  {
+    "id": "sr-ai-version",
+    "req": "AI model versioning & rollback (PCCP-aligned)",
+    "mode": "Automatable + Manual",
+    "desc": "Version models, gate releases on acceptance criteria, and support rollback within the PCCP envelope.",
+    "vv": "Release-gate tests against locked test set; rollback drill; version-traceability audit.",
+    "tech": [
+      "AI",
+      "SaMD",
+      "Cloud"
+    ]
+  }
+]

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MedReg Intel — Medical Device Regulatory &amp; Cybersecurity Intelligence (static)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..560&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div>
+        <h1>MedReg <span class="soft">Intel</span></h1>
+        <div class="sub">Medical device regulations, submission pathways, requirements, FDA cybersecurity incidents, RTA &amp; enforcement, and AI obligations — with downloadable submission templates and a live openFDA tracker.</div>
+      </div>
+      <div class="pills">
+        <button class="tracker-pill ask" id="askPill" title="Ask the knowledge base (local RAG)">
+          <span class="dot" style="background:var(--lavender);box-shadow:0 0 0 4px var(--lavender-bg)" aria-hidden="true"></span>
+          <span>Ask</span><span class="delta-chip">local RAG</span>
+        </button>
+        <button class="tracker-pill" id="trackerPill" title="Jump to the live tracker">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Run tracker</span>
+          <span class="delta-chip" id="pillDelta">openFDA · live</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="lensbar" id="lensbar" aria-label="Global filter">
+    <div class="lensgrp"><span class="lenslabel">Jurisdiction</span><div class="lenschips" id="lensJuris"></div></div>
+    <div class="lensgrp"><span class="lenslabel">Profile</span><div class="lenschips" id="lensTech"></div></div>
+  </div>
+
+  <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+
+  <div class="toolbar" id="toolbar">
+    <label class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA3B5" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search" type="search" placeholder="Search…" autocomplete="off" />
+    </label>
+    <div class="chips" id="filters"></div>
+    <span class="count" id="count"></span>
+  </div>
+
+  <section id="askPanel" class="panel hidden" aria-label="Ask the knowledge base">
+    <h2>Ask MedReg <span class="ragtag">local RAG</span></h2>
+    <p class="lead">Retrieval-augmented search over the whole knowledge base — regulations, submissions, requirements, incidents, RTA &amp; fines, AI, and templates. Returns the most relevant entries, ranked. For <b>generative agentic answers</b>, run the full app with a local LLM (Ollama via <code>backend/agent.py</code>) — see the README.</p>
+    <div class="trk-actions">
+      <input id="askInput" class="askbox" placeholder="e.g., what cybersecurity evidence does a connected mobile SaMD 510(k) need?" autocomplete="off" />
+      <button class="btn primary" id="askBtn">Ask</button>
+    </div>
+    <div class="trk-results" id="askResults"></div>
+  </section>
+
+  <section id="trackerPanel" class="panel hidden" aria-label="Live tracker">
+    <h2>Live tracker</h2>
+    <p class="lead">Watches <b>every regulation</b> in the register for version/date changes and pulls live <b>device cybersecurity incidents</b> from the FDA's openFDA API — showing the <b>delta</b> since your last run. Runs in your browser; no key needed.</p>
+    <div class="trk-actions">
+      <button class="btn primary" id="runTracker">Run tracker now</button>
+      <button class="btn" id="clearSnap">Reset delta baseline</button>
+      <span class="trk-status" id="trkStatus">Not run yet.</span>
+    </div>
+    <h3 class="trk-sub">Regulation register <span id="regStatus" class="trk-status"></span></h3>
+    <div class="trk-register" id="regRegister"></div>
+    <h3 class="trk-sub">openFDA device incidents</h3>
+    <div class="trk-results" id="trkResults"></div>
+  </section>
+
+  <main id="view"></main>
+
+  <div id="editor" class="modal hidden" aria-modal="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div><h3 id="edTitle">Template</h3><span class="badge b-tpl" id="edCat"></span></div>
+        <button class="iconbtn" id="edClose" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="ed-left">
+          <label class="ed-field">Pre-fill for submission type
+            <select id="edSubmission"></select>
+          </label>
+          <div class="ed-field">Content
+            <div class="seg" id="edMode">
+              <button class="seg-btn on" data-mode="blank">Blank template</button>
+              <button class="seg-btn" data-mode="example">Worked example</button>
+            </div>
+          </div>
+          <div class="ed-block"><div class="ed-h">What to do</div><div id="edGuide" class="ed-guide"></div></div>
+          <div class="ed-block"><div class="ed-h">Evidence to include</div><ul id="edEvidence" class="ed-ev"></ul></div>
+          <div class="ed-block"><div class="ed-h">Documents in an excellent submission</div><ul id="edDocs" class="ed-ev"></ul></div>
+        </div>
+        <div class="ed-right">
+          <div class="ed-h">Edit in real time</div>
+          <textarea id="edText" spellcheck="false"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn primary" id="dlWord">Download Word</button>
+        <button class="btn" id="dlPdf">Download PDF</button>
+        <button class="btn" id="dlMd">Download source</button>
+        <button class="btn hidden" id="edPdfLink">View example PDF ↗</button>
+        <span class="ed-hint">Your edits apply to every download.</span>
+      </div>
+    </div>
+  </div>
+
+  <footer class="wrap">
+    <div>Curated reference compiled from FDA guidance (§524B; June 27 2025 final premarket cybersecurity guidance; PCCP final guidance), EU MDR/IVDR &amp; MDCG 2019-16, IMDRF, and named device incidents. <b>Verify every item against its linked source before regulatory use.</b></div>
+    <div style="margin-top:8px">Live data: openFDA (FDA). Templates are starting points, not legal advice.</div>
+  </footer>
+</div>
+  <div id="pdfViewer" class="pdf-modal hidden" role="dialog" aria-label="PDF viewer">
+    <div class="pdf-box">
+      <div class="pdf-bar">
+        <span id="pdfTitle" class="pdf-title">example.pdf</span>
+        <span class="pdf-actions">
+          <button class="btn" id="pdfDownload">Download</button>
+          <button class="btn" id="pdfNewTab">Open in new tab</button>
+          <button class="btn" id="pdfClose">Close ✕</button>
+        </span>
+      </div>
+      <iframe id="pdfFrame" class="pdf-frame" title="PDF preview" src="about:blank"></iframe>
+    </div>
+  </div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

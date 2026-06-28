@@ -1,0 +1,635 @@
+[
+  {
+    "id": "r-srm",
+    "cat": "Cybersecurity",
+    "name": "Security Risk Management Plan & file",
+    "cite": "524B(b)(2); 2025 guidance \u00a7V; AAMI SW96; ISO 14971",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req",
+      "hde",
+      "eu-ce"
+    ],
+    "desc": "Document the security risk process, threats, controls, and residual risk, integrated with the safety risk file.",
+    "artifacts": [
+      "Security risk management plan",
+      "Security risk assessment matrix",
+      "Traceability to controls"
+    ],
+    "regs": [
+      "sec524b",
+      "premarket-cyber-2025",
+      "aami-sw96",
+      "iso-14971",
+      "aami-tir57",
+      "nist-80030"
+    ],
+    "tech": [
+      "Software",
+      "Firmware",
+      "Connected",
+      "Cloud",
+      "SaMD",
+      "SiMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Stand up a security risk process tied into ISO 14971. Inventory assets, enumerate threats, rate exploitability x patient-harm, select controls, and record residual risk acceptance.",
+    "evidence": [
+      "Security risk management plan",
+      "Security risk assessment matrix",
+      "Traceability to controls"
+    ],
+    "if_not_implementable": "Document the gap as a security risk: record why the control is infeasible, the compensating controls, the residual risk, and formal risk acceptance signed by the security/quality owner."
+  },
+  {
+    "id": "r-threat",
+    "cat": "Cybersecurity",
+    "name": "Threat model",
+    "cite": "2025 guidance \u00a7V.A.2",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req",
+      "eu-ce"
+    ],
+    "desc": "System-level threat model (e.g., STRIDE) covering device, comms, cloud, and update paths; informs controls and testing.",
+    "artifacts": [
+      "Threat model document",
+      "Data-flow diagrams",
+      "Trust boundaries"
+    ],
+    "regs": [
+      "premarket-cyber-2025",
+      "iec-81001-5-1",
+      "nist-csf"
+    ],
+    "tech": [
+      "Software",
+      "Connected",
+      "Cloud",
+      "AWS",
+      "Azure",
+      "GCP",
+      "SaMD",
+      "SiMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Build a STRIDE threat model spanning the device, its wireless/USB interfaces, cloud/back-end, and the update path. Derive controls and test cases from each threat.",
+    "evidence": [
+      "Threat model document",
+      "Data-flow diagrams",
+      "Trust boundaries"
+    ],
+    "if_not_implementable": "If a threat cannot be fully mitigated, capture it as accepted residual risk with compensating controls and a monitoring/detection plan; reflect it in labeling."
+  },
+  {
+    "id": "r-sbom",
+    "cat": "Cybersecurity",
+    "name": "Software Bill of Materials (SBOM)",
+    "cite": "524B(b)(3); 2025 guidance \u00a7V.A.4(b)/\u00a7VII.C.3; NTIA minimum elements",
+    "applies": [
+      "510k-traditional",
+      "510k-special",
+      "pma",
+      "denovo-req",
+      "hde",
+      "eu-ce"
+    ],
+    "desc": "Machine- and human-readable SBOM of commercial, open-source, and off-the-shelf components, with support/EOL info and known vulnerabilities.",
+    "artifacts": [
+      "CycloneDX or SPDX SBOM",
+      "Known-vulnerability list",
+      "Support/EOL dates"
+    ],
+    "regs": [
+      "sec524b",
+      "premarket-cyber-2025"
+    ],
+    "tech": [
+      "Software",
+      "Firmware",
+      "Cloud",
+      "SaMD",
+      "SiMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Generate a CycloneDX/SPDX SBOM from your build pipeline, enrich with supplier/support/EOL and known CVEs, and keep it continuously updated through postmarket.",
+    "evidence": [
+      "CycloneDX or SPDX SBOM",
+      "Known-vulnerability list",
+      "Support/EOL dates"
+    ],
+    "if_not_implementable": "If a complete SBOM cannot be provided, FDA expects a written justification for each missing element and an addendum plan to supply it; you must still attest to no known critical vulnerabilities."
+  },
+  {
+    "id": "r-arch",
+    "cat": "Cybersecurity",
+    "name": "Security architecture views",
+    "cite": "2025 guidance \u00a7V.A.3",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req",
+      "eu-ce"
+    ],
+    "desc": "Global system, multi-patient harm, updateability/patchability, and security-use-case views of the device and connected systems.",
+    "artifacts": [
+      "Global system view",
+      "Updateability view",
+      "Security use case views"
+    ],
+    "regs": [
+      "premarket-cyber-2025"
+    ],
+    "tech": [
+      "Software",
+      "Connected",
+      "Cloud",
+      "AWS",
+      "Azure",
+      "GCP"
+    ],
+    "guidance": "Produce the four architecture views (global system, multi-patient harm, updateability, security use cases) showing trust boundaries, data flows, and the patch path.",
+    "evidence": [
+      "Global system view",
+      "Updateability view",
+      "Security use case views"
+    ],
+    "if_not_implementable": "If a view cannot be produced (e.g., third-party black-box component), state the limitation, provide the supplier's security documentation, and analyze the residual exposure."
+  },
+  {
+    "id": "r-controls",
+    "cat": "Cybersecurity",
+    "name": "Security controls (8 categories)",
+    "cite": "2025 guidance Appendix 1",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req",
+      "eu-ce"
+    ],
+    "desc": "Authentication, authorization, cryptography, code/data integrity, confidentiality, event detection/logging, resiliency/recovery, and firmware/SW updates.",
+    "artifacts": [
+      "Controls matrix",
+      "Design evidence per category"
+    ],
+    "regs": [
+      "premarket-cyber-2025",
+      "nist-80053",
+      "iso-27001"
+    ],
+    "tech": [
+      "Software",
+      "Hardware",
+      "Firmware",
+      "Connected",
+      "Cloud",
+      "AWS",
+      "Azure",
+      "GCP"
+    ],
+    "guidance": "Implement and evidence all eight control categories. For cloud (AWS/Azure/GCP), map shared-responsibility controls: IAM, KMS/HSM, network isolation, logging.",
+    "evidence": [
+      "Controls matrix",
+      "Design evidence per category"
+    ],
+    "if_not_implementable": "Submit a risk-based justification per FDA guidance: why the control is infeasible, the compensating controls (segmentation, physical access, logging), residual risk and acceptance, plus user labeling describing the limitation."
+  },
+  {
+    "id": "r-testing",
+    "cat": "Cybersecurity",
+    "name": "Cybersecurity testing",
+    "cite": "2025 guidance \u00a7V.B",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req",
+      "eu-ce"
+    ],
+    "desc": "Vulnerability scanning, SAST/DAST, software composition analysis, fuzzing, and penetration testing with reports & coverage rationale.",
+    "artifacts": [
+      "Pen-test report",
+      "Vuln scan results",
+      "SBOM/SCA results",
+      "Fuzz/abuse-case results"
+    ],
+    "regs": [
+      "premarket-cyber-2025",
+      "ul-2900"
+    ],
+    "tech": [
+      "Software",
+      "Firmware",
+      "Connected",
+      "Cloud",
+      "SaMD",
+      "SiMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Run SAST, DAST, software-composition analysis, fuzzing, and an independent penetration test. Provide reports plus a coverage rationale traced to the threat model.",
+    "evidence": [
+      "Pen-test report",
+      "Vuln scan results",
+      "SBOM/SCA results",
+      "Fuzz/abuse-case results"
+    ],
+    "if_not_implementable": "If a test type is not applicable, justify the exclusion against the threat model; if testing reveals unresolved findings, provide a remediation plan with timelines and interim mitigations."
+  },
+  {
+    "id": "r-cvd",
+    "cat": "Cybersecurity",
+    "name": "Vulnerability monitoring & CVD plan",
+    "cite": "524B(b)(1); Postmarket guidance",
+    "applies": [
+      "510k-traditional",
+      "510k-special",
+      "pma",
+      "denovo-req",
+      "hde",
+      "eu-ce"
+    ],
+    "desc": "Postmarket plan to monitor, identify, and address vulnerabilities, including a coordinated vulnerability disclosure process and timelines.",
+    "artifacts": [
+      "Postmarket vuln mgmt plan",
+      "CVD policy",
+      "Patch/update SLAs"
+    ],
+    "regs": [
+      "sec524b",
+      "postmarket-cyber",
+      "aami-tir97"
+    ],
+    "tech": [
+      "Software",
+      "Firmware",
+      "Connected",
+      "Cloud",
+      "SaMD",
+      "SiMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Publish a security@ intake and CVD policy, triage on SLAs, and run a postmarket loop matching SBOM components to CISA KEV and vendor feeds; patch within defined timelines.",
+    "evidence": [
+      "Postmarket vuln mgmt plan",
+      "CVD policy",
+      "Patch/update SLAs"
+    ],
+    "if_not_implementable": "If full patch capability is infeasible (e.g., legacy hardware), provide compensating controls, end-of-support communication, and a managed-risk plan; document this in labeling."
+  },
+  {
+    "id": "r-labeling",
+    "cat": "Cybersecurity",
+    "name": "Security labeling & documentation for users",
+    "cite": "2025 guidance \u00a7V.C",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req",
+      "eu-ce"
+    ],
+    "desc": "Security-relevant labeling: supported configurations, controls, update mechanisms, and known limitations (e.g., MDS2).",
+    "artifacts": [
+      "Security labeling",
+      "MDS2 form",
+      "Hardening/Configuration guide"
+    ],
+    "regs": [
+      "premarket-cyber-2025",
+      "udi-830"
+    ],
+    "tech": [
+      "Software",
+      "Hardware",
+      "Connected"
+    ],
+    "guidance": "Provide security labeling (MDS2), a hardening/secure-configuration guide, supported configurations, and known limitations for users and integrators.",
+    "evidence": [
+      "Security labeling",
+      "MDS2 form",
+      "Hardening/Configuration guide"
+    ],
+    "if_not_implementable": "If a security feature is absent, the labeling must clearly disclose the limitation and the compensating operational controls the user must apply."
+  },
+  {
+    "id": "r-pccp",
+    "cat": "AI",
+    "name": "Predetermined Change Control Plan (PCCP)",
+    "cite": "FDA PCCP final guidance (2024)",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req"
+    ],
+    "desc": "Pre-specify allowed AI/ML modifications: description of modifications, modification protocol (data/retraining/validation), and impact assessment.",
+    "artifacts": [
+      "Description of modifications",
+      "Modification protocol",
+      "Impact assessment"
+    ],
+    "regs": [
+      "pccp-2024",
+      "nist-ai-rmf"
+    ],
+    "tech": [
+      "SaMD",
+      "SiMD",
+      "AI",
+      "Cloud",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Pre-specify the bounded set of model changes, the protocol to make them (data, retraining, validation), and an impact assessment authorized at clearance.",
+    "evidence": [
+      "Description of modifications",
+      "Modification protocol",
+      "Impact assessment"
+    ],
+    "if_not_implementable": "If a change falls outside the PCCP, do not deploy it under the PCCP \u2014 submit a new marketing submission; document the decision rationale."
+  },
+  {
+    "id": "r-gmlp",
+    "cat": "AI",
+    "name": "Good Machine Learning Practice (GMLP) evidence",
+    "cite": "FDA-MHRA-HC GMLP (2021)",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req"
+    ],
+    "desc": "Demonstrate the 10 GMLP principles: representative data, reference standards, model design, human-AI team, and monitoring.",
+    "artifacts": [
+      "Data management plan",
+      "Reference-standard rationale",
+      "Human-factors evidence"
+    ],
+    "regs": [
+      "gmlp",
+      "nist-ai-rmf"
+    ],
+    "tech": [
+      "SaMD",
+      "AI",
+      "Cloud",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Evidence the 10 GMLP principles across data management, model design, human-AI team performance, and deployed-model monitoring.",
+    "evidence": [
+      "Data management plan",
+      "Reference-standard rationale",
+      "Human-factors evidence"
+    ],
+    "if_not_implementable": "If a principle cannot be met (e.g., limited representative data), justify it, quantify the impact on generalizability, and add postmarket monitoring to detect underperformance."
+  },
+  {
+    "id": "r-ai-transparency",
+    "cat": "AI",
+    "name": "AI transparency & labeling",
+    "cite": "FDA AI lifecycle draft (2025); EU AI Act",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req",
+      "eu-ce"
+    ],
+    "desc": "Model card-style transparency: intended use, inputs/outputs, performance, limitations, and user-facing explanations.",
+    "artifacts": [
+      "Model description / card",
+      "Performance summary",
+      "Limitations & subgroup performance"
+    ],
+    "regs": [
+      "ai-lifecycle-2025",
+      "eu-ai-act"
+    ],
+    "tech": [
+      "SaMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Publish a model card: intended use, inputs/outputs, performance with confidence, subgroup limitations, and user-facing explanations.",
+    "evidence": [
+      "Model description / card",
+      "Performance summary",
+      "Limitations & subgroup performance"
+    ],
+    "if_not_implementable": "If full transparency is constrained by IP, provide the safety-relevant performance and limitation information needed for safe use, with rationale for any withheld detail."
+  },
+  {
+    "id": "r-ai-perf",
+    "cat": "AI",
+    "name": "AI performance validation & bias/generalizability",
+    "cite": "FDA AI lifecycle draft (2025)",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req"
+    ],
+    "desc": "Validation on representative, independent data with subgroup analysis to characterize bias and generalizability.",
+    "artifacts": [
+      "Validation protocol & results",
+      "Subgroup performance",
+      "Data provenance"
+    ],
+    "regs": [
+      "ai-lifecycle-2025",
+      "nist-ai-rmf"
+    ],
+    "tech": [
+      "SaMD",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Validate on independent, representative data; report subgroup performance to characterize bias and generalizability; document data provenance.",
+    "evidence": [
+      "Validation protocol & results",
+      "Subgroup performance",
+      "Data provenance"
+    ],
+    "if_not_implementable": "If subgroup data is limited, disclose the limitation, avoid claims beyond the validated population, and commit to postmarket performance monitoring."
+  },
+  {
+    "id": "r-ai-monitoring",
+    "cat": "AI",
+    "name": "Postmarket AI performance monitoring",
+    "cite": "FDA AI lifecycle draft (2025)",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req"
+    ],
+    "desc": "Monitor real-world performance, drift, and triggers for retraining/notification within the PCCP envelope.",
+    "artifacts": [
+      "Monitoring plan",
+      "Drift thresholds",
+      "Retraining triggers"
+    ],
+    "regs": [
+      "ai-lifecycle-2025"
+    ],
+    "tech": [
+      "SaMD",
+      "AI",
+      "Cloud",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Monitor real-world performance and drift; define thresholds and retraining/notification triggers that stay inside the authorized PCCP.",
+    "evidence": [
+      "Monitoring plan",
+      "Drift thresholds",
+      "Retraining triggers"
+    ],
+    "if_not_implementable": "If real-world monitoring is constrained, define proxy metrics and a periodic re-validation schedule, and state the limitation in labeling."
+  },
+  {
+    "id": "r-sw-doc",
+    "cat": "Software",
+    "name": "Software documentation (Documentation Level)",
+    "cite": "FDA Content of Premarket Submissions for Device Software Functions (2023)",
+    "applies": [
+      "510k-traditional",
+      "510k-special",
+      "pma",
+      "denovo-req",
+      "eu-ce"
+    ],
+    "desc": "Basic vs Enhanced documentation level: architecture, requirements, V&V, unresolved anomalies.",
+    "artifacts": [
+      "Software description",
+      "Architecture",
+      "V&V",
+      "Anomaly list"
+    ],
+    "regs": [
+      "part-807",
+      "iec-62304"
+    ],
+    "tech": [
+      "Software",
+      "Firmware",
+      "SaMD",
+      "SiMD",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Select Basic vs Enhanced documentation level by risk; supply software description, architecture, requirements, V&V, and unresolved-anomaly list.",
+    "evidence": [
+      "Software description",
+      "Architecture",
+      "V&V",
+      "Anomaly list"
+    ],
+    "if_not_implementable": "If an artifact is unavailable for a legacy/OTS component, provide the available documentation plus a risk assessment of the gap."
+  },
+  {
+    "id": "r-qms",
+    "cat": "QMS",
+    "name": "Quality management system",
+    "cite": "21 CFR 820 / QMSR; ISO 13485",
+    "applies": [
+      "pma",
+      "eu-ce"
+    ],
+    "desc": "Design controls, CAPA, supplier controls, and (2026) QMSR-harmonized ISO 13485 processes.",
+    "artifacts": [
+      "Design history file",
+      "CAPA records",
+      "Supplier agreements"
+    ],
+    "regs": [
+      "qmsr",
+      "iso-13485"
+    ],
+    "tech": [
+      "Software",
+      "Hardware"
+    ],
+    "guidance": "Operate design controls, CAPA, and supplier controls under ISO 13485 / the 2026 QMSR; keep a design history file.",
+    "evidence": [
+      "Design history file",
+      "CAPA records",
+      "Supplier agreements"
+    ],
+    "if_not_implementable": "Nonconformities are handled through CAPA; document the deviation, containment, root cause, and corrective action."
+  },
+  {
+    "id": "r-clinical",
+    "cat": "Clinical",
+    "name": "Clinical / performance evidence",
+    "cite": "21 CFR 814; MDR Annex XIV",
+    "applies": [
+      "pma",
+      "denovo-req",
+      "eu-ce"
+    ],
+    "desc": "Clinical evaluation or investigation appropriate to risk and novelty.",
+    "artifacts": [
+      "Clinical evaluation report",
+      "Study protocol & results"
+    ],
+    "regs": [
+      "part-814",
+      "eu-mdr",
+      "iso-14155"
+    ],
+    "tech": [
+      "SaMD",
+      "Hardware",
+      "AI",
+      "Mobile-iOS",
+      "Mobile-Android"
+    ],
+    "guidance": "Provide clinical or performance evidence proportional to risk and novelty; for AI, characterize performance in the intended population.",
+    "evidence": [
+      "Clinical evaluation report",
+      "Study protocol & results"
+    ],
+    "if_not_implementable": "If clinical data is limited, justify with a benefit-risk rationale, real-world evidence, or a postmarket study commitment."
+  },
+  {
+    "id": "r-interop",
+    "cat": "Cybersecurity",
+    "name": "Interoperability",
+    "cite": "FDA Interoperability guidance (2017)",
+    "applies": [
+      "510k-traditional",
+      "pma",
+      "denovo-req",
+      "eu-ce"
+    ],
+    "desc": "Define electronic interfaces, data exchange, and the security of interoperable connections.",
+    "artifacts": [
+      "Interface specs",
+      "Risk of misconnection analysis"
+    ],
+    "regs": [
+      "premarket-cyber-2025",
+      "iso-80001"
+    ],
+    "tech": [
+      "Connected",
+      "Cloud",
+      "Software"
+    ],
+    "guidance": "Specify electronic interfaces and data exchange; analyze misconnection/interoperability risk and secure the connections.",
+    "evidence": [
+      "Interface specs",
+      "Risk of misconnection analysis"
+    ],
+    "if_not_implementable": "If an interface cannot be fully secured, analyze and disclose the misconnection risk and provide operational mitigations in labeling."
+  }
+]

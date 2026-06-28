@@ -1,0 +1,385 @@
+[
+  {
+    "id": "cybersecurity-management-plan",
+    "name": "Cybersecurity Management Plan",
+    "category": "Cybersecurity",
+    "content": "# Cybersecurity Management Plan\n**Device:** <name / model>  \u00b7 **Manufacturer:** <legal name>  \u00b7 **Submission:** <510(k)/PMA/De Novo>\n**Regulatory basis:** FD&C Act \u00a7524B; FDA Premarket Cybersecurity Guidance (June 27, 2025); AAMI SW96; ISO 14971; IEC 81001-5-1\n\n## 1. Scope & device context\n- Intended use / intended environment:\n- Connectivity (Wi-Fi / Bluetooth / USB / cellular / cloud) \u2014 confirms 'cyber device' status:\n- Related systems (update servers, mobile apps, cloud):\n\n## 2. Roles & governance\n- Product security owner / PSIRT contact:\n- Secure Product Development Framework (SPDF) reference:\n\n## 3. Security risk management (ref. SW96 / ISO 14971)\n- Risk process & acceptance criteria:\n- Link to Security Risk Assessment file:\n\n## 4. Threat model\n- Methodology (e.g., STRIDE) & link to model:\n\n## 5. Security architecture views\n- [ ] Global system view  [ ] Multi-patient harm view  [ ] Updateability/patchability view  [ ] Security use case views\n\n## 6. SBOM\n- Format (CycloneDX/SPDX), location, support/EOL, known vulnerabilities:\n\n## 7. Verification & validation (testing)\n- [ ] Vulnerability scan  [ ] SAST  [ ] DAST  [ ] SCA  [ ] Fuzzing  [ ] Penetration test\n\n## 8. Postmarket plan\n- Monitoring, CVD policy, patch/update SLAs, 806/803 reporting triggers:\n\n## 9. Labeling\n- Security labeling, MDS2, hardening guide:\n",
+    "guidance": "The umbrella plan FDA reviewers open first. Fill the device context and connectivity (this confirms 'cyber device' status), then link out to each sub-artifact. Keep it traceable.",
+    "evidence": [
+      "Completed plan",
+      "Links to SRM file, threat model, SBOM, test reports",
+      "Named PSIRT/security owner"
+    ],
+    "evidence_docs": [
+      "Cybersecurity Management Plan (this doc)",
+      "Security Risk Management Report (AAMI SW96)",
+      "Threat Model v1.2",
+      "SBOM (CycloneDX 1.5)",
+      "Cybersecurity Test Report (3rd-party pen test)",
+      "Postmarket Surveillance & CVD Plan",
+      "Security Labeling / MDS2",
+      "Architecture Views package"
+    ],
+    "example": "# Cybersecurity Management Plan \u2014 BD Alaris\u2122 Infusion System\n**Manufacturer:** Becton, Dickinson and Company  \u00b7  **Status:** 510(k) cleared Jul 21, 2025-era update (2023) with enhanced cybersecurity + EMR interoperability\n**Cyber device:** Yes (Wi-Fi + EMR interoperability, multi-module connected platform)\n**Basis:** \u00a7524B; FDA Premarket Cybersecurity Guidance (2025); AAMI SW96; ISO 14971; IEC 81001-5-1\n\n## 1. Scope & context\nConnected acute-care infusion platform: Point-of-Care Unit (PCU) coordinates pump/syringe/PCA modules and exchanges programming with hospital EMRs. Related systems: device manager, EMR interface, signed update channel.\n## 2. Governance / SPDF\nProduct Security Owner + PSIRT own the total product lifecycle; security activities run inside the SPDF integrated with the QMS.\n## 3. Security risk management\nSecurity risk file per SW96 + ISO 14971; threats scored on exploitability \u00d7 patient-harm; residual risks formally accepted by Security + Quality.\n## 4. Architecture views\nGlobal system \u00b7 multi-patient harm \u00b7 updateability/patchability \u00b7 security use-case views.\n## 5. SBOM\nCycloneDX, OS/networking/crypto components, support/EOL + known-vulnerability list, maintained postmarket.\n## 6. Controls (8 categories)\nAuthentication, authorization, cryptography, code/data integrity, confidentiality, detection/logging, resiliency/recovery, signed updates.\n## 7. Testing\nSAST, SCA, DAST of network/EMR interfaces, independent pen test; coverage traced to threat model.\n## 8. Postmarket & CVD\nSBOM\u2192CVE + CISA KEV monitoring; published CVD; severity-based patch timelines; 806/803 assessment.\n## 9. Labeling\nMDS2 + hardening guide; supported network configurations.\n\n_Illustrative reconstruction grounded in the BD Alaris System (public FDA/BD 510(k) clearance, Jul 2023). Not actual confidential submission text._\n",
+    "example_pdf": "cybersecurity-management-plan-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "BD Alaris (infusion)",
+        "file": "cybersecurity-management-plan-example.pdf"
+      },
+      {
+        "label": "Abbott FreeStyle Libre 3 Plus (CGM)",
+        "file": "csmp-abbott-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "security-risk-assessment",
+    "name": "Security Risk Assessment",
+    "category": "Cybersecurity",
+    "content": "# Security Risk Assessment (SW96 / ISO 14971-aligned)\n**Device:** <name>  \u00b7 **Version:** <x.y>  \u00b7 **Date:** <yyyy-mm-dd>\n\n| ID | Asset | Threat (STRIDE) | Vulnerability | Exploitability | Patient-harm impact | Control(s) | Residual risk |\n|----|-------|-----------------|---------------|----------------|---------------------|------------|---------------|\n| S-01 | | Spoofing | | High/Med/Low | | Authentication | |\n| S-02 | | Tampering | | | | Integrity / signing | |\n| S-03 | | Repudiation | | | | Logging | |\n| S-04 | | Information disclosure | | | | Encryption | |\n| S-05 | | Denial of service | | | | Resiliency / recovery | |\n| S-06 | | Elevation of privilege | | | | Authorization | |\n\n**Risk acceptance criteria:** <define>  \u00b7  **Overall residual risk acceptable?** <yes/no + rationale>\n",
+    "guidance": "Enumerate assets and threats with STRIDE, score exploitability and patient-harm separately, then map controls and residual risk. Tie acceptance criteria to your safety risk file.",
+    "evidence": [
+      "Risk matrix with residual risk",
+      "Acceptance criteria & rationale",
+      "Traceability to controls and tests"
+    ],
+    "evidence_docs": [
+      "Security Risk Management Report",
+      "Risk matrix (asset\u00d7threat\u00d7control)",
+      "Residual-risk acceptance record",
+      "Traceability matrix (threat\u2192control\u2192test)"
+    ],
+    "example": "# Security Risk Assessment \u2014 BD Alaris\u2122 Infusion System (excerpt)\n| ID | Asset | Threat (STRIDE) | Exploit. | Patient harm | Control | Residual |\n|----|-------|-----------------|----------|--------------|---------|----------|\n| S-01 | EMR interface | Spoofing | Med | Med (wrong auto-program) | Mutual auth, order validation | Low (accepted) |\n| S-02 | Software update | Tampering | Low | High (malicious image) | Code signing, integrity check | Low |\n| S-03 | Service interface | Elevation | Med | Med | RBAC, least privilege | Low |\n| S-04 | PHI in transit | Info disclosure | Med | Low | TLS, key management | Low |\n| S-05 | Network | Denial of service | Med | Med (delayed therapy) | Safe-state, local fallback | Low (accepted) |\n\nAcceptance: S-01/S-05 accepted with compensating controls (segmentation, facility monitoring), reflected in labeling; signed by Security + Quality.\nIf a control can't be implemented: document the justification, compensating controls, residual risk + acceptance, and the labeling that discloses the limitation.\n\n_Illustrative reconstruction grounded in the BD Alaris System (public sources). Not actual confidential submission text._\n",
+    "example_pdf": "security-risk-assessment-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "BD Alaris",
+        "file": "security-risk-assessment-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "threat-model",
+    "name": "Threat Model",
+    "category": "Cybersecurity",
+    "content": "# Threat Model\n**Device:** <name>  \u00b7  **Method:** STRIDE  \u00b7  **Date:** <yyyy-mm-dd>\n\n## 1. System decomposition\n- Components, data stores, external entities:\n- Data-flow diagram (link):\n- Trust boundaries:\n\n## 2. Threats by element (STRIDE)\n- Spoofing / Tampering / Repudiation / Information disclosure / DoS / Elevation of privilege\n\n## 3. Attack surfaces\n- Physical ports (USB/serial), wireless (BLE/Wi-Fi/cellular), network services, update channel, cloud/API, mobile app\n\n## 4. Mitigations & residual risk\n- Map each threat \u2192 control \u2192 test \u2192 residual risk (link to Security Risk Assessment)\n",
+    "guidance": "Decompose the system, draw data-flow diagrams and trust boundaries, then walk STRIDE per element. Every threat needs a control and a test.",
+    "evidence": [
+      "Data-flow diagrams",
+      "STRIDE threat table",
+      "Threat-to-control-to-test traceability"
+    ],
+    "evidence_docs": [
+      "Threat Model document",
+      "Data-flow diagrams",
+      "Trust-boundary diagram",
+      "Threat\u2192control\u2192test traceability"
+    ],
+    "example": "# Threat Model \u2014 Dexcom G7 (connected CGM + mobile app)  \u00b7  STRIDE\n**Status:** FDA-cleared iCGM (2022); Bluetooth Low Energy to the G7 app (iOS/Android) and Apple Watch; cloud (Clarity) + share.\n## Decomposition\nEntities: sensor/transmitter, mobile app, BLE link, Dexcom cloud, follower/share, Apple Watch. Trust boundaries: sensor\u2194phone (BLE), phone\u2194cloud (TLS), cloud\u2194followers.\n## Key threats & mitigations\n- Spoofing (BLE): bonded pairing, session keys \u2192 BLE security tests\n- Tampering (readings/alerts): integrity checks, validated ranges \u2192 fuzz + unit tests\n- Info disclosure (glucose/PHI): TLS 1.2+, mobile secure storage (Keychain/Keystore) \u2192 MobSF, network capture\n- DoS (alert suppression): local alerting independent of cloud \u2192 fault-injection\n- Elevation (cloud/API): least-privilege IAM, scoped tokens \u2192 IAM review\n## Residual\nRF jamming of BLE accepted; mitigated by on-device alerting and gap handling.\n\n_Illustrative reconstruction grounded in Dexcom G7 (public clearance + connectivity facts). Not actual confidential submission text._",
+    "example_pdf": "threat-model-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "Dexcom G7",
+        "file": "threat-model-example.pdf"
+      },
+      {
+        "label": "Insulet Omnipod 5 (AID pump)",
+        "file": "threat-model-omnipod-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "sbom-cyclonedx",
+    "name": "SBOM (CycloneDX skeleton)",
+    "category": "Cybersecurity",
+    "content": "{\n  \"bomFormat\": \"CycloneDX\",\n  \"specVersion\": \"1.5\",\n  \"metadata\": {\n    \"component\": { \"type\": \"application\", \"name\": \"<device-software>\", \"version\": \"<x.y.z>\" },\n    \"supplier\": { \"name\": \"<manufacturer>\" }\n  },\n  \"components\": [\n    {\n      \"type\": \"library\",\n      \"name\": \"<component>\",\n      \"version\": \"<version>\",\n      \"supplier\": { \"name\": \"<supplier>\" },\n      \"licenses\": [{ \"license\": { \"id\": \"<SPDX-id>\" } }],\n      \"properties\": [\n        { \"name\": \"support:level\", \"value\": \"<supported/EOL>\" },\n        { \"name\": \"support:endOfSupport\", \"value\": \"<yyyy-mm-dd>\" }\n      ]\n    }\n  ],\n  \"vulnerabilities\": []\n}\n",
+    "guidance": "Emit this from your build (don't hand-write it). Add supplier, license, support level, and end-of-support per component, and attach a known-vulnerability list.",
+    "evidence": [
+      "Machine-readable SBOM (CycloneDX/SPDX)",
+      "Support/EOL per component",
+      "Known-vulnerability list"
+    ],
+    "evidence_docs": [
+      "Machine-readable SBOM (CycloneDX 1.5 JSON)",
+      "Known-vulnerability report (Grype)",
+      "Support/EOL register"
+    ],
+    "example": "{\n  \"bomFormat\": \"CycloneDX\", \"specVersion\": \"1.5\",\n  \"metadata\": { \"component\": { \"type\": \"application\", \"name\": \"alaris-pcu-fw\", \"version\": \"<cleared-version>\" },\n                \"supplier\": { \"name\": \"Becton, Dickinson and Company\" } },\n  \"components\": [\n    { \"type\": \"library\", \"name\": \"openssl\", \"version\": \"3.0.x\", \"licenses\": [{ \"license\": { \"id\": \"Apache-2.0\" } }],\n      \"properties\": [{ \"name\": \"support:level\", \"value\": \"supported\" }] },\n    { \"type\": \"library\", \"name\": \"network-stack\", \"version\": \"x.y\" },\n    { \"type\": \"operating-system\", \"name\": \"rtos\", \"version\": \"x.y\" }\n  ], \"vulnerabilities\": []\n}\n\nIllustrative reconstruction grounded in the BD Alaris System (public sources). Not actual confidential submission text.",
+    "example_pdf": "sbom-cyclonedx-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "BD Alaris",
+        "file": "sbom-cyclonedx-example.pdf"
+      },
+      {
+        "label": "Insulet Omnipod 5 (AID pump)",
+        "file": "sbom-omnipod-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "vulnerability-disclosure-policy",
+    "name": "Coordinated Vulnerability Disclosure Policy",
+    "category": "Cybersecurity",
+    "content": "# Coordinated Vulnerability Disclosure (CVD) Policy\n**Manufacturer:** <name>  \u00b7  **Contact:** security@<domain>  \u00b7  **PGP / report portal:** <link>\n\n## Scope\n- Products & versions covered:\n\n## How to report\n- Channel, expected acknowledgment time (e.g., 3 business days):\n\n## Our commitments\n- Triage SLA, status updates, no legal action for good-faith research (safe harbor):\n\n## Coordination & timelines\n- Target remediation windows by severity (e.g., Critical \u2264 X days), CISA/ICS-CERT coordination, advisory publication:\n\n## Reporting to regulators\n- Triggers for 21 CFR 806 correction/removal and 803 MDR reporting:\n",
+    "guidance": "Make it easy to report to you and clear what you'll do. State a safe-harbor, acknowledgment and remediation SLAs, and how you coordinate with CISA and notify regulators.",
+    "evidence": [
+      "Published CVD policy & security contact",
+      "Triage/remediation SLAs",
+      "Regulator-reporting triggers (806/803)"
+    ],
+    "evidence_docs": [
+      "Published CVD policy (web)",
+      "security.txt",
+      "Triage SLA record",
+      "Advisory template"
+    ],
+    "example": "# Coordinated Vulnerability Disclosure Policy \u2014 (modeled on Medtronic's public product-security program)\n**Contact:** a public security page + security@ intake; PGP key published.  **Scope:** marketed products + connected services.\n## Reporting & safe harbor\nGood-faith research welcomed; acknowledgment within a stated window; no legal action for testing within policy.\n## Coordination\nTriage and validate; assign/track CVEs (as a CNA or via a CNA); coordinate with CISA/ICS-CERT; publish security bulletins/advisories.\n## Timelines\nSeverity-based remediation targets; interim mitigations communicated to customers; advisory at fix availability.\n## Regulator reporting\nAssess 21 CFR 806 correction/removal and 803 MDR triggers; align to FDA postmarket cybersecurity guidance.\n\n_Illustrative reconstruction modeled on Medtronic's publicly documented coordinated-disclosure/PSIRT program. Not actual confidential text._",
+    "example_pdf": "vulnerability-disclosure-policy-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "Medtronic",
+        "file": "vulnerability-disclosure-policy-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "postmarket-cyber-plan",
+    "name": "Postmarket Cybersecurity Plan",
+    "category": "Cybersecurity",
+    "content": "# Postmarket Cybersecurity Management Plan\n**Device:** <name>  \u00b7  **Regulatory basis:** \u00a7524B(b)(1); FDA Postmarket Cybersecurity guidance\n\n## 1. Monitoring\n- Sources: SBOM-to-CVE matching, CISA KEV, vendor feeds, researcher reports\n\n## 2. Assessment\n- Exploitability + patient-harm scoring; controlled vs uncontrolled risk\n\n## 3. Remediation\n- Patch/update mechanism, validation, deployment, customer notification \u2264 30 days for vulnerabilities\n\n## 4. Disclosure & reporting\n- CVD process, advisory publication, 806/803 triggers\n\n## 5. Metrics\n- Mean time to remediate, % devices updated, open critical vulns\n",
+    "guidance": "Show the loop: monitor sources (SBOM->CVE, CISA KEV), assess exploitability x harm, remediate and notify within timelines. Define your metrics.",
+    "evidence": [
+      "Monitoring sources & cadence",
+      "Severity-based patch SLAs",
+      "Customer-notification process (<=30 days)"
+    ],
+    "evidence_docs": [
+      "Postmarket Surveillance Plan",
+      "Monitoring source list",
+      "Patch SLA matrix",
+      "Customer-notification template"
+    ],
+    "example": "# Postmarket Cybersecurity Plan \u2014 (modeled on a large connected-device maker, e.g., Medtronic)\n## Monitoring\nSBOM\u2192CVE matching daily, CISA KEV, vendor PSIRT feeds, researcher reports via CVD intake.\n## Assessment\nScore exploitability \u00d7 patient-harm; classify controlled vs uncontrolled risk per FDA postmarket guidance; CVSS + clinical impact.\n## Remediation & notification\nSeverity-based patch SLAs; signed OTA/staged deployment with rollback; customer security bulletins.\n## Reporting\n21 CFR 806/803 assessment; coordinate advisories with CISA.\n## Metrics\nMTTR, % fleet on supported versions, open critical vulnerabilities.\n\n_Illustrative reconstruction grounded in publicly documented PSIRT practice. Not actual confidential text._",
+    "example_pdf": "postmarket-cyber-plan-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "Medtronic",
+        "file": "postmarket-cyber-plan-example.pdf"
+      },
+      {
+        "label": "Abbott FreeStyle Libre (CGM)",
+        "file": "postmarket-abbott-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "premarket-cyber-checklist",
+    "name": "Premarket Cybersecurity Documentation Checklist",
+    "category": "Cybersecurity",
+    "content": "# Premarket Cybersecurity Documentation Checklist (\u00a7524B / 2025 guidance)\n- [ ] Cyber-device determination & rationale (connectivity)\n- [ ] Security risk management plan + assessment file (SW96/14971)\n- [ ] Threat model (STRIDE) + data-flow diagrams\n- [ ] Security architecture views (global / multi-patient harm / updateability / use-case)\n- [ ] Security controls matrix (8 categories: authn, authz, crypto, integrity, confidentiality, detection/logging, resiliency/recovery, updates)\n- [ ] SBOM (machine + human readable) with support/EOL + known vulns\n- [ ] Cybersecurity testing: vuln scan, SAST, DAST, SCA, fuzzing, penetration test (+ coverage rationale)\n- [ ] Postmarket vulnerability management + CVD plan with timelines\n- [ ] Security labeling / MDS2 / hardening guide\n- [ ] Interoperability interface + misconnection risk analysis\n",
+    "guidance": "Use this as the pre-submission gate. Every unchecked box is a likely Refuse-to-Accept. Attach the artifact next to each item.",
+    "evidence": [
+      "Each checklist item satisfied with a linked artifact"
+    ],
+    "evidence_docs": [
+      "Each artifact below, attached to the eSTAR submission"
+    ],
+    "example": "# Premarket Cybersecurity Checklist \u2014 BD Alaris\u2122 Infusion System (all satisfied)\n- [x] Cyber-device determination \u2192 CSMP \u00a71 (Wi-Fi + EMR interoperability)\n- [x] Security risk management plan + file \u2192 SRM report (SW96/14971)\n- [x] Threat model + DFDs \u2192 STRIDE model\n- [x] Architecture views (4) \u2192 architecture package\n- [x] Controls matrix (8 categories) \u2192 controls matrix\n- [x] SBOM (machine+human) + known vulns \u2192 CycloneDX + vuln list\n- [x] Testing: SAST/DAST/SCA/fuzz/pen \u2192 reports + coverage rationale\n- [x] Postmarket + CVD plan \u2192 postmarket + CVD plan\n- [x] Security labeling / MDS2 \u2192 labeling + MDS2\n- [x] Interoperability + misconnection analysis \u2192 interoperability analysis\n\nSince Oct 1, 2023 FDA refuses to accept cyber-device submissions missing \u00a7524B content \u2014 each unchecked box is a likely RTA.\n\n_Illustrative reconstruction grounded in the BD Alaris System (public sources). Not actual confidential submission text._\n",
+    "example_pdf": "premarket-cyber-checklist-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "BD Alaris",
+        "file": "premarket-cyber-checklist-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "pccp-ai",
+    "name": "Predetermined Change Control Plan (AI)",
+    "category": "AI",
+    "content": "# Predetermined Change Control Plan (PCCP)\n**AI/ML device:** <name>  \u00b7  **Basis:** FDA PCCP final guidance (2024)\n\n## 1. Description of modifications\n- What may change (e.g., re-training on new data, threshold tuning, added input sources) and bounds:\n\n## 2. Modification protocol\n- Data management (provenance, quality, independence):\n- Re-training / re-tuning methodology:\n- Performance evaluation (metrics, acceptance criteria, subgroup analysis):\n- Update & versioning procedures:\n\n## 3. Impact assessment\n- Benefits, risks, and how risks are controlled & verified for each modification type:\n\n## 4. Transparency\n- How users are informed of changes (labeling/version notes):\n",
+    "guidance": "Define the bounded changes you may make, the protocol to make them safely, and the impact assessment \u2014 all authorized at clearance so you don't re-file for each retrain.",
+    "evidence": [
+      "Description of modifications",
+      "Modification protocol (data/retrain/validate)",
+      "Impact assessment"
+    ],
+    "evidence_docs": [
+      "PCCP (this doc)",
+      "Modification protocol",
+      "Performance/validation plan",
+      "Impact assessment",
+      "Transparency/labeling note"
+    ],
+    "example": "# Predetermined Change Control Plan \u2014 LumineticsCore\u2122 / IDx-DR (autonomous AI for diabetic retinopathy)\n**Manufacturer:** Digital Diagnostics  \u00b7  **Status:** De Novo DEN180001 (2018), first FDA-authorized autonomous diagnostic AI; later 510(k) on its own predicate (2021)\n**AI structure:** image-quality AI + diagnostic AI \u2192 autonomous mtmDR result  \u00b7  **Public thresholds:** 85% sensitivity / 82.5% specificity (900-patient pivotal trial)\n\n## 1. Description of modifications\n- Periodic re-training of the diagnostic algorithm on additional labeled fundus images (intended use unchanged)\n- Bounded re-tuning of the operating threshold within pre-specified limits\n- Support for additional compatible fundus cameras after equivalence testing\n## 2. Modification protocol\nData: minimum size + demographic representativeness; independent frozen test set (no leakage).\nEvaluation: maintain sensitivity/specificity \u2265 cleared thresholds (85% / 82.5%) overall and per subgroup; no degradation on the locked test set.\nRelease: versioned with documented validation + rollback.\n## 3. Impact assessment\nRe-training \u2192 subgroup drift \u2192 locked acceptance gates + subgroup analysis. Threshold \u2192 sensitivity loss \u2192 bounded + re-validate. New camera \u2192 domain shift \u2192 equivalence testing.\n## 4. Transparency\nEach in-scope release adds a labeling version note (date, data summary, performance delta). Changes beyond this envelope require a new submission.\n\n_Illustrative reconstruction grounded in IDx-DR / LumineticsCore (De Novo DEN180001; Abr\u00e0moff et al. 2018; FDA PCCP guidance 2024). Not actual confidential submission text._\n",
+    "example_pdf": "pccp-ai-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "IDx-DR / LumineticsCore",
+        "file": "pccp-ai-example.pdf"
+      },
+      {
+        "label": "Insulet Omnipod 5 (AID algorithm)",
+        "file": "pccp-omnipod-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "gmlp-checklist",
+    "name": "GMLP Checklist (10 principles)",
+    "category": "AI",
+    "content": "# Good Machine Learning Practice (GMLP) Checklist\n- [ ] 1. Multidisciplinary expertise across the lifecycle\n- [ ] 2. Good software engineering & security practices\n- [ ] 3. Clinical study participants & datasets representative of intended population\n- [ ] 4. Training datasets independent of test sets\n- [ ] 5. Reference datasets based on best available methods\n- [ ] 6. Model design tailored to data & intended use\n- [ ] 7. Focus on the human-AI team performance\n- [ ] 8. Testing under clinically relevant conditions\n- [ ] 9. Clear, essential information for users\n- [ ] 10. Deployed models monitored for performance & re-training risks managed\n",
+    "guidance": "Walk the 10 principles and attach evidence for each \u2014 especially representative data, independent test sets, and deployed-model monitoring.",
+    "evidence": [
+      "Data management & representativeness",
+      "Independent train/test split",
+      "Monitoring plan"
+    ],
+    "evidence_docs": [
+      "GMLP evidence pack",
+      "Data management plan",
+      "Train/test independence statement",
+      "Monitoring plan"
+    ],
+    "example": "# GMLP Checklist \u2014 Viz.ai LVO (computer-aided triage AI for stroke)  \u00b7  satisfied with evidence\n**Status:** De Novo (2018), first FDA-authorized computer-aided triage & notification software; analyzes CTA, alerts the stroke team.\n- [x] 1 Multidisciplinary expertise \u2192 clinical neuro + ML + security\n- [x] 2 Good SW & security engineering \u2192 SDLC + threat model (HIPAA-compliant comms)\n- [x] 3 Representative data \u2192 multi-site CTA across scanners/demographics\n- [x] 4 Independent train/test \u2192 frozen test set, no leakage\n- [x] 5 Reference standard \u2192 neuroradiologist adjudication of LVO\n- [x] 6 Model tailored to use \u2192 LVO detection on CTA\n- [x] 7 Human-AI team \u2192 notification augments, does not replace, the specialist read\n- [x] 8 Clinically relevant testing \u2192 time-to-notification + detection performance\n- [x] 9 User info \u2192 intended use, performance, limitations communicated\n- [x] 10 Monitoring \u2192 real-world performance + drift monitoring\n\n_Illustrative reconstruction grounded in Viz.ai LVO (public De Novo facts). Not actual confidential submission text._",
+    "example_pdf": "gmlp-checklist-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "Viz.ai LVO",
+        "file": "gmlp-checklist-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "510k-cyber-section",
+    "name": "510(k) Cybersecurity Section Outline",
+    "category": "Cybersecurity",
+    "content": "# 510(k) \u2014 Cybersecurity Section (eSTAR)\n1. Device cyber description & connectivity (cyber-device status)\n2. Security risk management summary (link to file)\n3. Threat model summary\n4. Architecture views\n5. Security controls implemented (8 categories)\n6. SBOM (attach machine-readable + summary)\n7. Cybersecurity testing summary + reports\n8. Postmarket plan & CVD\n9. Security labeling\n10. Conclusions / reasonable assurance of cybersecurity\n",
+    "guidance": "The cybersecurity section of an eSTAR 510(k). Summarize each artifact and conclude with the reasonable-assurance statement reviewers look for.",
+    "evidence": [
+      "Summaries of SRM, threat model, architecture, SBOM, testing",
+      "Reasonable-assurance conclusion"
+    ],
+    "evidence_docs": [
+      "510(k) cybersecurity section (eSTAR)",
+      "All referenced cyber artifacts"
+    ],
+    "example": "# 510(k) Cybersecurity Section \u2014 Dexcom G7 (connected mobile iCGM)  \u00b7  summary\n1. Cyber device: Yes \u2014 BLE + mobile app (iOS/Android) + cloud (Clarity/share).\n2. Security risk management \u2192 SRM file (SW96/14971), residual risks accepted.\n3. Threat model \u2192 STRIDE across sensor/phone/cloud (see threat-model example).\n4. Architecture views \u2192 global, multi-patient (cloud), updateability, use-case.\n5. Controls (8 categories) \u2192 BLE bonding, TLS, mobile secure storage, signed app/firmware, logging.\n6. SBOM \u2192 CycloneDX incl. mobile + embedded components; 0 critical CVEs.\n7. Testing \u2192 SAST/DAST/SCA, BLE fuzzing, mobile (MobSF/MASVS), independent pen test.\n8. Postmarket + CVD \u2192 monitoring + disclosure policy.\n9. Labeling \u2192 security labeling + secure-setup guidance for the app.\n10. Conclusion: reasonable assurance of cybersecurity for a connected CGM.\n\n_Illustrative reconstruction grounded in Dexcom G7 (public facts). Not actual confidential submission text._",
+    "example_pdf": "510k-cyber-section-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "Dexcom G7",
+        "file": "510k-cyber-section-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "presub-request",
+    "name": "Pre-Submission (Q-Sub) Request",
+    "category": "Submission",
+    "content": "# Pre-Submission (Q-Sub) Request\n**Device:** <name>  \u00b7  **Sponsor:** <name>  \u00b7  **Type:** Pre-Submission\n\n## 1. Purpose & specific questions for FDA\n1.\n2.\n\n## 2. Device description & intended use\n\n## 3. Regulatory history / proposed pathway\n\n## 4. Proposed testing / cybersecurity strategy / PCCP (if AI)\n\n## 5. Meeting request & preferred format/date\n",
+    "guidance": "Ask FDA specific, answerable questions before you submit. For novel cyber/AI devices, align your testing and PCCP strategy here to de-risk the submission.",
+    "evidence": [
+      "Specific questions",
+      "Proposed cyber/PCCP strategy",
+      "Meeting request"
+    ],
+    "evidence_docs": [
+      "Pre-Sub cover letter",
+      "Specific questions",
+      "Draft cyber/PCCP strategy",
+      "Proposed test plan"
+    ],
+    "example": "# Pre-Submission (Q-Sub) \u2014 connected CGM (modeled on a Dexcom-class iCGM)\n## Questions for FDA\n1. Is the cybersecurity test scope (SAST/DAST/SCA, BLE fuzzing, mobile MASVS, pen test) adequate for a connected CGM + mobile app?\n2. Are the proposed security architecture views sufficient given the cloud + follower-share ecosystem?\n3. For mobile, is OWASP MASVS-based evidence acceptable to support the controls?\n## Context\nIntegrated CGM (iCGM) with BLE to iOS/Android apps and cloud; interoperable with AID systems.\n## Proposed strategy\nSW96 risk management; CycloneDX SBOM; CVD policy; independent pen test pre-submission.\n\n_Illustrative reconstruction grounded in a Dexcom-class connected CGM (public facts). Not actual confidential submission text._",
+    "example_pdf": "presub-request-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "Dexcom-class CGM",
+        "file": "presub-request-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "architecture-views",
+    "name": "Security Architecture Views",
+    "category": "Cybersecurity",
+    "content": "# Security Architecture Views (FDA \u2014 4 views)\n**Device:** <name>  \u00b7  **Basis:** FDA Premarket Cybersecurity Guidance (2025) \u00a7V.A.3\n\n## 1. Global system view\nAll components, interfaces, data stores, external systems, and data flows with trust boundaries.\n\n## 2. Multi-patient harm view\nHow a single compromise could scale to multiple patients (e.g., server/cloud), and the controls that prevent it.\n\n## 3. Updateability / patchability view\nHow signed software/firmware updates reach the installed base; rollback/anti-rollback.\n\n## 4. Security use case views\nEnd-to-end flows for authentication, remote service, interoperability, and update \u2014 with controls per step.\n",
+    "guidance": "Produce all four FDA views so reviewers can see the system, how harm could scale, how you patch, and how key flows are secured.",
+    "evidence": [
+      "Global system diagram",
+      "Multi-patient harm analysis",
+      "Updateability diagram",
+      "Security use-case flows"
+    ],
+    "evidence_docs": [
+      "Global system view",
+      "Multi-patient harm view",
+      "Updateability view",
+      "Security use-case views"
+    ],
+    "example": "# Security Architecture Views \u2014 BD Alaris\u2122 Infusion System\n## 1. Global system view\nPCU + pump/syringe/PCA/respiratory modules \u2194 facility network \u2194 EMR interface \u2194 device manager \u2194 signed update service. Trust boundaries at each hop.\n## 2. Multi-patient harm view\nA compromised server/EMR interface must NOT push unsafe programs fleet-wide \u2014 controls: signed/validated orders, server hardening, segmentation, rate/range limits.\n## 3. Updateability / patchability view\nSigned software distributed to the installed base; integrity verified on receipt; anti-rollback; staged rollout with monitoring.\n## 4. Security use-case views\nClinician auth \u2192 program infusion \u2192 EMR auto-program (validated) \u2192 audit log; remote service (authenticated, logged); update (signed, verified).\n\n_Illustrative reconstruction grounded in the BD Alaris System (public sources). Not actual confidential submission text._",
+    "example_pdf": "architecture-views-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "BD Alaris",
+        "file": "architecture-views-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "ai-model-card",
+    "name": "AI Model Card / Transparency",
+    "category": "AI",
+    "content": "# AI Model Card / Transparency\n**Device:** <name>  \u00b7  **Basis:** FDA AI transparency principles; GMLP; EU AI Act\n\n## Intended use & users\nIndication, population, clinical workflow, autonomy level.\n## Inputs / outputs\nData types, formats, output semantics, thresholds.\n## Performance\nPrimary metrics with CIs; overall and per pre-defined subgroup; reference standard.\n## Limitations\nOut-of-scope use, known failure modes, edge cases.\n## Data\nProvenance, representativeness, train/test independence.\n## Monitoring & change control\nReal-world monitoring, drift triggers, PCCP envelope.\n",
+    "guidance": "A concise, user-facing transparency artifact: intended use, performance (overall + subgroup), limitations, data, and how the model changes over time.",
+    "evidence": [
+      "Model card",
+      "Subgroup performance table",
+      "Data provenance summary",
+      "Monitoring/PCCP reference"
+    ],
+    "evidence_docs": [
+      "Model card",
+      "Performance + subgroup tables",
+      "Data provenance",
+      "Monitoring plan"
+    ],
+    "example": "# AI Model Card \u2014 LumineticsCore\u2122 / IDx-DR (autonomous diabetic retinopathy AI)\n**Intended use:** Autonomous detection of more-than-mild diabetic retinopathy (mtmDR) in adults with diabetes, in primary care.\n**Inputs/outputs:** Fundus images (specified cameras) \u2192 mtmDR present / not detected (+ image-quality gate).\n**Performance (public pivotal trial):** Sensitivity 87%+/specificity 90%+ region; FDA thresholds 85% sensitivity / 82.5% specificity.\n**Limitations:** Not for patients with prior DR diagnosis; image-quality dependent; specified cameras only.\n**Data:** 900-patient pivotal study across primary-care sites; independent reference standard.\n**Monitoring/change control:** Real-world performance monitoring; PCCP governs retraining within bounds.\n\n_Illustrative reconstruction grounded in IDx-DR / LumineticsCore (public De Novo facts). Not actual confidential text._",
+    "example_pdf": "ai-model-card-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "IDx-DR",
+        "file": "ai-model-card-example.pdf"
+      }
+    ]
+  },
+  {
+    "id": "pentest-summary",
+    "name": "Penetration Test Summary",
+    "category": "Cybersecurity",
+    "content": "# Penetration Test Summary\n**Device:** <name>  \u00b7  **Tester:** <independent lab>  \u00b7  **Dates:** <range>  \u00b7  **Scope:** device, app, cloud, interfaces\n\n## Methodology\nThreat-model-driven; OWASP/MITRE ATT&CK; black/grey-box; tools + manual.\n## Findings (by severity)\n| ID | Severity | Finding | Status |\n|----|----------|---------|--------|\n| P-1 | High | <finding> | Closed |\n| P-2 | Medium | <finding> | Risk-accepted |\n## Coverage rationale\nMapping of tested attack surfaces to the threat model.\n## Conclusion\nResidual risk acceptable; retest evidence attached.\n",
+    "guidance": "Summarize an independent test tied to your threat model; show findings, closure/risk-acceptance, and coverage rationale.",
+    "evidence": [
+      "Pen test report",
+      "Findings tracker with closure",
+      "Coverage-to-threat-model mapping",
+      "Retest evidence"
+    ],
+    "evidence_docs": [
+      "Independent pen-test report",
+      "Findings tracker",
+      "Coverage rationale",
+      "Retest evidence"
+    ],
+    "example": "# Penetration Test Summary \u2014 Dexcom-class connected CGM (illustrative)\n**Tester:** Independent accredited lab  \u00b7  **Scope:** sensor/BLE, mobile app (iOS/Android), cloud APIs\n## Methodology\nThreat-model-driven; OWASP MASVS/MASTG + API testing; BLE protocol testing; grey-box.\n## Findings\n| ID | Severity | Finding | Status |\n|----|----------|---------|--------|\n| P-1 | Medium | Verbose API error leakage | Closed |\n| P-2 | Low | Missing cert-pinning on one endpoint | Closed |\n| P-3 | Info | Logging hygiene | Risk-accepted |\n## Coverage\nBLE, app storage/transport, API authz, cloud IAM mapped to the threat model.\n## Conclusion\nNo high/critical open findings; residual risk acceptable; retest evidence attached.\n\n_Illustrative reconstruction grounded in a Dexcom-class connected CGM (public facts). Not actual confidential text._",
+    "example_pdf": "pentest-summary-example.pdf",
+    "example_pdfs": [
+      {
+        "label": "Dexcom-class CGM",
+        "file": "pentest-summary-example.pdf"
+      }
+    ]
+  }
+]
