@@ -148,7 +148,7 @@
 <section class="hero"><div class="wrap">
   <h1>Target intelligence — MedDevice · Tech · Financial</h1>
   <p>MA · NH · RI · MN. Revenue, pay band, manufacturing, IT/OT footprint, named CIO/CTO/CISO where public, the compliance regimes that drive security spend, and a role-fit read for your vCISO / Deputy-CISO practice. Click a row for the full profile.</p>
-  <div class="disc">Named CIO/CTO/CISO verified where shown; most are flagged "confirm via LinkedIn" because they're not reliably public and change often (e.g., U.S. Bancorp's long-time CISO has already moved on). Pay, IT/OT, compliance &amp; role-fit are analyst judgments from company type — verify before client use.</div>
+  <div class="disc">Named CIO/CTO/CISO verified where shown; most are flagged "confirm via LinkedIn" because they're not reliably public and change often. Public company/contact emails are included where available; direct CIO/CTO/CISO personal emails and phones are generally not public and are not guessed. Pay, IT/OT, compliance &amp; role-fit are analyst judgments — verify before client use.</div>
 </div></section>
 
 <section class="controls"><div class="wrap"><div class="crow">
@@ -198,6 +198,7 @@
       <th data-k="employees">Employees (≈)</th>
       <th data-k="regs">Regulations</th>
       <th data-k="ciso">CISO</th>
+      <th data-k="companyContactEmail">Contact email</th>
       <th data-k="roleFit">Role fit</th>
     </tr></thead>
     <tbody id="rows"></tbody>
@@ -221,7 +222,7 @@
 const ND="Not public — confirm via LinkedIn";
 const GDF="≈3.5 industry avg — verify";
 const MEDCOMP="FDA 524B (premarket cyber), HIPAA, ISO 13485, ISO 27001, IEC 62443 (mfg/OT), SOX (if public), EU MDR/CRA";
-function rec(o){return Object.assign({cio:ND,cto:ND,ciso:ND,cisaCount:0,cisaNote:"N/A — not a device OEM",hhsNote:"—",glassdoor:GDF,matBand:"",matSig:"",matNext:"",revStr:"—"},o);}
+function rec(o){return Object.assign({cio:ND,cto:ND,ciso:ND,cioEmail:"Not publicly listed",ctoEmail:"Not publicly listed",cisoEmail:"Not publicly listed",securityEmail:"Not publicly listed",companyContactEmail:"Not publicly listed",companyPhone:"Not publicly listed",contactRoute:"Use public company contact page / LinkedIn for named executives",cisaCount:0,cisaNote:"N/A — not a device OEM",hhsNote:"—",glassdoor:GDF,matBand:"",matSig:"",matNext:"",revStr:"—"},o);}
 const DATA=[
 /* ===== MEDICAL DEVICE ===== */
 rec({company:"Boston Scientific",sector:"MedDevice",state:"MA",hq:"Marlborough",status:"Public (NYSE: BSX)",ceo:"Mike Mahoney — Chairman & CEO",cio:"Jodi Eddy — Chief Information & Digital Officer (confirm)",cto:ND,ciso:ND,ticker:"BSX",paysWell:"High",mfg:"Yes",itot:"Partial (plant OT)",revStr:"$20.07B (FY2025)",keyProducts:"Stents, cardiac rhythm, neuromodulation, endoscopy, urology",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, SOX",cisaCount:2,cisaNote:"2 CISA ICS medical advisories",hhsNote:"Verify on HHS portal",glassdoor:"≈4.0 — verify",roleFit:"Medium",roleRationale:"Mature, has product security; better as Deputy/VP-CISO target than vCISO. Deep fit with your medtech PSIRT/SBOM background. Competitive.",src:"SEC; CISA tally; tickerleague"}),
@@ -357,6 +358,86 @@ rec({company:"Lockheed Martin Aeronautics",sector:"Tech",state:"GA",hq:"Marietta
 rec({company:"Global Payments",sector:"Financial",state:"GA",hq:"Atlanta",status:"Public (NYSE: GPN)",stage:"Public",ceo:"Payments technology",ciso:"Corp CISO (confirm)",ticker:"GPN",paysWell:"High",mfg:"No",itot:"No",revStr:"\u2248$10B",employees:"\u224827,000",keyProducts:"Merchant payment processing & issuer solutions",compliance:"PCI DSS, SOC 2, GLBA, ISO 27001, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"Payments breach reporting; PCI obligations",roleFit:"Medium",roleRationale:"Atlanta 'Transaction Alley' payments processor \u2014 deep PCI DSS + financial program; Deputy-CISO/advisory. Your financial-sector lane. GA.",src:"GPN \u2014 confirm leaders"}),
 ];
 
+
+
+/* ===== PUBLIC CONTACT ENRICHMENT =====
+   Direct CIO/CTO/CISO emails and personal phones are usually not public. This block
+   adds safe outreach fields into the index: public company email/contact routes and
+   security-intake aliases where a public/security mailbox is appropriate. Verify delivery
+   before outreach; do not treat generated aliases as confirmed personal executive emails. */
+const CONTACT_ENRICH={
+  "Boston Scientific":{domain:"bostonscientific.com", companyContactEmail:"investor_relations@bsci.com", companyPhone:"+1 508-683-4000"},
+  "Insulet":{domain:"insulet.com", companyContactEmail:"investorrelations@insulet.com", companyPhone:"+1 978-600-7000"},
+  "Hologic":{domain:"hologic.com", companyContactEmail:"investors@hologic.com", companyPhone:"+1 508-263-2900"},
+  "Haemonetics":{domain:"haemonetics.com", companyContactEmail:"investor@haemonetics.com", companyPhone:"+1 781-848-7100"},
+  "Abiomed":{domain:"abiomed.com", companyContactEmail:"contact@abiomed.com", companyPhone:"+1 978-777-5410"},
+  "Lantheus":{domain:"lantheus.com", companyContactEmail:"investorrelations@lantheus.com", companyPhone:"+1 978-671-8001"},
+  "Anika Therapeutics":{domain:"anika.com", companyContactEmail:"ir@anika.com", companyPhone:"+1 781-457-9000"},
+  "Vapotherm":{domain:"vapotherm.com", companyContactEmail:"info@vapotherm.com", companyPhone:"+1 603-658-0011"},
+  "BD — Davol (site)":{domain:"bd.com", companyContactEmail:"bd_investor_relations@bd.com", companyPhone:"+1 201-847-6800"},
+  "Ximedica (Veranex)":{domain:"veranexsolutions.com", companyContactEmail:"info@veranexsolutions.com"},
+  "Nabsys":{domain:"nabsys.com", companyContactEmail:"info@nabsys.com"},
+  "Medtronic":{domain:"medtronic.com", companyContactEmail:"investor.relations@medtronic.com", companyPhone:"+1 763-514-4000"},
+  "Solventum (3M spin-off)":{domain:"solventum.com", companyContactEmail:"investors@solventum.com", companyPhone:"+1 651-733-1110"},
+  "Tactile Medical":{domain:"tactilemedical.com", companyContactEmail:"investors@tactilemedical.com", companyPhone:"+1 612-355-5100"},
+  "Inspire Medical":{domain:"inspiresleep.com", companyContactEmail:"investors@inspiresleep.com", companyPhone:"+1 844-672-4357"},
+  "Starkey Hearing":{domain:"starkey.com", companyContactEmail:"customersupport@starkey.com", companyPhone:"+1 800-328-8602"},
+  "Bio-Techne":{domain:"bio-techne.com", companyContactEmail:"investor.relations@bio-techne.com", companyPhone:"+1 612-379-2956"},
+  "Surmodics":{domain:"surmodics.com", companyContactEmail:"investorrelations@surmodics.com", companyPhone:"+1 952-500-7000"},
+  "Smiths Medical":{domain:"icumed.com", companyContactEmail:"investorrelations@icumed.com", companyPhone:"+1 949-366-2183"},
+  "RTX (Raytheon)":{domain:"rtx.com", companyContactEmail:"investorrelations@rtx.com", companyPhone:"+1 781-522-3000"},
+  "Analog Devices":{domain:"analog.com", companyContactEmail:"investor.relations@analog.com", companyPhone:"+1 781-329-4700"},
+  "PTC":{domain:"ptc.com", companyContactEmail:"investor@ptc.com", companyPhone:"+1 781-370-5000"},
+  "Akamai":{domain:"akamai.com", companyContactEmail:"ir@akamai.com", companyPhone:"+1 617-444-3000"},
+  "HubSpot":{domain:"hubspot.com", companyContactEmail:"ir@hubspot.com", companyPhone:"+1 888-482-7768"},
+  "3M":{domain:"3m.com", companyContactEmail:"investorrelations@3m.com", companyPhone:"+1 651-733-1110"},
+  "Best Buy":{domain:"bestbuy.com", companyContactEmail:"investorrelations@bestbuy.com", companyPhone:"+1 612-291-1000"},
+  "BAE Systems Inc.":{domain:"baesystems.com", companyContactEmail:"media.relations@baesystems.com", companyPhone:"+1 703-312-6100"},
+  "Bottomline Technologies":{domain:"bottomline.com", companyContactEmail:"info@bottomline.com", companyPhone:"+1 603-436-0700"},
+  "Textron":{domain:"textron.com", companyContactEmail:"ir@textron.com", companyPhone:"+1 401-421-2800"},
+  "Hasbro":{domain:"hasbro.com", companyContactEmail:"investor@hasbro.com", companyPhone:"+1 401-431-8697"},
+  "Fidelity Investments":{domain:"fidelity.com", companyContactEmail:"fidelityinvestorrelations@fmr.com", companyPhone:"+1 800-343-3548"},
+  "State Street":{domain:"statestreet.com", companyContactEmail:"contact@statestreet.com", companyPhone:"+1 617-786-3000"},
+  "Liberty Mutual":{domain:"libertymutual.com", companyContactEmail:"media@libertymutual.com", companyPhone:"+1 617-357-9500"},
+  "MassMutual":{domain:"massmutual.com", companyContactEmail:"media@massmutual.com", companyPhone:"+1 413-788-8411"},
+  "U.S. Bancorp":{domain:"usbank.com", companyContactEmail:"investor.relations@usbank.com", companyPhone:"+1 651-466-3000"},
+  "Ameriprise Financial":{domain:"ameriprise.com", companyContactEmail:"ir@ampf.com", companyPhone:"+1 612-671-3131"},
+  "Thrivent":{domain:"thrivent.com", companyContactEmail:"mediarelations@thrivent.com", companyPhone:"+1 800-847-4836"},
+  "Securian Financial":{domain:"securian.com", companyContactEmail:"media.relations@securian.com", companyPhone:"+1 651-665-3500"},
+  "Citizens Financial Group":{domain:"citizensbank.com", companyContactEmail:"investor.relations@citizensbank.com", companyPhone:"+1 401-456-7000"},
+  "Amica Mutual Insurance":{domain:"amica.com", companyContactEmail:"mediarelations@amica.com", companyPhone:"+1 800-242-6422"},
+  "Biogen":{domain:"biogen.com", companyContactEmail:"IR@biogen.com", companyPhone:"+1 781-464-2000"},
+  "Moderna":{domain:"modernatx.com", companyContactEmail:"investors@modernatx.com", companyPhone:"+1 617-714-6500"},
+  "Vertex Pharmaceuticals":{domain:"vrtx.com", companyContactEmail:"ir@vrtx.com", companyPhone:"+1 617-341-6100"},
+  "Takeda (US HQ)":{domain:"takeda.com", companyContactEmail:"MediaRelations@takeda.com", companyPhone:"+1 617-444-2000"},
+  "Alnylam Pharmaceuticals":{domain:"alnylam.com", companyContactEmail:"ir@alnylam.com", companyPhone:"+1 617-551-8200"},
+  "Sanofi US / Genzyme":{domain:"sanofi.com", companyContactEmail:"media.relations@sanofi.com", companyPhone:"+1 908-981-5000"},
+  "Charles River Laboratories":{domain:"criver.com", companyContactEmail:"ir@criver.com", companyPhone:"+1 781-222-6000"},
+  "Ginkgo Bioworks":{domain:"ginkgobioworks.com", companyContactEmail:"investors@ginkgobioworks.com"},
+  "Lonza (Portsmouth)":{domain:"lonza.com", companyContactEmail:"contact.allendale@lonza.com"},
+  "Adimab":{domain:"adimab.com", companyContactEmail:"info@adimab.com", companyPhone:"+1 603-653-0045"},
+  "Amgen Rhode Island":{domain:"amgen.com", companyContactEmail:"investor.relations@amgen.com", companyPhone:"+1 805-447-1000"},
+  "EpiVax":{domain:"epivax.com", companyContactEmail:"info@epivax.com", companyPhone:"+1 401-272-2123"},
+  "Upsher-Smith Laboratories":{domain:"upsher-smith.com", companyContactEmail:"customer.service@upsher-smith.com", companyPhone:"+1 800-654-2299"},
+  "Secureframe":{domain:"secureframe.com", companyContactEmail:"support@secureframe.com", companyPhone:"Not publicly listed"},
+  "Vanta":{domain:"vanta.com", companyContactEmail:"support@vanta.com", companyPhone:"Not publicly listed"},
+  "Drata":{domain:"drata.com", companyContactEmail:"support@drata.com", companyPhone:"Not publicly listed"}
+};
+function domainGuess(name){return (CONTACT_ENRICH[name]&&CONTACT_ENRICH[name].domain)||"";}
+function safeSecurityEmail(domain){return domain?`security@${domain} (security intake — verify)`:'Not publicly listed';}
+DATA.forEach(d=>{
+  const c=CONTACT_ENRICH[d.company]||{};
+  const domain=c.domain||"";
+  if(c.companyContactEmail) d.companyContactEmail=c.companyContactEmail;
+  if(c.companyPhone) d.companyPhone=c.companyPhone;
+  if(domain && (!d.securityEmail || d.securityEmail===ND || d.securityEmail==="Not publicly listed")) d.securityEmail=safeSecurityEmail(domain);
+  if(!d.cioEmail || d.cioEmail===ND) d.cioEmail="Not publicly listed — use company contact route";
+  if(!d.ctoEmail || d.ctoEmail===ND) d.ctoEmail="Not publicly listed — use company contact route";
+  if(!d.cisoEmail || d.cisoEmail===ND) d.cisoEmail=d.securityEmail||"Not publicly listed — use company contact route";
+  d.contactRoute=d.contactRoute||"Company contact + LinkedIn; named executive direct email/phone not publicly listed";
+  d.contact=(d.companyContactEmail&&d.companyContactEmail!=="Not publicly listed")?d.companyContactEmail:(d.securityEmail||d.contact||"Not publicly listed");
+});
+
 const SITES=new Set(["BD — Davol (site)","Smiths Medical","Abiomed","Olympus Corp. of the Americas","Coloplast US","Amgen Rhode Island","Lonza (Portsmouth)","Sanofi US / Genzyme","BAE Systems Inc.","Takeda (US HQ)","RTX (Raytheon)","General Dynamics Electric Boat","General Dynamics Mission Systems","Elbit Systems of America (Kollsman)","Sig Sauer","Pfizer","Novartis","Bristol Myers Squibb","GE HealthCare","Philips North America","Siemens Healthineers","Abbott","Seagate Technology","Dell Technologies","Toray Plastics (America)","Wells Fargo","RBC Wealth Management \u2013 US","Stryker","Smith+Nephew"]);
 DATA.forEach(d=>{if(SITES.has(d.company))d.presence="Major site";});
 function regsOf(d){
@@ -475,7 +556,7 @@ function matches(d){
   if(state.stage.size && !state.stage.has(stageOf(d)))return false;
   if(state.reg.size){const rl=regList(d);for(const r of state.reg){if(!rl.includes(r))return false;}}
   if(state.mw && !isMW(d))return false;
-  if(state.q){const hay=(d.company+" "+d.hq+" "+d.keyProducts+" "+d.compliance+" "+d.ciso+" "+d.status+" "+d.sector).toLowerCase();if(!hay.includes(state.q))return false;}
+  if(state.q){const hay=(d.company+" "+d.hq+" "+d.keyProducts+" "+d.compliance+" "+d.cio+" "+d.cto+" "+d.ciso+" "+d.cioEmail+" "+d.ctoEmail+" "+d.cisoEmail+" "+d.companyContactEmail+" "+d.securityEmail+" "+d.status+" "+d.sector).toLowerCase();if(!hay.includes(state.q))return false;}
   return true;
 }
 function sortFn(a,b){
@@ -500,6 +581,7 @@ function render(){
       <td class="num">${empOf(d)}<div class="sub">${sizeOf(d)}</div></td>
       <td>${regList(d).map(r=>`<span class="flag fl-${r}">${r==='CRA'?'EU-CRA':r}</span>`).join('')||'<span class="sub">—</span>'}</td>
       <td class="leader ${cisoND?'nd':''}">${d.ciso.split('(')[0].split('—')[0].trim()||'—'}${/verified/.test(d.ciso)?' ✓':''}</td>
+      <td class="comp">${d.companyContactEmail||d.securityEmail||'—'}<div class="sub">${d.companyPhone||''}</div></td>
       <td><span class="pill rf-${d.roleFit}">${d.roleFit}</span></td>`;
     tb.appendChild(tr);
   });
@@ -521,7 +603,7 @@ function openModal(name){
     </div>
     <div class="grid2">
       <div>${rr("Stage",stageOf(d))}${rr("Presence",(d.presence==="Major site"?"Major site (HQ elsewhere)":"In-state HQ")+(isMW(d)?" · MetroWest MA":""))}${rr("Status",d.status)}${rr("Employees (≈)",empOf(d)+"  ·  "+sizeOf(d))}${rr("Revenue",d.revStr)}${rr("Pays well",d.paysWell)}${rr("Manufacturing",d.mfg)}${rr("IT / OT",d.itot)}</div>
-      <div>${rr("CIO",d.cio,nd(d.cio))}${rr("CTO",d.cto,nd(d.cto))}${rr("CISO",d.ciso,nd(d.ciso))}${rr("Culture (Glassdoor)",d.glassdoor)}${rr("Contact",d.contact)}</div>
+      <div>${rr("CIO",d.cio,nd(d.cio))}${rr("CIO email",d.cioEmail,nd(d.cioEmail))}${rr("CTO",d.cto,nd(d.cto))}${rr("CTO email",d.ctoEmail,nd(d.ctoEmail))}${rr("CISO",d.ciso,nd(d.ciso))}${rr("CISO / security email",d.cisoEmail||d.securityEmail,nd(d.cisoEmail||d.securityEmail))}${rr("Company contact email",d.companyContactEmail,nd(d.companyContactEmail))}${rr("Company phone",d.companyPhone,nd(d.companyPhone))}${rr("Culture (Glassdoor)",d.glassdoor)}</div>
     </div>
     ${rr("Key products / business",d.keyProducts)}
     <div class="box" style="border-color:#D9E2F0"><div class="h" style="color:var(--tech)">Cyber-insurance signal (heuristic)</div><p style="margin:0">${insuranceOf(d)}</p></div>
@@ -542,7 +624,7 @@ function dl(name,text,type){const b=new Blob([text],{type});const a=document.cre
 $("#json").onclick=()=>dl("target_intel.json",JSON.stringify(DATA.filter(matches),null,2),"application/json");
 $("#csv").onclick=()=>{
   DATA.forEach(d=>{d.stage=stageOf(d);d.regulations=regList(d).join("|");});
-  const cols=["company","sector","state","stage","presence","size","regulations","hq","status","employees","revStr","paysWell","mfg","itot","keyProducts","cio","cto","ciso","compliance","glassdoor","insurance","contact","investors","ipoWindow","metrowest","cisaNote","hhsNote","roleFit","roleRationale","src"];
+  const cols=["company","sector","state","stage","presence","size","regulations","hq","status","employees","revStr","paysWell","mfg","itot","keyProducts","cio","cioEmail","cto","ctoEmail","ciso","cisoEmail","securityEmail","companyContactEmail","companyPhone","contactRoute","compliance","glassdoor","insurance","contact","investors","ipoWindow","metrowest","cisaNote","hhsNote","roleFit","roleRationale","src"];
   DATA.forEach(d=>{if(!d.employees)d.employees=empOf(d);if(!d.insurance)d.insurance=insuranceOf(d);d.size=sizeOf(d);d.investors=INV[d.company]||"";d.ipoWindow=stageOf(d)==="Pre-IPO"?(IPOWIN[d.company]||"No timeline"):"";d.metrowest=isMW(d)?"Yes":"No";});
   const esc=s=>`"${(s==null?"":s).toString().replace(/"/g,'""')}"`;
   const rows=[cols.join(",")].concat(DATA.filter(matches).map(d=>cols.map(c=>esc(d[c])).join(",")));
