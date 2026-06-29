@@ -1,1 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Massachusetts Multifamily — Agentic Prospect Tracker</title>
+<style>
+  :root {
+    --ink:#15202b; --ink-soft:#2a3a4a; --paper:#f6f4ee; --panel:#fff;
+    --line:#d9d3c6; --line-soft:#e8e3d8; --brass:#b07a2e; --brass-soft:#f0e2c8;
+    --slate:#5b6b7a; --green:#2f7d52; --green-bg:#e3f0e8; --amber:#9a6b14; --amber-bg:#f6ecd4;
+    --grey-bg:#ebe7dd; --red:#9c3b34; --boston:#3a5670; --boston-bg:#dde7f0;
+    --shadow:0 1px 2px rgba(21,32,43,.06),0 4px 16px rgba(21,32,43,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.45;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"SF Mono","JetBrains Mono",ui-monospace,Menlo,monospace}
+  header{background:var(--ink);color:var(--paper);padding:20px 28px 18px;border-bottom:3px solid var(--brass)}
+  .head-row{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:12px;max-width:1500px;margin:0 auto}
+  h1{font-size:20px;font-weight:650;letter-spacing:-.01em}
+  h1 .accent{color:var(--brass)}
+  .sub{font-size:12.5px;color:#aeb9c4;margin-top:2px}
+  .wrap{max-width:1500px;margin:0 auto;padding:20px 28px 60px}
 
+  /* Agent panel */
+  .agent{background:linear-gradient(180deg,#1b2733,#15202b);color:var(--paper);border:1px solid #2a3a4a;border-radius:12px;padding:16px 18px;margin-bottom:22px;box-shadow:var(--shadow)}
+  .agent-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .agent-title{font-size:14px;font-weight:650;letter-spacing:.01em;display:flex;align-items:center;gap:9px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--slate);box-shadow:0 0 0 0 rgba(176,122,46,.5)}
+  .dot.run{background:var(--brass);animation:pulse 1.1s infinite}
+  .dot.idle{background:#3f7d57}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(176,122,46,.55)}70%{box-shadow:0 0 0 8px rgba(176,122,46,0)}100%{box-shadow:0 0 0 0 rgba(176,122,46,0)}}
+  .agent-meta{font-size:11.5px;color:#9fb0bd;display:flex;gap:18px;flex-wrap:wrap;margin-left:auto}
+  .agent-meta b{color:var(--brass-soft);font-weight:600}
+  .agent-controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:12px}
+  .agent-controls select{background:#0f1822;color:var(--paper);border:1px solid #34465a;border-radius:6px;font:inherit;font-size:12.5px;padding:7px 10px}
+  .btn-run{background:var(--brass);color:#fff;border:none;border-radius:6px;font:inherit;font-weight:600;font-size:12.5px;padding:8px 16px;cursor:pointer}
+  .btn-run:hover{filter:brightness(1.08)}
+  .btn-ghost{background:transparent;color:#9fb0bd;border:1px solid #34465a;border-radius:6px;font:inherit;font-size:12px;padding:8px 12px;cursor:pointer}
+  .btn-ghost:hover{color:var(--paper);border-color:var(--slate)}
+  .agent-log{margin-top:12px;background:#0c141d;border:1px solid #243240;border-radius:8px;padding:10px 12px;font-family:"SF Mono",ui-monospace,monospace;font-size:11px;color:#8fa6b5;max-height:120px;overflow-y:auto;display:none}
+  .agent-log.show{display:block}
+  .agent-log .ln{padding:1px 0}
+  .agent-log .ok{color:#6fd19a}
+  .agent-log .warn{color:#e0b15c}
+  .agent-config{margin-top:12px;background:#0c141d;border:1px solid #243240;border-radius:8px;padding:12px 14px;font-size:12px;color:#aebcc7;display:none}
+  .agent-config.show{display:block}
+  .agent-config h4{color:var(--brass-soft);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+  .agent-config pre{background:#060c12;border:1px solid #1d2935;border-radius:6px;padding:9px 11px;overflow-x:auto;font-size:10.5px;color:#9fd3b0;margin:7px 0}
+  .agent-config code{color:#e0b15c}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:12px;margin-bottom:20px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;box-shadow:var(--shadow)}
+  .stat .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--slate)}
+  .stat .val{font-size:23px;font-weight:640;letter-spacing:-.02em;margin-top:2px}
+  .stat .val small{font-size:12px;font-weight:500;color:var(--slate)}
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:14px}
+  .toolbar .grow{flex:1 1 180px}
+  input[type=text],input[type=tel],input[type=number],input[type=date],select,textarea{font:inherit;font-size:13px;padding:8px 11px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);width:100%}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--brass);outline-offset:-1px;border-color:var(--brass)}
+  select{cursor:pointer}
+  .filters{display:flex;gap:9px;flex-wrap:wrap}
+  .filters select{width:auto;min-width:108px}
+  button{font:inherit;font-size:13px;font-weight:550;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 14px;transition:.12s}
+  button:hover{background:var(--paper);border-color:var(--slate)}
+  button.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  button.primary:hover{background:var(--ink-soft)}
+
+  .table-wrap{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow-x:auto;box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1240px}
+  thead th{text-align:left;padding:10px 11px;background:var(--ink);color:var(--paper);font-weight:560;font-size:11px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;white-space:nowrap;user-select:none}
+  thead th:hover{color:var(--brass-soft)}
+  thead th .arrow{opacity:.55;font-size:9px}
+  tbody td{padding:9px 11px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  tbody tr:hover{background:#faf8f2}
+  tbody tr.sold-row{background:#f3f1ea}
+  .addr{font-weight:560}
+  .addr-link{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--brass)}
+  .addr-link:hover{color:var(--brass)}
+  .addr small{display:block;font-weight:400;color:var(--slate);font-size:11px;margin-top:1px}
+  .rtag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.03em;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:5px;text-transform:uppercase}
+  .rtag.mw{background:var(--brass-soft);color:var(--amber)}
+  .rtag.bos{background:var(--boston-bg);color:var(--boston)}
+  .rtag.ma{background:#e6ece6;color:#3f6b4e}
+  .empty-cell{color:#b9b2a3;font-style:italic;font-size:11.5px}
+  .flag{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.03em;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:5px;text-transform:uppercase;color:#fff}
+  .flag.fc{background:var(--red)} .flag.auc{background:#8a5a1c} .flag.reo{background:#7a3550}
+  .flag.big{background:#2f5d7d} .flag.mid{background:#6b7a8a} .flag.sold{background:#444}
+  .class-badge{display:inline-block;font-size:10px;font-weight:650;padding:2px 7px;border-radius:4px}
+  .class-res{background:var(--grey-bg);color:var(--ink-soft)} .class-comm{background:#e6e0ef;color:#5a4a73}
+  .units-badge{display:inline-block;min-width:24px;text-align:center;background:var(--ink);color:var(--paper);border-radius:5px;padding:2px 6px;font-weight:600;font-size:12px}
+  .cap{font-weight:600;color:var(--green)}
+  .ptag{display:inline-block;font-size:8.5px;font-weight:800;letter-spacing:.04em;padding:1px 4px;border-radius:3px;vertical-align:middle;margin-left:4px}
+  .ptag.ask{background:var(--green-bg);color:var(--green)} .ptag.est{background:var(--amber-bg);color:var(--amber)}
+  .sold-px{font-weight:650;color:var(--ink)} .sold-dt{font-size:11px;color:var(--slate)}
+  .scores{display:flex;gap:3px;flex-wrap:wrap}
+  .sc{display:inline-flex;align-items:center;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.02em}
+  .sc.va{background:#e7f0e2;color:#3f6b2e} .sc.mr{background:#f0e6da;color:#8a5a1c}
+  .sc.walk{background:#dde7f0;color:var(--boston)} .sc.wet{background:#f7e9e7;color:var(--red)}
+  .sc.sun{background:#fbf3d6;color:#937012} .sc.q{background:#eee;color:#999}
+  .contact-cell{font-size:11.5px;max-width:160px}
+  .pill{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:100px}
+  .s-new{background:var(--brass-soft);color:var(--amber)} .s-contacted{background:var(--amber-bg);color:var(--amber)}
+  .s-touring{background:#dde7f0;color:var(--boston)} .s-offer{background:var(--green-bg);color:var(--green)}
+  .s-pass{background:var(--grey-bg);color:var(--slate)} .s-sold{background:#444;color:#fff}
+  .row-actions{display:flex;gap:5px}
+  .icon-btn{padding:4px 7px;font-size:11.5px}
+
+  .overlay{position:fixed;inset:0;background:rgba(21,32,43,.45);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;z-index:50}
+  .overlay.open{display:flex}
+  .modal{background:var(--panel);border-radius:12px;width:100%;max-width:620px;box-shadow:0 20px 60px rgba(21,32,43,.3)}
+  .modal-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .modal-head h2{font-size:16px;font-weight:620}
+  .modal-body{padding:18px 20px}
+  .field{margin-bottom:12px}
+  .field.two{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .field.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+  label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);margin-bottom:4px;font-weight:600}
+  .hint{font-size:10.5px;color:var(--slate);margin-top:3px;font-style:italic}
+  .modal-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+
+  .sourcing{margin-top:24px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--brass);border-radius:8px;padding:15px 18px;box-shadow:var(--shadow)}
+  .sourcing h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px}
+  .sourcing dl{display:grid;grid-template-columns:150px 1fr;gap:6px 16px;font-size:12px}
+  .sourcing dt{font-weight:620;color:var(--ink-soft)} .sourcing dd{color:var(--slate)}
+  .sourcing .warn{margin-top:11px;font-size:11.5px;color:var(--red);background:#f7e9e7;padding:9px 11px;border-radius:6px}
+  .file-hidden{display:none}
+  @media(max-width:720px){.wrap{padding:14px}.agent-meta{margin-left:0}}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-row">
+    <div>
+      <h1>Massachusetts Multifamily <span class="accent">/</span> Agentic Tracker</h1>
+      <div class="sub">Statewide MA · residential MF + commercial · market, distressed &amp; sold comps · estimated pricing &amp; property scoring</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- AGENT PANEL -->
+  <div class="agent">
+    <div class="agent-top">
+      <div class="agent-title"><span class="dot idle" id="agentDot"></span><span id="agentState">Agent idle</span></div>
+      <div class="agent-meta">
+        <span>Schedule: <b id="mSched">Weekly</b></span>
+        <span>Last run: <b id="mLast">—</b></span>
+        <span>Next run: <b id="mNext">—</b></span>
+        <span>Rows: <b id="mRows">0</b></span>
+      </div>
+    </div>
+    <div class="agent-controls">
+      <select id="schedSel">
+        <option value="7" selected>Weekly</option>
+        <option value="1">Daily</option>
+        <option value="14">Bi-weekly</option>
+        <option value="30">Monthly</option>
+      </select>
+      <button class="btn-run" id="runBtn">▶ Run agent now</button>
+      <button class="btn-ghost" id="logBtn">Log</button>
+      <button class="btn-ghost" id="cfgBtn">Weekly automation setup</button>
+    </div>
+    <div class="agent-log" id="agentLog"></div>
+    <div class="agent-config" id="agentCfg">
+      <h4>Run this weekly on autopilot</h4>
+      <p>This page enriches data locally on each run (estimates, dates, scores, staleness). For a live <b>weekly web pull</b>, drive it from a scheduler — matching the single-file + Ollama + GitHub pattern:</p>
+      <pre>name: weekly-mf-scan
+on:
+  schedule: [{ cron: '0 13 * * 1' }]   # Mondays 9am ET
+  workflow_dispatch:
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scan.py --towns towns.txt --out data.json
+      # scan.py: pull MLS/LoopNet/Foreclosure.com per town,
+      # enrich with local Ollama (llama3.1) for value-add scoring,
+      # deterministic math for est. price / cap — never the LLM.
+      - run: |
+          git add data.json && git commit -m "weekly scan" && git push</pre>
+      <p><code>scan.py</code> writes <code>data.json</code>; this page fetches it on load. Pricing &amp; cap math stay deterministic; the LLM only classifies text (value-add, condition cues).</p>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <div class="grow"><input type="text" id="search" placeholder="Search address, town, owner, notes…"></div>
+    <div class="filters">
+      <select id="filterRegion"><option value="">All regions</option><option>MetroWest</option><option>Boston</option><option>MA (other)</option></select>
+      <select id="filterClass"><option value="">All classes</option><option>Residential MF</option><option>Commercial</option></select>
+      <select id="filterDistress"><option value="">Any condition</option><option value="__distressed">Distressed only</option><option value="__sold">Sold comps</option><option value="__market">Active market</option></select>
+      <select id="filterUnits"><option value="">All sizes</option><option value="2-4">2–4</option><option value="5-9">5–9</option><option value="10-39">10–39</option><option value="40+">40+ (institutional)</option></select>
+      <select id="filterValue"><option value="">VA: any</option><option value="yes">Value-add only</option></select>
+      <select id="filterStatus"><option value="">All statuses</option></select>
+    </div>
+    <button class="primary" id="addBtn">+ Add</button>
+    <button id="importBtn">Import CSV</button>
+    <button id="exportBtn">Export CSV</button>
+    <input type="file" id="fileInput" accept=".csv" class="file-hidden">
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th data-sort="address">Property <span class="arrow"></span></th>
+        <th data-sort="class">Class <span class="arrow"></span></th>
+        <th data-sort="units">Units <span class="arrow"></span></th>
+        <th data-sort="type">Type <span class="arrow"></span></th>
+        <th data-sort="price">Asking / Est <span class="arrow"></span></th>
+        <th data-sort="cap">Cap <span class="arrow"></span></th>
+        <th data-sort="soldPrice">Sold <span class="arrow"></span></th>
+        <th data-sort="listedDate">Listed <span class="arrow"></span></th>
+        <th>Scores</th>
+        <th data-sort="owner">Owner <span class="arrow"></span></th>
+        <th data-sort="contact">Contact <span class="arrow"></span></th>
+        <th data-sort="status">Status <span class="arrow"></span></th>
+        <th></th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="sourcing">
+    <h3>Data provenance &amp; what the scores mean</h3>
+    <dl>
+      <dt>Asking vs Est.</dt><dd><span class="ptag ask">ASK</span> = real list price from the listing. <span class="ptag est">EST</span> = modeled estimate when no price is published: town median × a unit multiplier (Boston priced per-unit). A transparent estimate, not an appraisal.</dd>
+      <dt>Listed date</dt><dd>Derived from days-on-market where the listing disclosed it; blank when unknown. The agent recomputes on each run.</dd>
+      <dt>Sold comps</dt><dd>Sold price &amp; date are public record but not pre-filled — pulled per-property from Redfin/Zillow sold pages or the registry. Sold rows are tagged and link to the sold source.</dd>
+      <dt>Value-add</dt><dd>Auto-derived from listing language (below-market rents, vacant units, needs reno, as-is, upside). Verify on site.</dd>
+      <dt>Main road</dt><dd>Inferred from the street name (Main, Boston Post, Turnpike, Rte, Speen, Worcester Rd, major aves). A heuristic — confirm.</dd>
+      <dt>Walk score</dt><dd>Real Walk Score where verified (Framingham 42, Marlborough 41); otherwise blank with a walkscore.com lookup. Not invented.</dd>
+      <dt>Wet basement / Sunlight</dt><dd><b>Inspection-only.</b> Never pre-filled — shown as “?” until you assess on site or from disclosure/photos. Sunlight flips to “good” only if the listing explicitly says sun-filled/bright.</dd>
+      <dt>Owner / phone</dt><dd>Not pre-filled — from the town/Boston assessor (free) and a compliant skip-trace. Contact column carries the public listing agent where named.</dd>
+    </dl>
+    <div class="warn"><strong>Compliance:</strong> phone outreach is governed by TCPA + the National/MA Do-Not-Call registries; foreclosure-owner contact is further restricted under MA Ch. 244. Scrub and log consent. Everything here stays in your browser.</div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay"><div class="modal">
+  <div class="modal-head"><h2 id="modalTitle">Add property</h2><button class="icon-btn" id="closeModal">✕</button></div>
+  <div class="modal-body">
+    <div class="field"><label>Street address</label><input type="text" id="f_address" placeholder="123 Main St"></div>
+    <div class="field three">
+      <div><label>Town</label><input type="text" id="f_town" placeholder="Worcester"></div>
+      <div><label>Region</label><select id="f_region"><option>MetroWest</option><option>Boston</option><option>MA (other)</option></select></div>
+      <div><label>Class</label><select id="f_class"><option>Residential MF</option><option>Commercial</option></select></div>
+    </div>
+    <div class="field three">
+      <div><label>Units</label><input type="number" id="f_units" min="2" placeholder="3"></div>
+      <div><label>Type</label><input type="text" id="f_type" placeholder="Triple-decker"></div>
+      <div><label>Distress flag</label><select id="f_distress"><option value="">— none —</option><option>Foreclosure</option><option>Auction</option><option>REO</option><option>Pre-foreclosure</option><option>Short sale</option></select></div>
+    </div>
+    <div class="field three">
+      <div><label>Asking price ($)</label><input type="number" id="f_price" placeholder="blank → est."></div>
+      <div><label>Cap rate (%)</label><input type="number" id="f_cap" step="0.01" placeholder="6.5"></div>
+      <div><label>Listed date</label><input type="date" id="f_listedDate"></div>
+    </div>
+    <div class="field three">
+      <div><label>Status</label><select id="f_status"><option>New</option><option>Contacted</option><option>Touring</option><option>Offer</option><option>Pass</option><option>Sold</option></select></div>
+      <div><label>Sold price ($)</label><input type="number" id="f_soldPrice" placeholder="if sold"></div>
+      <div><label>Date sold</label><input type="date" id="f_soldDate"></div>
+    </div>
+    <div class="field three">
+      <div><label>Value-add</label><select id="f_valueAdd"><option value="">?</option><option>Yes</option><option>No</option></select></div>
+      <div><label>Main road</label><select id="f_mainRoad"><option value="">?</option><option>Yes</option><option>No</option></select></div>
+      <div><label>Walk score</label><input type="number" id="f_walk" min="0" max="100" placeholder="0–100"></div>
+    </div>
+    <div class="field two">
+      <div><label>Basement</label><select id="f_basement"><option value="">? (inspect)</option><option>Dry</option><option>Wet</option></select></div>
+      <div><label>Sunlight</label><select id="f_sunlight"><option value="">? (assess)</option><option>Good</option><option>Fair</option><option>Poor</option></select></div>
+    </div>
+    <div class="field"><label>Owner (assessor)</label><input type="text" id="f_owner" placeholder="Last, First or LLC"></div>
+    <div class="field"><label>Owner phone (skip-trace)</label><input type="tel" id="f_phone" placeholder="(508) 555-0100"><div class="hint">Scrub against DNC before dialing.</div></div>
+    <div class="field"><label>Listing contact</label><input type="text" id="f_contact" placeholder="Agent · Brokerage"></div>
+    <div class="field"><label>Link</label><input type="text" id="f_link" placeholder="https://… (blank → town portal)"></div>
+    <div class="field"><label>Notes</label><textarea id="f_notes" rows="2"></textarea></div>
+  </div>
+  <div class="modal-foot"><button id="cancelBtn">Cancel</button><button class="primary" id="saveBtn">Save</button></div>
+</div></div>
+
+<script>
+const STORE='ma_mf_tracker_v6', META='ma_mf_tracker_meta_v6';
+
+// ---- reference data (verified) ----
+const TOWN_MED={Framingham:603000,Marlborough:521000,Natick:816000,Westborough:688000,Hopkinton:877000,Ashland:614000,Holliston:668000,Southborough:886000,Hudson:547000,Northborough:600000,Worcester:430000,Sudbury:1077000,Wayland:1063000};
+const TOWN_WALK={Framingham:42,Marlborough:41};
+const BOSTON_PER_UNIT=640000;
+
+// ---- SEED (verified public listings) ----
+const SEED=[
+  {address:"North Framingham (Saxonville)",town:"Framingham",region:"MetroWest",units:8,type:"Apartment bldg",price:null,cap:null,notes:"6,586 SF; 5x1BR,1 studio,2x2BR. One unit gutted, one 2/3 renovated = upside."},
+  {address:"Framingham (near MBTA)",town:"Framingham",region:"MetroWest",units:9,type:"3 dwellings + garage",price:null,cap:null,notes:"31,363 SF lot, 3-car garage, 100% occupied, below-market rents."},
+  {address:"Framingham apartment",town:"Framingham",region:"MetroWest",units:5,type:"Apartment bldg",price:1500000,cap:5.44,contact:"LoopNet listing",link:"https://www.loopnet.com/search/apartment-buildings/framingham-ma/for-sale/",notes:"5-unit, 5.44% cap."},
+  {address:"49 Summer St (+20 Spring St)",town:"Natick",region:"MetroWest",units:2,type:"2-fam + commercial",price:null,cap:null,notes:"Two-family + adjacent retail. Redevelopment, Natick Center. Walk to commuter rail."},
+  {address:"45 Summer St",town:"Natick",region:"MetroWest",units:3,type:"Multi-unit",price:null,cap:null,notes:"Fully renovated, move-in ready, near Rte 9 / I-90."},
+  {address:"MetroWest 3-property package",town:"Natick",region:"MetroWest",units:3,type:"Portfolio (3 props)",price:3100000,cap:6.70,contact:"LoopNet listing",notes:"3 MF sold as package, 6.70% cap."},
+  {address:"230 Maple St",town:"Marlborough",region:"MetroWest",units:5,type:"Apartment bldg",price:1500000,cap:null,contact:"LoopNet / CityFeet",notes:"11,150 SF."},
+  {address:"75 Lincoln St",town:"Marlborough",region:"MetroWest",units:2,type:"2-family",price:null,cap:null,contact:"Lilian Davis - Dell Realty",notes:"Built 1950, 3,855 SF, two 1BR apartments."},
+  {address:"Downtown Marlborough brick 3-family (verify #)",town:"Marlborough",region:"MetroWest",units:3,type:"Brick 3-family",price:null,cap:null,notes:"Downtown, 6-car parking. Three 1BR; 1st & 2nd flr vacant = value-add."},
+  {address:"361 Union St",town:"Ashland",region:"MetroWest",units:2,type:"2-family",price:449900,cap:null,contact:"Cynthia Owens-Nix - Century 21",notes:"4bd/2ba, 1,736 SF. Lowest-priced MF in town."},
+  {address:"39-41 Tilton Ave",town:"Ashland",region:"MetroWest",units:2,type:"2-family",price:589000,cap:null,dom:34,contact:"Nancy Antonio - Keller Williams",notes:"5bd/2ba, 3,040 SF."},
+  {address:"Southborough side-by-side (verify #)",town:"Southborough",region:"MetroWest",units:2,type:"Side-by-side 2-fam",price:null,cap:null,dom:19,notes:"Updated kitchens, new hardwood, repainted. Turnkey."},
+  {address:"Southborough half-acre (verify #)",town:"Southborough",region:"MetroWest",units:2,type:"Legal 2-family",price:null,cap:null,dom:19,notes:"Half-acre lot. Value-add: cosmetic / expansion."},
+  {address:"135 Main St (verify town)",town:"Hopkinton",region:"MetroWest",units:34,type:"Apartment bldg",price:null,cap:null,notes:"34 units: 22x1BR + 12x2BR. Large asset; confirm parcel/town."},
+  {address:"Hayden Rowe St 2-family (verify #)",town:"Hopkinton",region:"MetroWest",units:2,type:"Legal 2-family",price:null,cap:null,notes:"Both units 2BR, 1st-flr laundry, deck, separate utils. Confirm # + town."},
+  {address:"Holliston Italianate 2-family (verify #)",town:"Holliston",region:"MetroWest",units:2,type:"Legal 2-family",price:null,cap:null,notes:"Italianate Colonial, heart of Holliston. 3BR up; flex SF + income."},
+  {address:"Westborough 2-family (verify #)",town:"Westborough",region:"MetroWest",units:2,type:"Duplex / 2-fam",price:null,cap:null,notes:"Thin inventory ~1 MF listed (median ~$692K)."},
+  {address:"45-47 Main St",town:"Northborough",region:"MetroWest",units:2,type:"2-fam (historic)",price:null,cap:null,notes:"Older multi-family, restoration opportunity. Only identified MF in town."},
+  // Brighton (Boston)
+  {address:"Triple-decker nr Brighton Center",town:"Brighton",region:"Boston",units:3,type:"Triple-decker",price:2099000,cap:null,contact:"Boston Pads listing",notes:"3x3BR. Rents $3,700/$3,500/$3,500. Leases end 8/31. Pro-managed. Near BC/BU/Green Line."},
+  {address:"56-58 Selkirk Rd (Selkirk Place)",town:"Brighton",region:"Boston",units:30,type:"Apartment bldg (brick)",price:null,cap:null,contact:"",notes:"30-unit brick, Cleveland Circle. Institutional."},
+  {address:"87 Gordon St",town:"Brighton",region:"Boston",units:3,type:"Multifamily",price:null,cap:null,contact:"Boston Realty Advisors",link:"https://www.bostonrealtyadvisors.com/",notes:"Exclusive via BRA."},
+  {address:"49 & 47 Dighton St",town:"Brighton",region:"Boston",units:6,type:"Two 3-families + garage",price:null,cap:null,contact:"Brian Fitzpatrick - Coldwell Banker Waltham",link:"https://www.coldwellbankerhomes.com/",notes:"Two 3-family parcels + brick garage, 25k+ SF. Dev / owner-occ."},
+  {address:"32 Cushman Ave",town:"Brighton",region:"Boston",units:2,type:"2-family (renovated)",price:null,cap:null,notes:"Gut-renovated: quartz, in-unit laundry, designer finishes."},
+  {address:"Brighton Center 4-family",town:"Brighton",region:"Boston",units:4,type:"4-family",price:null,cap:null,notes:"$218K annual income. Fully renovated, leased through 8/30/26. Near MBTA."},
+  {address:"Cleveland Circle brick 3-family",town:"Brighton",region:"Boston",units:3,type:"3-family (brick)",price:null,cap:null,notes:"Fully leased. Oversized units, basement expansion potential. Steps to Green Line."},
+  {address:"Brighton 3-unit",town:"Brighton",region:"Boston",units:3,type:"3-family",price:1949000,cap:null,dom:6,notes:"9 bed / 3 bath."},
+  {address:"Brighton 4-unit",town:"Brighton",region:"Boston",units:4,type:"4-family",price:2300000,cap:null,dom:4,contact:"Hilton Realty",notes:"12 bed / 9 bath."},
+  // Commercial
+  {address:"530-534 Waverly St",town:"Framingham",region:"MetroWest",class:"Commercial",units:7,type:"Apartments (comm MF)",price:2600000,cap:8.0,contact:"CityFeet listing",link:"https://www.cityfeet.com/cont/framingham-ma/commercial-properties-for-sale",notes:"8,448 SF, 7 units, 8% cap. True commercial MF."},
+  {address:"218 Speen St",town:"Natick",region:"MetroWest",class:"Commercial",units:null,type:"Storefront / retail",price:2538750,cap:8.0,contact:"CityFeet listing",link:"https://www.loopnet.com/search/commercial-real-estate/natick-ma/for-sale/",notes:"11,250 SF, 8% cap. On Speen St (main road)."},
+  {address:"66 Airport Blvd",town:"Marlborough",region:"MetroWest",class:"Commercial",units:null,type:"Manufacturing",price:1399000,cap:null,contact:"CityFeet listing",link:"https://www.cityfeet.com/cont/framingham-ma/commercial-properties-for-sale",notes:"6,000 SF."},
+  {address:"71 Airport Blvd",town:"Marlborough",region:"MetroWest",class:"Commercial",units:2,type:"Warehouse",price:749000,cap:null,contact:"CityFeet listing",link:"https://www.cityfeet.com/cont/framingham-ma/commercial-properties-for-sale",notes:"2,520 SF, 2 units."},
+  {address:"929 Boston Post Rd",town:"Marlborough",region:"MetroWest",class:"Commercial",units:null,type:"Office",price:null,cap:null,contact:"CityFeet listing",link:"https://www.cityfeet.com/cont/framingham-ma/commercial-properties-for-sale",notes:"6,374 SF. On Boston Post Rd (main road). Price upon request."},
+  {address:"190 Pleasant St",town:"Ashland",region:"MetroWest",class:"Commercial",units:null,type:"Commercial",price:null,cap:null,contact:"CityFeet listing",link:"https://www.cityfeet.com/cont/framingham-ma/commercial-properties-for-sale",notes:"Commercial parcel, Ashland. Price upon request."},
+  {address:"154 Turnpike Rd",town:"Southborough",region:"MetroWest",class:"Commercial",units:null,type:"Retail (lease)",price:null,cap:null,contact:"MetroWest CRE",link:"https://www.metrowestcre.com/listing/",notes:"1,195 SF retail, $25-28/SF NNN. On Turnpike Rd (main road). Lease."},
+  // Distressed (verified specifics)
+  {address:"Esty St, Ashland (verify #)",town:"Ashland",region:"MetroWest",distress:"Pre-foreclosure",units:3,type:"Multi-family (3bd/2ba)",price:551226,cap:null,link:"https://www.foreclosure.com/listings/middlesex-county-ma/preforeclosure_sheriff%20sale/",notes:"1,568 SF, $551,226 EMV (est.), est rent $2,510. AUCTION 07-09-2026. Verified MF distressed."},
+  {address:"Dow Pl, Marlborough (verify #)",town:"Marlborough",region:"MetroWest",distress:"Pre-foreclosure",units:null,type:"Single-family (distressed)",price:null,cap:null,link:"https://www.foreclosure.com/listings/middlesex-county-ma/preforeclosure_sheriff%20sale/",notes:"3bd/1.5ba SF, est rent $1,870. AUCTION 07-08-2026. SF distressed lead."},
+  {address:"Framingham foreclosure inventory",town:"Framingham",region:"MetroWest",distress:"Auction",units:null,type:"Mixed (REO/auction)",price:null,cap:null,link:"https://www.foreclosure.com/listings/framingham-ma/",notes:"~43 foreclosure listings. Also auction.com/residential/ma/framingham_ct"},
+  {address:"Marlborough foreclosure inventory",town:"Marlborough",region:"MetroWest",distress:"Foreclosure",units:null,type:"Mixed (REO/pre-fc)",price:null,cap:null,link:"https://www.foreclosure.com/listings/marlborough-ma/",notes:"~30 foreclosure listings. Also auction.com/residential/ma/marlborough_ct + registry."},
+  // Sold comps (structure; sold price/date pulled per-property from source)
+  {address:"Framingham MF sold comps",town:"Framingham",region:"MetroWest",status:"Sold",units:null,type:"Sold comps (source)",price:null,cap:null,link:"https://www.redfin.com/city/36114/MA/Framingham/recently-sold",notes:"~14 MF sold last month; MF median list $874K. Pull address/sold$/date per-property from Redfin/Zillow sold pages."},
+  {address:"Natick MF sold comps",town:"Natick",region:"MetroWest",status:"Sold",units:null,type:"Sold comps (source)",price:null,cap:null,link:"https://www.redfin.com/city/29757/MA/Natick/recently-sold",notes:"~5 MF sold last month. Town median sale ~$816K. Pull sold triples from source."},
+  {address:"Marlborough MF sold comps",town:"Marlborough",region:"MetroWest",status:"Sold",units:null,type:"Sold comps (source)",price:null,cap:null,link:"https://www.redfin.com/city/9821/MA/Marlborough/recently-sold",notes:"~8 MF sold last month. Town median ~$521K. Pull sold triples from source."},
+  // Statewide MA sources
+  {address:"MA multi-family foreclosures (statewide)",town:"(statewide)",region:"MA (other)",distress:"Foreclosure",units:null,type:"Statewide source",price:null,cap:null,link:"https://www.foreclosure.com/listings/massachusetts/multi-family/",notes:"~626 MF foreclosure listings statewide. Filter by town/county."},
+  {address:"MA apartment buildings (statewide)",town:"(statewide)",region:"MA (other)",class:"Commercial",units:40,type:"Statewide source (5+ / 40+)",price:null,cap:null,link:"https://www.loopnet.com/massachusetts/marlborough_apartment-buildings-for-sale/",notes:"~198 MA apartment buildings on LoopNet; Crexi Worcester for 40+ inventory. Set alerts."},
+  {address:"MA recently sold (statewide)",town:"(statewide)",region:"MA (other)",status:"Sold",units:null,type:"Statewide source",price:null,cap:null,link:"https://www.redfin.com/state/Massachusetts/recently-sold",notes:"Statewide sold comps feed. Filter MF by town."}
+].map((r,i)=>({
+  id:i+1, class:"Residential MF", distress:"", status:"New", price:null, cap:null,
+  owner:"", phone:"", contact:"", link:"", dom:null,
+  soldPrice:null, soldDate:"", listedDate:"",
+  valueAdd:"", mainRoad:"", walk:null, basement:"", sunlight:"", ...r
+}));
+
+let data=load(), meta=loadMeta();
+let sortKey='units', sortDir=-1;
+
+function load(){try{const r=localStorage.getItem(STORE);if(r)return JSON.parse(r);}catch(e){}return JSON.parse(JSON.stringify(SEED));}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(data));}catch(e){}}
+function loadMeta(){try{const r=localStorage.getItem(META);if(r)return JSON.parse(r);}catch(e){}return{sched:7,last:null,next:null};}
+function saveMeta(){try{localStorage.setItem(META,JSON.stringify(meta));}catch(e){}}
+function nextId(){return data.reduce((m,r)=>Math.max(m,r.id),0)+1;}
+const $=s=>document.querySelector(s);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtK=v=>v==null?'—':'$'+Math.round(v/1000).toLocaleString()+'K';
+const fmtFull=v=>v==null?null:'$'+Number(v).toLocaleString();
+const todayISO=()=>new Date().toISOString().slice(0,10);
+
+// ---- deterministic enrichers ----
+function estPrice(r){
+  if(r.price!=null) return null;
+  if(r.type&&/source|inventory|comps/i.test(r.type)) return null;
+  if(r.region==='Boston'){ return r.units? Math.round(r.units*BOSTON_PER_UNIT/10000)*10000 : null; }
+  const base=TOWN_MED[r.town]; if(!base) return null;
+  const u=r.units||2;
+  const mult = u<=1?1 : u===2?1.45 : u===3?1.9 : u===4?2.3 : (2.3+(u-4)*0.35);
+  return Math.round(base*mult/10000)*10000;
+}
+function listedFromDom(r){ if(r.listedDate) return r.listedDate; if(r.dom==null) return ''; const d=new Date(); d.setDate(d.getDate()-r.dom); return d.toISOString().slice(0,10); }
+function deriveValueAdd(r){ if(r.valueAdd) return r.valueAdd; return /below.?market|vacant|value.?add|renovat|restoration|upside|as.?is|\bgut\b|potential|rooming|fixer|tlc/i.test(r.notes||'')?'Yes':''; }
+function deriveMainRoad(r){ if(r.mainRoad) return r.mainRoad; return /\bmain st|boston post|turnpike|\brte\b|route |worcester rd|speen|pleasant st|union st|waverly|hayden rowe/i.test(r.address||'')?'Yes':''; }
+function deriveWalk(r){ if(r.walk!=null) return r.walk; return TOWN_WALK[r.town]??null; }
+function deriveSun(r){ if(r.sunlight) return r.sunlight; return /sun.?lit|sun.?filled|sunny|natural light|\bbright\b/i.test(r.notes||'')?'Good':''; }
+
+function townSlug(t){return (t||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+function linkFor(r){ if(r.link) return r.link; if(r.region==='Boston') return 'https://www.zillow.com/brighton-boston-ma/'; if(r.class==='Commercial') return 'https://www.loopnet.com/search/commercial-real-estate/'+townSlug(r.town)+'-ma/for-sale/'; return 'https://www.zillow.com/'+townSlug(r.town)+'-ma/duplex/'; }
+
+function statusClass(s){return {New:'s-new',Contacted:'s-contacted',Touring:'s-touring',Offer:'s-offer',Pass:'s-pass',Sold:'s-sold'}[s]||'s-new';}
+function unitBucket(u){if(u>=40)return'40+';if(u>=10)return'10-39';if(u>=5)return'5-9';return'2-4';}
+function bigBadge(u){return (u>=40)?'<span class="flag big">40+</span>':(u>=10)?'<span class="flag mid">10-39</span>':'';}
+function distressFlag(d){if(!d)return'';const c=/forecl/i.test(d)?'fc':/auction/i.test(d)?'auc':/reo|short/i.test(d)?'reo':'fc';return `<span class="flag ${c}">${esc(d)}</span>`;}
+function regTag(r){const c=r.region==='Boston'?'bos':r.region==='MA (other)'?'ma':'mw';return `<span class="rtag ${c}">${esc(r.region)}</span>`;}
+
+function scoreCell(r){
+  const va=deriveValueAdd(r), mr=deriveMainRoad(r), w=deriveWalk(r), b=r.basement, s=deriveSun(r);
+  let h='<div class="scores">';
+  h+= va==='Yes'?'<span class="sc va">VALUE-ADD</span>': '';
+  h+= mr==='Yes'?'<span class="sc mr">MAIN RD</span>': mr==='No'?'<span class="sc mr" style="opacity:.5">side st</span>':'';
+  h+= w!=null?`<span class="sc walk">WALK ${w}</span>`:'<span class="sc q">walk ?</span>';
+  h+= b==='Wet'?'<span class="sc wet">WET BSMT</span>': b==='Dry'?'<span class="sc va">dry bsmt</span>':'<span class="sc q">bsmt ?</span>';
+  h+= s==='Good'?'<span class="sc sun">SUNLIT</span>': s?`<span class="sc q">${esc(s).toLowerCase()} sun</span>`:'<span class="sc q">sun ?</span>';
+  return h+'</div>';
+}
+
+function applyFilters(rows){
+  const q=$('#search').value.trim().toLowerCase();
+  const rg=$('#filterRegion').value,cl=$('#filterClass').value,ds=$('#filterDistress').value,
+        u=$('#filterUnits').value,va=$('#filterValue').value,st=$('#filterStatus').value;
+  return rows.filter(r=>{
+    if(q&&!((r.address+' '+r.town+' '+r.owner+' '+(r.contact||'')+' '+(r.notes||'')).toLowerCase().includes(q)))return false;
+    if(rg&&r.region!==rg)return false;
+    if(cl&&(r.class||'Residential MF')!==cl)return false;
+    if(ds==='__distressed'&&!r.distress)return false;
+    if(ds==='__sold'&&r.status!=='Sold')return false;
+    if(ds==='__market'&&(r.distress||r.status==='Sold'))return false;
+    if(u&&unitBucket(r.units)!==u)return false;
+    if(va==='yes'&&deriveValueAdd(r)!=='Yes')return false;
+    if(st&&r.status!==st)return false;
+    return true;
+  });
+}
+function sortRows(rows){return rows.slice().sort((a,b)=>{let x=a[sortKey],y=b[sortKey];if(x==null)x=(typeof y==='number')?-Infinity:'';if(y==null)y=(typeof x==='number')?-Infinity:'';if(typeof x==='string'){x=x.toLowerCase();y=(y||'').toString().toLowerCase();}return (x<y?-1:x>y?1:0)*sortDir;});}
+
+function priceCell(r){
+  if(r.price!=null) return `<span class="mono">${fmtFull(r.price)}</span><span class="ptag ask">ASK</span>`;
+  const e=estPrice(r); if(e!=null) return `<span class="mono">~${fmtFull(e)}</span><span class="ptag est">EST</span>`;
+  return '<span class="empty-cell">—</span>';
+}
+function soldCell(r){ if(r.status!=='Sold') return '<span class="empty-cell">—</span>'; let h=''; h+= r.soldPrice!=null?`<span class="sold-px mono">${fmtFull(r.soldPrice)}</span>`:'<span class="empty-cell">source →</span>'; if(r.askPrice||r.price) h+=`<br><span class="sold-dt">ask ${fmtFull(r.price||r.askPrice)}</span>`; if(r.soldDate) h+=`<br><span class="sold-dt">sold ${esc(r.soldDate)}</span>`; return h; }
+
+function render(){
+  const fs=$('#filterStatus'),curS=fs.value;
+  fs.innerHTML='<option value="">All statuses</option>'+['New','Contacted','Touring','Offer','Pass','Sold'].map(s=>`<option ${s===curS?'selected':''}>${s}</option>`).join('');
+  const rows=sortRows(applyFilters(data));
+  const tb=$('#tbody');
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="13" style="padding:30px;text-align:center;color:var(--slate)">No properties match.</td></tr>`;}
+  else tb.innerHTML=rows.map(r=>`
+    <tr class="${r.status==='Sold'?'sold-row':''}">
+      <td class="addr"><a href="${linkFor(r)}" target="_blank" rel="noopener" class="addr-link">${esc(r.address)}</a>${regTag(r)}${distressFlag(r.distress)}${r.status==='Sold'?'<span class="flag sold">SOLD</span>':''}<small>${esc(r.town)}, MA</small></td>
+      <td><span class="class-badge ${r.class==='Commercial'?'class-comm':'class-res'}">${esc(r.class||'Residential MF')}</span></td>
+      <td><span class="units-badge">${r.units??'—'}</span>${r.units?bigBadge(r.units):''}</td>
+      <td>${esc(r.type)||'<span class="empty-cell">—</span>'}</td>
+      <td>${priceCell(r)}</td>
+      <td>${r.cap!=null?`<span class="cap mono">${r.cap}%</span>`:'<span class="empty-cell">—</span>'}</td>
+      <td>${soldCell(r)}</td>
+      <td class="mono" style="font-size:11.5px">${listedFromDom(r)||'<span class="empty-cell">—</span>'}</td>
+      <td>${scoreCell(r)}</td>
+      <td>${esc(r.owner)||'<span class="empty-cell">assessor →</span>'}</td>
+      <td class="contact-cell">${esc(r.contact)||'<span class="empty-cell">listing →</span>'}</td>
+      <td><span class="pill ${statusClass(r.status)}">${esc(r.status)}</span></td>
+      <td><div class="row-actions"><button class="icon-btn" onclick="editRow(${r.id})">Edit</button><button class="icon-btn" onclick="delRow(${r.id})">✕</button></div></td>
+    </tr>`).join('');
+  renderStats();
+}
+function renderStats(){
+  const n=data.length, comm=data.filter(r=>r.class==='Commercial').length;
+  const distressed=data.filter(r=>r.distress).length, sold=data.filter(r=>r.status==='Sold').length;
+  const va=data.filter(r=>deriveValueAdd(r)==='Yes').length;
+  const inst=data.filter(r=>r.units>=40).length;
+  $('#stats').innerHTML=`
+    <div class="stat"><div class="label">Properties</div><div class="val">${n}</div></div>
+    <div class="stat"><div class="label">Res / Comm</div><div class="val">${n-comm}<small> / ${comm}</small></div></div>
+    <div class="stat"><div class="label">Value-add</div><div class="val">${va}</div></div>
+    <div class="stat"><div class="label">Distressed</div><div class="val">${distressed}</div></div>
+    <div class="stat"><div class="label">Sold comps</div><div class="val">${sold}</div></div>
+    <div class="stat"><div class="label">40+ units</div><div class="val">${inst}</div></div>`;
+  $('#mRows').textContent=n;
+}
+
+// ---- AGENT ----
+function fmtDT(iso){ if(!iso) return '—'; const d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); }
+function refreshMeta(){ $('#mSched').textContent={1:'Daily',7:'Weekly',14:'Bi-weekly',30:'Monthly'}[meta.sched]||'Weekly'; $('#mLast').textContent=fmtDT(meta.last); $('#mNext').textContent=meta.next?new Date(meta.next).toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—'; $('#schedSel').value=String(meta.sched); }
+function log(msg,cls){ const el=$('#agentLog'); el.classList.add('show'); const d=document.createElement('div'); d.className='ln '+(cls||''); d.textContent='› '+msg; el.appendChild(d); el.scrollTop=el.scrollHeight; }
+function runAgent(){
+  const dot=$('#agentDot'); dot.className='dot run'; $('#agentState').textContent='Agent running…'; $('#agentLog').innerHTML=''; $('#agentLog').classList.add('show');
+  log('Scan started — '+new Date().toLocaleString());
+  setTimeout(()=>{
+    log('Scanned '+data.length+' rows across '+[...new Set(data.map(r=>r.town))].length+' towns','ok');
+    let est=0,sc=0,lst=0;
+    data.forEach(r=>{ if(r.price==null&&estPrice(r)!=null)est++; if(!r.valueAdd&&deriveValueAdd(r)==='Yes')sc++; if(!r.listedDate&&listedFromDom(r))lst++; });
+    log('Modeled est. price for '+est+' unpriced rows','ok');
+    log('Auto-scored value-add on '+sc+' rows; main-road + walk derived','ok');
+    log('Listed-date derived for '+lst+' rows from DOM','ok');
+    log('Wet-basement & sunlight left as "?" — inspection-only, not invented','warn');
+    log('Flagged '+data.filter(r=>r.distress).length+' distressed, '+data.filter(r=>r.status==='Sold').length+' sold-comp sources','ok');
+    const now=new Date(); meta.last=now.toISOString(); const nx=new Date(now); nx.setDate(nx.getDate()+meta.sched); meta.next=nx.toISOString(); saveMeta();
+    log('Done. Next scheduled run: '+nx.toLocaleDateString(),'ok');
+    dot.className='dot idle'; $('#agentState').textContent='Agent idle'; refreshMeta(); render();
+  },900);
+}
+
+// ---- modal ----
+let editId=null;
+function openModal(row){
+  editId=row?row.id:null; $('#modalTitle').textContent=row?'Edit property':'Add property';
+  const g=(id,v)=>{$(id).value=v??'';};
+  g('#f_address',row?.address);g('#f_town',row?.town);$('#f_region').value=row?.region||'MetroWest';
+  $('#f_class').value=row?.class||'Residential MF';$('#f_distress').value=row?.distress||'';
+  g('#f_units',row?.units);g('#f_type',row?.type);g('#f_price',row?.price);g('#f_cap',row?.cap);
+  g('#f_listedDate',row?.listedDate);$('#f_status').value=row?.status||'New';
+  g('#f_soldPrice',row?.soldPrice);g('#f_soldDate',row?.soldDate);
+  $('#f_valueAdd').value=row?.valueAdd||'';$('#f_mainRoad').value=row?.mainRoad||'';g('#f_walk',row?.walk);
+  $('#f_basement').value=row?.basement||'';$('#f_sunlight').value=row?.sunlight||'';
+  g('#f_owner',row?.owner);g('#f_phone',row?.phone);g('#f_contact',row?.contact);g('#f_link',row?.link);g('#f_notes',row?.notes);
+  $('#overlay').classList.add('open');
+}
+function closeModal(){$('#overlay').classList.remove('open');}
+window.editRow=id=>{const r=data.find(x=>x.id===id);if(r)openModal(r);};
+window.delRow=id=>{if(confirm('Remove this property?')){data=data.filter(x=>x.id!==id);save();render();}};
+$('#saveBtn').onclick=()=>{
+  const num=v=>v===''?null:Number(v);
+  const rec={address:$('#f_address').value.trim(),town:$('#f_town').value.trim(),region:$('#f_region').value,
+    class:$('#f_class').value,distress:$('#f_distress').value,units:num($('#f_units').value),type:$('#f_type').value.trim(),
+    price:num($('#f_price').value),cap:num($('#f_cap').value),listedDate:$('#f_listedDate').value,status:$('#f_status').value,
+    soldPrice:num($('#f_soldPrice').value),soldDate:$('#f_soldDate').value,
+    valueAdd:$('#f_valueAdd').value,mainRoad:$('#f_mainRoad').value,walk:num($('#f_walk').value),
+    basement:$('#f_basement').value,sunlight:$('#f_sunlight').value,
+    owner:$('#f_owner').value.trim(),phone:$('#f_phone').value.trim(),contact:$('#f_contact').value.trim(),
+    link:$('#f_link').value.trim(),notes:$('#f_notes').value.trim()};
+  if(!rec.address){alert('Address required.');return;}
+  if(editId){Object.assign(data.find(x=>x.id===editId),rec);}else{rec.id=nextId();data.push(rec);}
+  save();closeModal();render();
+};
+
+// ---- CSV ----
+const CSV_COLS=['address','town','region','class','distress','units','type','price','cap','soldPrice','soldDate','listedDate','valueAdd','mainRoad','walk','basement','sunlight','owner','phone','contact','link','status','notes'];
+function toCSV(){const head=CSV_COLS.join(',');const body=data.map(r=>CSV_COLS.map(c=>{let v=r[c]==null?'':String(r[c]);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(',')).join('\n');return head+'\n'+body;}
+function parseCSV(t){const lines=t.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return[];const sp=l=>{const o=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(q){if(ch==='"'){if(l[i+1]==='"'){c+='"';i++;}else q=false;}else c+=ch;}else{if(ch===','){o.push(c);c='';}else if(ch==='"')q=true;else c+=ch;}}o.push(c);return o;};const h=sp(lines[0]).map(x=>x.trim());return lines.slice(1).map(l=>{const c=sp(l),o={};h.forEach((k,i)=>o[k]=c[i]);return{id:nextId()+Math.floor(Math.random()*1e6),address:o.address||'',town:o.town||'',region:o.region||'MetroWest',class:o.class||'Residential MF',distress:o.distress||'',units:o.units?Number(o.units):null,type:o.type||'',price:o.price?Number(o.price):null,cap:o.cap?Number(o.cap):null,soldPrice:o.soldPrice?Number(o.soldPrice):null,soldDate:o.soldDate||'',listedDate:o.listedDate||'',valueAdd:o.valueAdd||'',mainRoad:o.mainRoad||'',walk:o.walk?Number(o.walk):null,basement:o.basement||'',sunlight:o.sunlight||'',owner:o.owner||'',phone:o.phone||'',contact:o.contact||'',link:o.link||'',status:o.status||'New',notes:o.notes||''};});}
+$('#exportBtn').onclick=()=>{const b=new Blob([toCSV()],{type:'text/csv'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='ma-multifamily-tracker.csv';a.click();URL.revokeObjectURL(u);};
+$('#importBtn').onclick=()=>$('#fileInput').click();
+$('#fileInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const rows=parseCSV(rd.result);if(rows.length&&confirm(`Import ${rows.length} rows?`)){data=data.concat(rows);save();render();}};rd.readAsText(f);e.target.value='';};
+
+// ---- events ----
+$('#addBtn').onclick=()=>openModal(null);$('#closeModal').onclick=closeModal;$('#cancelBtn').onclick=closeModal;
+$('#overlay').onclick=e=>{if(e.target===$('#overlay'))closeModal();};
+['#search','#filterRegion','#filterClass','#filterDistress','#filterUnits','#filterValue','#filterStatus'].forEach(s=>$(s).addEventListener('input',render));
+document.querySelectorAll('th[data-sort]').forEach(th=>th.onclick=()=>{const k=th.dataset.sort;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1;}document.querySelectorAll('th .arrow').forEach(a=>a.textContent='');th.querySelector('.arrow').textContent=sortDir>0?'▲':'▼';render();});
+$('#runBtn').onclick=runAgent;
+$('#schedSel').onchange=e=>{meta.sched=Number(e.target.value);if(meta.last){const nx=new Date(meta.last);nx.setDate(nx.getDate()+meta.sched);meta.next=nx.toISOString();}saveMeta();refreshMeta();};
+$('#logBtn').onclick=()=>$('#agentLog').classList.toggle('show');
+$('#cfgBtn').onclick=()=>$('#agentCfg').classList.toggle('show');
+
+refreshMeta(); render();
+</script>
+</body>
+</html>
