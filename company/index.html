@@ -1,1 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Target Intelligence — BitSense</title>
+<meta name="description" content="MedDevice, Tech, and Financial companies in MA / NH / RI / MN — revenue, pay, manufacturing, IT/OT, CIO/CTO/CISO, compliance needs, and vCISO role-fit." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;--panel:#F7F9FC;--raised:#FBFCFE;--card:#FFFFFF;
+    --line:#E4E9F1;--line-soft:#EEF2F7;
+    --txt:#1A2233;--muted:#5B6678;--faint:#98A2B3;
+    --med:#0E9E8E;--tech:#6A57C9;--fin:#C77A12;--pharma:#2563C9;
+    --med-bg:#E4F6F3;--tech-bg:#ECE8FA;--fin-bg:#FBF0DD;--pharma-bg:#E6EDFC;
+    --priv:#C73E76;--priv-bg:#FAE6EF;
+    --good:#0E9E8E;--warn:#C77A12;
+    --display:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+    --body:"Inter",ui-sans-serif,system-ui,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --shadow:0 1px 2px rgba(16,28,48,.04),0 4px 16px rgba(16,28,48,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1480px;margin:0 auto;padding:0 24px}
+  ::selection{background:rgba(14,158,142,.18)}
+  header.top{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top .wrap{display:flex;align-items:center;gap:14px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:-.01em}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--med);box-shadow:0 0 0 3px var(--med-bg)}
+  .brand small{color:var(--faint);font-weight:500;font-family:var(--mono);font-size:11px;letter-spacing:.06em}
+  .top .stat{margin-left:auto;display:flex;gap:18px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .top .stat b{color:var(--txt);font-weight:600;font-size:13px}
+  .top .stat b.t{color:var(--med)}
+  .hero{padding:28px 0 12px}
+  .hero h1{font-family:var(--display);font-weight:600;font-size:26px;letter-spacing:-.02em;margin:0 0 6px}
+  .hero p{color:var(--muted);margin:0;max-width:96ch;font-size:13.5px}
+  .hero .disc{margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--warn);background:var(--fin-bg);border:1px solid #F0DCBC;padding:8px 12px;border-radius:8px;display:inline-block;line-height:1.5}
+  .controls{position:sticky;top:60px;z-index:30;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line);padding:12px 0;margin-top:12px}
+  .crow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .grp{display:flex;gap:6px;align-items:center}
+  .glabel{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-right:2px}
+  .chip{font-size:12px;font-family:var(--mono);color:var(--muted);background:var(--bg);border:1px solid var(--line);padding:6px 11px;border-radius:18px;cursor:pointer;white-space:nowrap;transition:.12s}
+  .chip:hover{border-color:var(--faint);color:var(--txt)}
+  .chip.on{background:var(--txt);color:#fff;border-color:var(--txt)}
+  .chip.sec-MedDevice.on{background:var(--med);border-color:var(--med)} .chip.sec-Tech.on{background:var(--tech);border-color:var(--tech)} .chip.sec-Financial.on{background:var(--fin);border-color:var(--fin)} .chip.sec-Pharma.on{background:var(--pharma);border-color:var(--pharma)}
+  .chip.rf-High.on{background:var(--med);border-color:var(--med)} .chip.rf-Medium.on{background:var(--tech);border-color:var(--tech)} .chip.rf-Low.on{background:var(--faint);border-color:var(--faint)}
+  .search{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 12px;min-width:230px}
+  .search input{background:none;border:none;color:var(--txt);font-family:var(--body);font-size:13px;outline:none;width:100%}
+  .search svg{opacity:.45;flex:none}
+  main{padding:16px 0 50px}
+  .meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+  .count{font-family:var(--mono);font-size:12px;color:var(--muted)} .count b{color:var(--med)}
+  .btn{font-family:var(--mono);font-size:12px;border:1px solid var(--line);background:var(--bg);color:var(--muted);padding:8px 13px;border-radius:8px;cursor:pointer;transition:.12s}
+  .btn:hover{color:var(--txt);border-color:var(--faint);box-shadow:var(--shadow)}
+  .btn.primary{background:var(--med);color:#fff;border-color:var(--med);font-weight:600}
+  .btn.primary:hover{filter:brightness(1.06);color:#fff}
+  .tablewrap{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:1100px}
+  thead th{background:var(--panel);text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);padding:11px 12px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap}
+  thead th:hover{color:var(--txt)}
+  tbody tr{border-bottom:1px solid var(--line-soft);cursor:pointer;transition:.1s}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:var(--panel)}
+  tbody td{padding:11px 12px;vertical-align:top}
+  .cname{font-weight:600;font-family:var(--display);font-size:14px;display:flex;align-items:center;gap:7px}
+  .cname .bar{width:3px;height:15px;border-radius:2px;flex:none}
+  .sub{color:var(--faint);font-size:11px;font-family:var(--mono);margin-top:3px}
+  .pill{display:inline-block;font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:5px;letter-spacing:.02em;white-space:nowrap;font-weight:600}
+  .sec-MedDevice{color:var(--med);background:var(--med-bg)} .sec-Tech{color:var(--tech);background:var(--tech-bg)} .sec-Financial{color:var(--fin);background:var(--fin-bg)} .sec-Pharma{color:var(--pharma);background:var(--pharma-bg)}
+  .rf-High{color:var(--med);background:var(--med-bg)} .rf-Medium{color:var(--tech);background:var(--tech-bg)} .rf-Low{color:var(--faint);background:#F0F2F6}
+  .pay-High{color:var(--good);font-weight:600} .pay-Above{color:var(--tech);font-weight:600} .pay-Market{color:var(--muted)}
+  .yn-y{color:var(--good);font-weight:600} .yn-p{color:var(--warn);font-weight:600} .yn-n{color:var(--faint)}
+  .leader{font-size:12.5px} .leader.nd{color:var(--faint);font-style:italic;font-size:12px}
+  .comp{font-size:11.5px;color:var(--muted);max-width:240px}
+  .regs{display:flex;gap:4px;flex-wrap:wrap}
+  .reg{font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.02em;padding:3px 6px;border-radius:4px;line-height:1;border:1px solid transparent}
+  .reg.CMMC{color:var(--sec);background:var(--sec-bg)} .reg.PCI{color:var(--fin);background:var(--fin-bg)}
+  .reg.FDA{color:var(--med);background:var(--med-bg)} .reg.ISO{color:var(--tech);background:var(--tech-bg)}
+  .reg.SOC2{color:var(--priv);background:var(--priv-bg)} .reg.EU-CRA{color:var(--guard);background:var(--guard-d,#ECE8FA)}
+  .reg.off{opacity:.18;filter:grayscale(1)}
+  .empty{text-align:center;padding:60px;color:var(--faint);font-family:var(--mono);font-size:13px}
+  .scrim{position:fixed;inset:0;background:rgba(20,28,42,.42);backdrop-filter:blur(3px);z-index:60;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+  .scrim.open{display:flex}
+  .modal{background:#fff;border:1px solid var(--line);border-radius:16px;max-width:740px;width:100%;padding:28px;position:relative;box-shadow:0 24px 60px rgba(16,28,48,.18);animation:rise .2s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .modal .close{position:absolute;top:16px;right:16px;background:var(--panel);border:1px solid var(--line);color:var(--muted);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:17px}
+  .modal h2{font-family:var(--display);font-weight:600;font-size:23px;margin:2px 0 4px;padding-right:40px;letter-spacing:-.02em}
+  .modal .badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px 22px}
+  .row{padding:8px 0;border-top:1px solid var(--line-soft)}
+  .row .k{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:3px}
+  .row .v{font-size:13.5px;color:var(--txt)} .row .v.nd{color:var(--faint);font-style:italic}
+  .box{margin-top:14px;border:1px solid var(--line-soft);border-radius:10px;padding:14px;background:var(--raised)}
+  .box .h{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;font-weight:600}
+  .box.role .h{color:var(--med)} .box.sec .h{color:var(--priv)} .box.comp .h{color:var(--fin)}
+  .box p{margin:0 0 8px;font-size:13.5px;color:var(--txt)} .box p:last-child{margin-bottom:0}
+  .src{margin-top:14px;font-family:var(--mono);font-size:10.5px;color:var(--faint);line-height:1.6}
+  footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--faint);font-size:12px;margin-top:10px}
+  footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  footer b{color:var(--muted);font-family:var(--display)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:11px}
+  .legend span{display:flex;align-items:center;gap:6px}.legend i{width:9px;height:9px;border-radius:2px}
+  .flag{display:inline-block;font-family:var(--mono);font-size:9px;padding:2px 5px;border-radius:4px;margin:1px 2px 1px 0;font-weight:600;letter-spacing:.02em}
+  .fl-CMMC{color:#2E7D32;background:#E6F4E7} .fl-PCI{color:#1565C0;background:#E3EEFB} .fl-FDA{color:var(--med);background:var(--med-bg)}
+  .fl-ISO{color:#5A5A5A;background:#EEEEEE} .fl-SOC2{color:var(--guard);background:var(--guard-bg)} .fl-CRA{color:var(--sec);background:var(--sec-bg)}
+  .stg{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:5px;font-weight:600;white-space:nowrap}
+  .stg-PreIPO{color:#fff;background:var(--tech)} .stg-Public{color:var(--med);background:var(--med-bg)} .stg-Private{color:var(--sec);background:var(--sec-bg)}
+  .stg-Sub{color:var(--faint);background:#F0F2F6}
+  .agent-card{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:15px 18px;margin-bottom:16px}
+  .agent-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .agent-title{font-family:var(--display);font-weight:600;font-size:15px;display:flex;align-items:center;gap:10px}
+  .agent-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .wk{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;cursor:pointer}
+  .run-meta{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .ollama2{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--faint);border:1px solid var(--line);padding:4px 9px;border-radius:14px;cursor:pointer}
+  .ollama2 .led{width:7px;height:7px;border-radius:50%;background:var(--faint)}
+  .ollama2.live .led{background:var(--med);box-shadow:0 0 7px var(--med)} .ollama2.live{color:var(--med);border-color:var(--med-bg)}
+  .agent-body{margin-top:14px;border-top:1px solid var(--line-soft);padding-top:14px}
+  .trace{font-family:var(--mono);font-size:11.5px;background:#0E1422;color:#cdd6e6;border-radius:9px;padding:12px 14px;max-height:190px;overflow-y:auto;margin-bottom:12px}
+  .trace .tl{display:flex;gap:9px;padding:2px 0;align-items:baseline}
+  .trace .ts{color:#5E6A82;flex:none}.trace .st{flex:none;width:70px;font-weight:600}
+  .trace .st.perceive{color:#34E0D0}.trace .st.reason{color:#9B8CFF}.trace .st.act{color:#FFB13C}.trace .st.verify{color:#F45D9C}.trace .st.done{color:#34E0D0}
+  .rep-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
+  .rep-card{border:1px solid var(--line);border-radius:9px;padding:11px 13px}
+  .rep-card .n{font-family:var(--display);font-weight:600;font-size:22px;color:var(--sec)}
+  .rep-card .l{font-family:var(--mono);font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+  .rep-recs{font-size:13px;padding-left:18px;margin:0} .rep-recs li{margin-bottom:6px;color:var(--txt)}
+  .rep-recs b{color:var(--sec)}
+  .spin{width:12px;height:12px;border:2px solid var(--line);border-top-color:var(--sec);border-radius:50%;display:inline-block;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media(max-width:980px){.grid2{grid-template-columns:1fr}.controls{position:static}.search{margin-left:0;width:100%}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand"><span class="dot"></span>Target Intelligence <small>BITSENSE</small></div>
+  <div class="stat">
+    <span><b class="t" id="s-total">0</b> companies</span>
+    <span><b id="s-med">0</b> med · <b id="s-tech">0</b> tech · <b id="s-fin">0</b> fin · <b id="s-pharma">0</b> pharma</span>
+    <span><b id="s-preipo">0</b> pre-IPO</span>
+      <span><b id="s-high">0</b> high-fit</span>
+  </div>
+</div></header>
 
+<section class="hero"><div class="wrap">
+  <h1>Target intelligence — MedDevice · Tech · Financial</h1>
+  <p>MA · NH · RI · MN. Revenue, pay band, manufacturing, IT/OT footprint, named CIO/CTO/CISO where public, the compliance regimes that drive security spend, and a role-fit read for your vCISO / Deputy-CISO practice. Click a row for the full profile.</p>
+  <div class="disc">Named CIO/CTO/CISO verified where shown; most are flagged "confirm via LinkedIn" because they're not reliably public and change often (e.g., U.S. Bancorp's long-time CISO has already moved on). Pay, IT/OT, compliance &amp; role-fit are analyst judgments from company type — verify before client use.</div>
+</div></section>
+
+<section class="controls"><div class="wrap"><div class="crow">
+  <div class="grp"><span class="glabel">Sector</span><div id="secChips" class="grp"></div></div>
+  <div class="grp"><span class="glabel">State</span><div id="stateChips" class="grp"></div></div>
+  <div class="grp"><span class="glabel">Presence</span><div id="presChips" class="grp"></div></div>
+  <div class="grp"><span class="glabel">Size</span><div id="sizeChips" class="grp"></div></div>
+  <div class="grp"><span class="glabel">Stage</span><div id="stageChips" class="grp"></div></div>
+  <div class="grp"><span class="glabel">Regulation</span><div id="regChips" class="grp"></div></div>
+  <div class="grp"><button class="chip" id="mwToggle" title="MetroWest MA towns (Framingham/Marlborough/Natick/Hopkinton/Acton/Waltham corridor)">MetroWest only</button></div>
+  <div class="grp"><span class="glabel">Role fit</span><div id="rfChips" class="grp"></div></div>
+  <div class="search">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+    <input id="q" placeholder="Search company, product, compliance, CISO…" />
+  </div>
+</div></div></section>
+
+<main><div class="wrap">
+  <div class="agent-card" id="agentCard">
+      <div class="agent-head">
+        <div class="agent-title">⟳ Update Agent
+          <span class="ollama2" id="ollamaBadge" title="Click to re-check local Ollama (llama3.1:8b)"><span class="led"></span><span id="ollamaTxt">checking…</span></span>
+        </div>
+        <div class="agent-controls">
+          <label class="wk"><input type="checkbox" id="weeklyToggle"> Auto-run weekly</label>
+          <span class="run-meta" id="runMeta"></span>
+          <input type="file" id="importFile" accept=".json,.csv" style="display:none">
+          <button class="btn" id="importBtn">Import data…</button>
+          <button class="btn primary" id="runAgentBtn">Run update now</button>
+        </div>
+      </div>
+      <div class="agent-body" id="agentBody" style="display:none">
+        <div class="trace" id="agentTrace"></div>
+        <div id="agentReport"></div>
+      </div>
+    </div>
+  <div class="meta">
+    <div class="count"><b id="shown">0</b> shown</div>
+    <div><button class="btn" id="csv">Export CSV</button> <button class="btn" id="json">Export JSON</button></div>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr>
+      <th data-k="company">Company</th>
+      <th data-k="sector">Sector</th>
+      <th data-k="state">State</th>
+      <th data-k="stage">Stage</th>
+      <th data-k="employees">Employees (≈)</th>
+      <th data-k="regs">Regulations</th>
+      <th data-k="ciso">CISO</th>
+      <th data-k="roleFit">Role fit</th>
+    </tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+  <div class="empty" id="empty" style="display:none">No companies match those filters.</div>
+</div></main>
+
+<footer><div class="wrap">
+  <div><b>BitSense · Target Intelligence</b><br>Curated &amp; enriched 2026-06-28. Verify "confirm" leadership, pay, and compliance before client use.</div>
+  <div class="legend">
+    <span><i style="background:var(--med)"></i>MedDevice</span>
+    <span><i style="background:var(--tech)"></i>Tech</span>
+    <span><i style="background:var(--fin)"></i>Financial</span>
+    <span><i style="background:var(--pharma)"></i>Pharma/Biotech</span>
+  </div>
+</div></footer>
+
+<div class="scrim" id="scrim"><div class="modal" id="modal"></div></div>
+
+<script>
+const ND="Not public — confirm via LinkedIn";
+const GDF="≈3.5 industry avg — verify";
+const MEDCOMP="FDA 524B (premarket cyber), HIPAA, ISO 13485, ISO 27001, IEC 62443 (mfg/OT), SOX (if public), EU MDR/CRA";
+function rec(o){return Object.assign({cio:ND,cto:ND,ciso:ND,cisaCount:0,cisaNote:"N/A — not a device OEM",hhsNote:"—",glassdoor:GDF,matBand:"",matSig:"",matNext:"",revStr:"—"},o);}
+const DATA=[
+/* ===== MEDICAL DEVICE ===== */
+rec({company:"Boston Scientific",sector:"MedDevice",state:"MA",hq:"Marlborough",status:"Public (NYSE: BSX)",ceo:"Mike Mahoney — Chairman & CEO",cio:"Jodi Eddy — Chief Information & Digital Officer (confirm)",cto:ND,ciso:ND,ticker:"BSX",paysWell:"High",mfg:"Yes",itot:"Partial (plant OT)",revStr:"$20.07B (FY2025)",keyProducts:"Stents, cardiac rhythm, neuromodulation, endoscopy, urology",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, SOX",cisaCount:2,cisaNote:"2 CISA ICS medical advisories",hhsNote:"Verify on HHS portal",glassdoor:"≈4.0 — verify",roleFit:"Medium",roleRationale:"Mature, has product security; better as Deputy/VP-CISO target than vCISO. Deep fit with your medtech PSIRT/SBOM background. Competitive.",src:"SEC; CISA tally; tickerleague"}),
+rec({company:"Insulet",sector:"MedDevice",state:"MA",hq:"Acton",status:"Public (NASDAQ: PODD)",ceo:"Ashley McEvoy — President & CEO",ticker:"PODD",paysWell:"High",mfg:"Yes",itot:"Partial (plant OT)",revStr:"≈$2.5B (2025e)",keyProducts:"Omnipod tubeless insulin pump; Omnipod 5 AID; drug delivery",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, SOX",cisaCount:1,cisaNote:"1 CISA ICS medical advisory",hhsNote:"Verify on HHS portal",roleFit:"High",roleRationale:"Smartphone-connected insulin platform = high product-security need, likely building the function. Acton (local). Excellent fit for your FDA 524B + connected-device profile.",src:"Insulet IR; CISA tally"}),
+rec({company:"Hologic",sector:"MedDevice",state:"MA",hq:"Marlborough",status:"Going private (Blackstone/TPG ~$18.3B)",ceo:"Steve MacMillan — CEO (retiring at close)",ticker:"HOLX",paysWell:"High",mfg:"Yes",itot:"Partial (plant OT)",revStr:"$3.26B (FY2025)",keyProducts:"Mammography, cervical cancer screening, molecular dx, surgical",compliance:"FDA 524B, HIPAA, ISO 13485/27001, SOX",cisaCount:0,cisaNote:"None in CISA list (verify)",hhsNote:"Verify on HHS portal",glassdoor:"3.5 (verified, 1,357+ reviews)",roleFit:"High",roleRationale:"PE take-private = security-org churn + maturity push for exit — classic interim/transition-CISO or vCISO window. Imaging PHI fits your healthcare experience.",src:"MedTech Dive; Glassdoor"}),
+rec({company:"Haemonetics",sector:"MedDevice",state:"MA",hq:"Boston",status:"Public (NYSE: HAE)",ceo:"Chris Simon — President & CEO",ticker:"HAE",paysWell:"High",mfg:"Yes",itot:"Partial (plant OT)",revStr:"≈$1.4B (FY2025)",keyProducts:"Plasma collection, blood-center, hospital (VASCADE, hemostasis)",compliance:"FDA 524B, HIPAA, ISO 13485/27001, SOX",cisaCount:0,cisaNote:"None in CISA list (verify)",hhsNote:"Verify on HHS portal",roleFit:"Medium",roleRationale:"Mid-cap shifting to software/hospital tech (rising product-security need). Boston-local. Good Deputy-CISO or vCISO-advisory target.",src:"SEC 8-K FY2025"}),
+rec({company:"Abiomed",sector:"MedDevice",state:"MA",hq:"Danvers",status:"Subsidiary of J&J MedTech",ceo:"Within J&J MedTech (no standalone CEO)",ticker:"part of JNJ",paysWell:"High",mfg:"Yes",itot:"Partial",revStr:"Part of J&J (~$1.1B at acq.)",keyProducts:"Impella heart pumps",compliance:"FDA 524B, HIPAA, ISO 13485/27001, SOX (J&J)",cisaCount:0,cisaNote:"Assessed at J&J level",hhsNote:"Assess at J&J level",roleFit:"Low",roleRationale:"Absorbed into J&J MedTech — no standalone role. Relevant to your J&J carve-out case-study knowledge.",src:"J&J MedTech"}),
+rec({company:"Lantheus",sector:"MedDevice",state:"MA",hq:"Bedford",status:"Public (NASDAQ: LNTH)",ceo:"CONFIRM",ticker:"LNTH",paysWell:"Above-market",mfg:"Yes",itot:"Partial (radiopharma mfg)",revStr:"≈$1.5B (2024) — verify",keyProducts:"Diagnostic & therapeutic radiopharmaceuticals",compliance:"FDA, HIPAA, ISO 27001, NRC, SOX",cisaCount:0,cisaNote:"None in CISA list (verify)",hhsNote:"Verify on HHS portal",roleFit:"Medium",roleRationale:"Mid-cap radiopharma; growing, regulated, plausible vCISO/security-leadership need. Verify leadership first.",src:"IR — not verified"}),
+rec({company:"Anika Therapeutics",sector:"MedDevice",state:"MA",hq:"Bedford",status:"Public (NASDAQ: ANIK)",ceo:"CONFIRM",ticker:"ANIK",paysWell:"Market/Varies",mfg:"Yes",itot:"Partial",revStr:"≈$170M — verify",keyProducts:"Orthopedic & regenerative (HA joint therapies, sports med)",compliance:"FDA 524B, ISO 13485/27001, SOX",cisaCount:0,cisaNote:"None in CISA list (verify)",hhsNote:"Verify on HHS portal",roleFit:"Medium",roleRationale:"Small-cap unlikely to have full-time CISO — fractional/vCISO fits. Lower connected-device surface. Verify budget.",src:"IR — not verified"}),
+rec({company:"Vapotherm",sector:"MedDevice",state:"NH",hq:"Exeter",status:"Private (Perceptive Advisors 2023)",ceo:"Joe Army — President & CEO",ticker:"was VAPO",paysWell:"Market/Varies",mfg:"Limited (offshored to Mexico)",itot:"No",revStr:"<$100M, declining",keyProducts:"High-velocity nasal cannula / Mask-Free NIV respiratory",compliance:"FDA 524B, HIPAA, ISO 13485/27001",cisaCount:0,cisaNote:"None in CISA list (verify)",hhsNote:"Verify on HHS portal",roleFit:"Medium",roleRationale:"Only NH pure-play in scope, budget-constrained = textbook fractional-vCISO candidate. Caveat: financial distress = budget risk.",src:"NH Business Review"}),
+rec({company:"BD — Davol (site)",sector:"MedDevice",state:"RI",hq:"Warwick",status:"Site of Becton Dickinson (corp: NJ)",ceo:"Tom Polen — BD Chairman, CEO (corp)",ciso:"BD enterprise CISO + product security at corp (confirm name)",ticker:"BDX",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"≈$20.2B (BD corp FY2025)",keyProducts:"Alaris infusion, Pyxis, Vacutainer, BACTEC dx; Davol = hernia mesh",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, SOX",cisaCount:16,cisaNote:"~16 CISA ICS medical advisories — top-4 disclosing vendor",hhsNote:"Verify on HHS portal",roleFit:"Low",roleRationale:"Warwick is a site, not the security org; BD already has mature corp CISO + PSIRT. Directly relevant to your BD Alaris 510(k) credential — buyer is BD corporate.",src:"BD SEC; CISA tally"}),
+rec({company:"Ximedica (Veranex)",sector:"MedDevice",state:"RI",hq:"Providence",status:"Innovation center of Veranex (CRO)",ceo:"Veranex-led (Providence is a site)",ticker:"Private",paysWell:"Market/Varies",mfg:"Limited (prototyping)",itot:"No",revStr:"Private (Providence ~$23M)",keyProducts:"Device & IVD design/development, human factors, regulatory (CRO)",compliance:"ISO 13485/27001 (by service); client FDA programs",cisaCount:0,cisaNote:"Service provider, not OEM",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Design partner, not device owner — channel/partnership angle to embed your product-security skills in client programs.",src:"Veranex; PBN"}),
+rec({company:"Nabsys",sector:"MedDevice",state:"RI",hq:"Providence",status:"Private (genome mapping)",ceo:"CONFIRM",ticker:"Private",paysWell:"Market/Varies",mfg:"Limited",itot:"No",revStr:"Private, small (venture)",keyProducts:"High-definition electronic genome mapping",compliance:"HIPAA (if clinical), ISO 27001, SOC 2",cisaCount:0,cisaNote:"None",hhsNote:"Verify on HHS portal",roleFit:"Medium",roleRationale:"Small private genomics — vCISO/first-security-hire candidate if data/IP sensitivity warrants. Confirm stage.",src:"Company site — not verified"}),
+rec({company:"Medtronic",sector:"MedDevice",state:"MN",hq:"Minneapolis (ops HQ; legal Ireland)",status:"Public (NYSE: MDT)",ceo:"CONFIRM (Geoff Martha reported)",cto:"Jim Peichel — CTO (verified)",ciso:"Mature PSIRT — confirm lead",ticker:"MDT",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"$33.5B FY25; $36.4B FY26",keyProducts:"Cardiac rhythm, MiniMed insulin pumps, surgical robotics, neuromod, spine",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, SOX",cisaCount:14,cisaNote:"~14 CISA ICS medical advisories — top-4 disclosing vendor",hhsNote:"Verify on HHS portal",glassdoor:"≈3.9 — verify",roleFit:"Medium",roleRationale:"World's largest, very mature PSIRT — Deputy/VP-CISO or product-security director roles exist but highly competitive. Deep alignment with your insulin-pump/PSIRT/SBOM expertise.",src:"Fast Company; MacroTrends; CISA"}),
+rec({company:"Solventum (3M spin-off)",sector:"MedDevice",state:"MN",hq:"Maplewood",status:"Public (NYSE: SOLV)",ceo:"Bryan Hanson — CEO",cio:"Amy Landucci — digital/tech transformation (confirm)",ciso:"Global security under Chief Corp & Legal Affairs Officer — confirm dedicated CISO",ticker:"SOLV",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"$8.25B (2025)",keyProducts:"Advanced wound care, infection prevention, dental, health info systems (software)",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, SOX",cisaCount:0,cisaNote:"None yet (new entity) — verify",hhsNote:"Verify on HHS portal",roleFit:"High",roleRationale:"★ Your sweet spot: 2024 carve-out from 3M still disentangling — IdP cutover, stranded service accounts, TSA exit = your M&A/carve-out specialty. Large, software-heavy, building independent security org. Top target.",src:"Solventum leadership; TCB Mag"}),
+rec({company:"Tactile Medical",sector:"MedDevice",state:"MN",hq:"Minneapolis",status:"Public (NASDAQ: TCMD)",ceo:"Sheri L. Dodd — CEO (since 2024)",ticker:"TCMD",paysWell:"Above-market",mfg:"Yes",itot:"Partial",revStr:"≈$300M — verify",keyProducts:"At-home pneumatic compression for lymphedema (Flexitouch, Entre)",compliance:"FDA 524B, HIPAA, ISO 13485/27001, SOX",cisaCount:0,cisaNote:"None in CISA list (verify)",hhsNote:"Verify on HHS portal",roleFit:"High",roleRationale:"Small public w/ at-home connected devices, no visible product-security program = strong first-CISO / vCISO opening. New CEO often re-evaluates risk functions.",src:"tactilemedical.com"}),
+rec({company:"Inspire Medical",sector:"MedDevice",state:"MN",hq:"Golden Valley",status:"Public (NYSE: INSP)",ceo:"CONFIRM (Tim Herbert, founder)",ticker:"INSP",paysWell:"Above-market",mfg:"Yes",itot:"Partial",revStr:"≈$0.8–1B (2024) — verify",keyProducts:"Implantable hypoglossal nerve stimulator for sleep apnea (+app/remote)",compliance:"FDA 524B, HIPAA, ISO 13485/27001, SOX",cisaCount:0,cisaNote:"None in CISA list (verify)",hhsNote:"Verify on HHS portal",roleFit:"High",roleRationale:"Active implant + companion app + cloud = serious patient-safety cyber surface; fast growth outpaces security. Strong fit with your implantable-device threat-modeling.",src:"IR — not verified"}),
+rec({company:"Starkey Hearing",sector:"MedDevice",state:"MN",hq:"Eden Prairie",status:"Private",ceo:"CONFIRM (Brandon Sawalich reported)",ticker:"Private",paysWell:"Above-market",mfg:"Yes",itot:"Partial",revStr:"Private, ≈$1B est — verify",keyProducts:"AI hearing aids w/ health sensors, app & cloud (Genesis AI, Edge)",compliance:"FDA, HIPAA, ISO 13485/27001, GDPR",cisaCount:0,cisaNote:"None in CISA list (verify)",hhsNote:"Verify on HHS portal",roleFit:"Medium",roleRationale:"Private app+cloud+AI hearing platform w/ real health-data exposure. Could need vCISO/first security leader; private = relationship-driven access.",src:"Company site — not verified"}),
+rec({company:"Bio-Techne",sector:"MedDevice",state:"MN",hq:"Minneapolis",status:"Public (NASDAQ: TECH)",ceo:"CONFIRM (Kim Kelderman reported)",ticker:"TECH",paysWell:"Above-market",mfg:"Yes",itot:"Partial",revStr:"≈$1.2B — verify",keyProducts:"Life-science reagents, proteomic instruments, molecular dx",compliance:"ISO 27001, SOX, HIPAA (dx), GDPR",cisaCount:0,cisaNote:"None in CISA list",hhsNote:"Verify on HHS portal",roleFit:"Medium",roleRationale:"More enterprise-IT/IP-protection than connected-device product security. Decent vCISO/enterprise target; lighter on your product-security differentiator.",src:"IR — not verified"}),
+rec({company:"Surmodics",sector:"MedDevice",state:"MN",hq:"Eden Prairie",status:"Public / GTCR take-private — confirm",ceo:"CONFIRM (Gary Maharaj reported)",ticker:"SRDX",paysWell:"Market/Varies",mfg:"Yes",itot:"Partial",revStr:"≈$130M — verify",keyProducts:"Device coatings (hydrophilic), IVD components, vascular",compliance:"FDA, ISO 13485/27001, SOX",cisaCount:0,cisaNote:"None in CISA list",hhsNote:"Verify on HHS portal",roleFit:"Medium",roleRationale:"Pending GTCR take-private — PE deals trigger security-maturity push for diligence/exit (vCISO/transition window). GRC value > product security. Confirm deal first.",src:"IR — not verified"}),
+rec({company:"Smiths Medical",sector:"MedDevice",state:"MN",hq:"Plymouth",status:"Subsidiary of ICU Medical",ceo:"Within ICU Medical (no standalone CEO)",ticker:"part of ICUI",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"Part of ICU Medical",keyProducts:"Infusion systems, vascular access, temperature management",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443",cisaCount:2,cisaNote:"2 CISA ICS medical advisories (legacy pumps)",hhsNote:"Assess at ICU Medical level",roleFit:"Low",roleRationale:"Absorbed into ICU Medical — no standalone role. Infusion-pump advisories relevant to your Alaris expertise; engage ICU Medical.",src:"ICU Medical; CISA"}),
+
+/* ===== TECH ===== */
+rec({company:"RTX (Raytheon)",sector:"Tech",state:"MA",hq:"Waltham",status:"Public (NYSE: RTX)",ceo:"Defense/aerospace prime",cio:"Jennifer Flynn — VP & CIO, Raytheon (verified)",cto:"Daniel Conroy — CTO-Digital & AI (verified)",ciso:"Daniel Conroy — CISO (verified)",ticker:"RTX",paysWell:"High",mfg:"Yes",itot:"Yes (defense plants/OT)",revStr:"≈$80B (RTX total)",keyProducts:"Missiles & defense, Collins Aerospace, Pratt & Whitney engines",compliance:"CMMC L2 / DFARS 252.204-7012, NIST 800-171, ITAR, SOX",cisaCount:0,cisaNote:"N/A (defense; not medical-device OEM)",hhsNote:"N/A",roleFit:"Medium",roleRationale:"★ Your CMMC RP credential is directly relevant to their DIB supply chain. Huge, mature internal security — but CMMC/DFARS advisory and supplier-assurance work is a strong vCISO/consulting angle.",src:"LinkedIn; National CIO Review"}),
+rec({company:"Analog Devices",sector:"Tech",state:"MA",hq:"Wilmington",status:"Public (NASDAQ: ADI)",ceo:"Semiconductors",ticker:"ADI",paysWell:"High",mfg:"Yes (fabs)",itot:"Yes (fab OT)",revStr:"≈$9–10B",keyProducts:"Analog/mixed-signal & power semiconductors",compliance:"ISO 27001, IEC 62443, SOX, ITAR (some), export controls",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Semiconductor fabs = real OT/ICS security need (IEC 62443) matching your IT/OT work. Large mature org; OT-security advisory or Deputy-CISO angle.",src:"Public co — confirm leaders"}),
+rec({company:"PTC",sector:"Tech",state:"MA",hq:"Boston",status:"Public (NASDAQ: PTC)",ceo:"Industrial software",ticker:"PTC",paysWell:"High",mfg:"No",itot:"Partial (their software runs customer OT/IIoT)",revStr:"≈$2.3B",keyProducts:"PLM (Windchill), CAD (Creo), industrial IoT (ThingWorx)",compliance:"SOC 2, ISO 27001, SOX, GDPR; customer IEC 62443 exposure",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Industrial IoT/OT software vendor — product-security & IEC 62443 alignment with your IT/OT background. Good for product-security leadership or advisory.",src:"Public co — confirm leaders"}),
+rec({company:"Akamai",sector:"Tech",state:"MA",hq:"Cambridge",status:"Public (NASDAQ: AKAM)",ceo:"Security/CDN/cloud",ciso:"Has a CISO (security company) — confirm name",ticker:"AKAM",paysWell:"High",mfg:"No",itot:"No",revStr:"≈$4B",keyProducts:"CDN, cloud security (WAF, DDoS, Zero Trust), compute",compliance:"SOC 2, PCI DSS, ISO 27001, FedRAMP, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Low",roleRationale:"A security company with a deep mature security org — limited gap for a vCISO. Possible product-security or compliance-leadership role only.",src:"Public co — confirm leaders"}),
+rec({company:"HubSpot",sector:"Tech",state:"MA",hq:"Cambridge",status:"Public (NYSE: HUBS)",ceo:"SaaS CRM/marketing",ticker:"HUBS",paysWell:"High",mfg:"No",itot:"No",revStr:"≈$2.6B",keyProducts:"CRM, marketing/sales/service SaaS platform",compliance:"SOC 2, ISO 27001, GDPR, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"SaaS with large customer-data footprint; SOC 2/GDPR-driven program. Enterprise-security or compliance-leadership target; lighter on your medtech edge.",src:"Public co — confirm leaders"}),
+rec({company:"3M",sector:"Tech",state:"MN",hq:"Maplewood",status:"Public (NYSE: MMM)",ceo:"Industrial conglomerate",ciso:ND,ticker:"MMM",paysWell:"High",mfg:"Yes (extensive)",itot:"Yes (global plant OT)",revStr:"≈$24B (post-Solventum)",keyProducts:"Industrial, safety, consumer, electronics materials",compliance:"IEC 62443, ISO 27001, NIST CSF, SOX, ITAR (some)",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Massive global OT/ICS footprint (IEC 62443) and the parent of your top target Solventum — carve-out + OT-security angles both fit. Mature org; advisory/OT-security niche.",src:"Public co — confirm leaders"}),
+rec({company:"Best Buy",sector:"Tech",state:"MN",hq:"Richfield",status:"Public (NYSE: BBY)",ceo:"Retail tech",ticker:"BBY",paysWell:"Above-market",mfg:"No",itot:"Partial (stores/distribution OT)",revStr:"≈$43B",keyProducts:"Consumer electronics retail, Geek Squad, health services",compliance:"PCI DSS, SOX, CCPA/state privacy, HIPAA (BestBuy Health)",cisaCount:0,cisaNote:"N/A",hhsNote:"BestBuy Health = HIPAA exposure",roleFit:"Medium",roleRationale:"Retail PCI + growing BestBuy Health (HIPAA) = interesting blend touching your healthcare angle. Large mature org; healthcare-security or compliance niche.",src:"Public co — confirm leaders"}),
+rec({company:"BAE Systems Inc.",sector:"Tech",state:"NH",hq:"Nashua",status:"US arm of BAE (UK)",ceo:"Defense electronics",ciso:ND,ticker:"BA. (LSE parent)",paysWell:"High",mfg:"Yes",itot:"Yes (defense plants/OT)",revStr:"US arm multi-$B",keyProducts:"Electronic warfare, sensors, defense electronics",compliance:"CMMC L2 / DFARS, NIST 800-171, ITAR, NISPOM",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"★ CMMC RP + defense industrial base = strong fit. NH-local. CUI/NIST 800-171 program and supplier-assurance work is a clear vCISO/consulting lane.",src:"Public — confirm leaders"}),
+rec({company:"Bottomline Technologies",sector:"Tech",state:"NH",hq:"Portsmouth",status:"Private (Thoma Bravo, 2022)",ceo:"Fintech payments software",ciso:ND,ticker:"Private (was EPAY)",paysWell:"Above-market",mfg:"No",itot:"No",revStr:"Private (PE-owned)",keyProducts:"B2B payments, cash management, fraud & financial messaging software",compliance:"PCI DSS, SOC 2, GLBA, ISO 27001, SWIFT CSP",cisaCount:0,cisaNote:"N/A",hhsNote:"Payments/fraud breach reporting applies",roleFit:"High",roleRationale:"★ Fintech + PE-owned (Thoma Bravo) in NH — PE portfolios often want fractional/vCISO leadership and exit-readiness. Payments/fraud security matches your financial-sector work.",src:"Public record — confirm leaders"}),
+rec({company:"Textron",sector:"Tech",state:"RI",hq:"Providence",status:"Public (NYSE: TXT)",ceo:"Aerospace & defense",ciso:ND,ticker:"TXT",paysWell:"High",mfg:"Yes",itot:"Yes (defense/aviation plant OT)",revStr:"≈$14B",keyProducts:"Bell helicopters, Cessna/Beechcraft, defense systems",compliance:"CMMC L2 / DFARS, NIST 800-171, ITAR, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"★ CMMC RP + defense manufacturing in RI. CUI/supplier-assurance and OT-security across aviation plants = strong vCISO/Deputy-CISO/consulting fit.",src:"Public co — confirm leaders"}),
+rec({company:"Hasbro",sector:"Tech",state:"RI",hq:"Pawtucket",status:"Public (NASDAQ: HAS)",ceo:"Consumer products/gaming",ticker:"HAS",paysWell:"Above-market",mfg:"Yes (largely outsourced)",itot:"Partial",revStr:"≈$4B",keyProducts:"Toys & games, Wizards of the Coast (digital gaming), licensing",compliance:"PCI DSS, SOX, GDPR, COPPA (children's data)",cisaCount:0,cisaNote:"N/A",hhsNote:"COPPA / children's-privacy exposure",roleFit:"Medium",roleRationale:"COPPA/children's-data + digital gaming privacy is a distinctive risk surface. RI-local. Privacy-and-security-leadership or vCISO angle.",src:"Public co — confirm leaders"}),
+
+/* ===== FINANCIAL ===== */
+rec({company:"Fidelity Investments",sector:"Financial",state:"MA",hq:"Boston",status:"Private",ceo:"Asset management",ciso:ND,ticker:"Private",paysWell:"High",mfg:"No",itot:"No",revStr:"≈$28B",keyProducts:"Brokerage, asset management, retirement, custody",compliance:"SEC, FINRA, GLBA, SOX, NYDFS 500, PCI DSS",cisaCount:0,cisaNote:"N/A",hhsNote:"GLBA/SEC breach reporting; check state AG",roleFit:"Medium",roleRationale:"Huge, very mature security org — Deputy/VP-CISO or specialized-program roles, not vCISO. Strong financial-sector fit but highly competitive.",src:"Private — confirm leaders"}),
+rec({company:"State Street",sector:"Financial",state:"MA",hq:"Boston",status:"Public (NYSE: STT)",ceo:"Custody/asset-servicing bank",cio:"EVP & CIO (confirm name)",ciso:"Elizabeth (Liz) Joyce — EVP, CISO (verified)",ticker:"STT",paysWell:"High",mfg:"No",itot:"No",revStr:"≈$13B",keyProducts:"Custody, asset servicing, investment management",compliance:"FFIEC, GLBA, SOX, OCC, NYDFS 500, PCI, EU DORA",cisaCount:0,cisaNote:"N/A",hhsNote:"FFIEC/SEC incident reporting",roleFit:"Medium",roleRationale:"G-SIB-scale, mature program under a named CISO — Deputy-CISO/program-leadership target, not vCISO. Boston-local. DORA/third-party-risk work could fit.",src:"theorg.com; SEC ARS FY2025"}),
+rec({company:"Liberty Mutual",sector:"Financial",state:"MA",hq:"Boston",status:"Private (mutual insurer)",ceo:"Insurance",ciso:ND,ticker:"Mutual",paysWell:"High",mfg:"No",itot:"No",revStr:"≈$50B",keyProducts:"Property & casualty insurance (personal & commercial)",compliance:"NAIC, state DOI, NYDFS 500, GLBA, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"State breach-notification; NYDFS reporting",roleFit:"Medium",roleRationale:"Large mature insurer — Deputy-CISO or domain-leadership target. Insurance/NYDFS compliance fits your regulated-industry work.",src:"Private — confirm leaders"}),
+rec({company:"MassMutual",sector:"Financial",state:"MA",hq:"Springfield",status:"Private (mutual insurer)",ceo:"Insurance/financial",ciso:ND,ticker:"Mutual",paysWell:"High",mfg:"No",itot:"No",revStr:"Large mutual",keyProducts:"Life insurance, annuities, retirement, asset management",compliance:"NAIC, NYDFS 500, GLBA, SEC/FINRA (subs), state DOI",cisaCount:0,cisaNote:"N/A",hhsNote:"State breach-notification",roleFit:"Medium",roleRationale:"Large insurer with growing tech/data programs. Deputy-CISO or compliance-leadership target; verify current security org.",src:"Private — confirm leaders"}),
+rec({company:"U.S. Bancorp",sector:"Financial",state:"MN",hq:"Minneapolis",status:"Public (NYSE: USB)",ceo:"Bank (top-5 US)",ciso:"CONFIRM — long-time CISO Jason Witty departed to JPMorgan",ticker:"USB",paysWell:"High",mfg:"No",itot:"No",revStr:"≈$28B",keyProducts:"Retail & commercial banking, payments (Elavon)",compliance:"FFIEC, GLBA, SOX, OCC, NYDFS, PCI DSS",cisaCount:0,cisaNote:"N/A",hhsNote:"FFIEC/OCC incident reporting",roleFit:"Medium",roleRationale:"Top-5 bank, mature program but CISO seat recently turned over — leadership-build moment. Deputy-CISO/program target; payments (Elavon) PCI angle.",src:"CyberSecurity Ventures; confirm current"}),
+rec({company:"Ameriprise Financial",sector:"Financial",state:"MN",hq:"Minneapolis",status:"Public (NYSE: AMP)",ceo:"Wealth management",ciso:ND,ticker:"AMP",paysWell:"High",mfg:"No",itot:"No",revStr:"≈$17B",keyProducts:"Wealth management, advice, asset management, annuities",compliance:"SEC, FINRA, GLBA, SOX, NYDFS, PCI",cisaCount:0,cisaNote:"N/A",hhsNote:"SEC/state incident reporting",roleFit:"Medium",roleRationale:"Large wealth manager — Deputy-CISO/program-leadership target. SEC/FINRA + client-PII program fits your financial-sector profile.",src:"Public co — confirm leaders"}),
+rec({company:"Thrivent",sector:"Financial",state:"MN",hq:"Minneapolis",status:"Private (fraternal financial)",ceo:"Insurance/financial",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"No",itot:"No",revStr:"Large fraternal",keyProducts:"Life insurance, annuities, advisory, mutual funds",compliance:"NAIC, SEC/FINRA, GLBA, NYDFS, state DOI",cisaCount:0,cisaNote:"N/A",hhsNote:"State breach-notification",roleFit:"Medium",roleRationale:"Mid-large financial; possibly leaner security org than the megabanks = vCISO/Deputy-CISO or program-build potential. MN-local.",src:"Private — confirm leaders"}),
+rec({company:"Securian Financial",sector:"Financial",state:"MN",hq:"St. Paul",status:"Private (mutual)",ceo:"Insurance/financial",ciso:ND,ticker:"Mutual",paysWell:"Above-market",mfg:"No",itot:"No",revStr:"Large mutual",keyProducts:"Life insurance, annuities, retirement, group benefits",compliance:"NAIC, NYDFS 500, GLBA, SEC (subs), state DOI",cisaCount:0,cisaNote:"N/A",hhsNote:"State breach-notification",roleFit:"Medium",roleRationale:"Mutual insurer, MN-local — Deputy-CISO or vCISO-advisory potential depending on current maturity. Verify security org.",src:"Private — confirm leaders"}),
+rec({company:"Citizens Financial Group",sector:"Financial",state:"RI",hq:"Providence",status:"Public (NYSE: CFG)",ceo:"Bank (regional)",ciso:ND,ticker:"CFG",paysWell:"High",mfg:"No",itot:"No",revStr:"≈$8B",keyProducts:"Retail & commercial banking, wealth",compliance:"FFIEC, GLBA, SOX, OCC, NYDFS, PCI DSS",cisaCount:0,cisaNote:"N/A",hhsNote:"FFIEC/OCC incident reporting",roleFit:"Medium",roleRationale:"Largest RI-HQ financial; regional bank scaling — Deputy-CISO/program-leadership target. RI-local. FFIEC/third-party-risk fit.",src:"Public co — confirm leaders"}),
+rec({company:"Amica Mutual Insurance",sector:"Financial",state:"RI",hq:"Lincoln",status:"Private (mutual insurer)",ceo:"Insurance",ciso:ND,ticker:"Mutual",paysWell:"Above-market",mfg:"No",itot:"No",revStr:"Mid-size mutual",keyProducts:"Auto, home, life insurance",compliance:"NAIC, state DOI, NYDFS (if applicable), GLBA",cisaCount:0,cisaNote:"N/A",hhsNote:"State breach-notification",roleFit:"Medium",roleRationale:"Mid-size RI insurer — leaner org makes a fractional-vCISO or first-real-CISO model viable. RI-local. Good relationship-driven target.",src:"Private — confirm leaders"}),
+
+/* ===== PHARMA / BIOTECH ===== */
+rec({company:"Biogen",sector:"Pharma",state:"MA",hq:"Cambridge",status:"Public (NASDAQ: BIIB)",ceo:"Neuro/biotech",cio:"Mark Hernon — SVP, CIO (confirm, dated)",ciso:"Bob Litterer — VP, CISO (confirm)",ticker:"BIIB",paysWell:"High",mfg:"Yes",itot:"Yes (biologics plant OT)",revStr:"\u22489.7B",keyProducts:"MS, Alzheimer's (Leqembi), SMA (Spinraza), neuro & rare disease",compliance:"FDA GxP/GMP, 21 CFR Part 11, HIPAA, GDPR, IEC 62443 (mfg), SOX",hhsNote:"R&D IP & clinical-data exposure; SEC/state reporting",roleFit:"Medium",roleRationale:"Named CISO + mature program \u2192 Deputy/VP-CISO or domain-leadership target, not vCISO. M&A-active (your M&A-security specialty) and biologics OT both fit. Cambridge-local.",src:"Biogen IR; Comparably"}),
+rec({company:"Moderna",sector:"Pharma",state:"MA",hq:"Cambridge",status:"Public (NASDAQ: MRNA)",ceo:"mRNA biotech",ciso:ND,ticker:"MRNA",paysWell:"High",mfg:"Yes",itot:"Yes (mRNA plant OT)",revStr:"\u22483\u20134B (post-COVID decline)",keyProducts:"mRNA vaccines (COVID, RSV) & therapeutics pipeline",compliance:"FDA GxP/GMP, 21 CFR Part 11, HIPAA, GDPR, IEC 62443, SOX",hhsNote:"Extremely high-value R&D IP (nation-state target)",roleFit:"Medium",roleRationale:"Rapidly built company with elite-value mRNA IP \u2014 security still maturing relative to legacy pharma. Strong IP-protection + AI-in-discovery (your AI-governance angle) fit. Deputy-CISO/program target.",src:"Moderna SEC \u2014 confirm leaders"}),
+rec({company:"Vertex Pharmaceuticals",sector:"Pharma",state:"MA",hq:"Boston",status:"Public (NASDAQ: VRTX)",ceo:"Reshma Kewalramani \u2014 CEO",ciso:ND,ticker:"VRTX",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"\u224811B",keyProducts:"Cystic fibrosis (Trikafta/Alyftrek), Casgevy (CRISPR), Journavx (pain)",compliance:"FDA GxP/GMP, 21 CFR Part 11, HIPAA, GDPR, IEC 62443, SOX",hhsNote:"Cell/gene-therapy patient data; high-value IP",roleFit:"Medium",roleRationale:"Large, well-resourced \u2014 Deputy/VP-CISO or product/clinical-security leadership. Gene-editing (Casgevy) clinical-data sensitivity overlaps your healthcare regulated-industry work.",src:"Vertex SEC \u2014 confirm CISO"}),
+rec({company:"Takeda (US HQ)",sector:"Pharma",state:"MA",hq:"Cambridge",status:"US HQ of Takeda (Japan parent; TAK)",ceo:"Global pharma",cio:"Regional CIO (confirm)",ciso:"Jennifer West \u2014 SVP, Chief Digital Trust Officer / CISO (verified, since 2024)",ticker:"TAK",paysWell:"High",mfg:"Yes",itot:"Yes (global plant OT)",revStr:"\u224830B+ global",keyProducts:"GI, rare disease, plasma-derived therapies, oncology, neuroscience",compliance:"FDA GxP/GMP, 21 CFR Part 11, HIPAA, GDPR, IEC 62443, SOX",hhsNote:"Global clinical + plasma-donor data exposure",roleFit:"Medium",roleRationale:"Very mature program under a named CISO \u2014 specialized program/Deputy-CISO roles only, not vCISO. Cambridge US HQ. Strong regulated-pharma reference if you target the sector.",src:"theorg.com (verified)"}),
+rec({company:"Alnylam Pharmaceuticals",sector:"Pharma",state:"MA",hq:"Cambridge",status:"Public (NASDAQ: ALNY)",ceo:"RNAi biotech",ciso:ND,ticker:"ALNY",paysWell:"High",mfg:"Partial",itot:"Partial",revStr:"\u22482B",keyProducts:"RNAi therapeutics (Onpattro, Amvuttra, rare disease)",compliance:"FDA GxP/GMP, 21 CFR Part 11, HIPAA, GDPR, SOX",hhsNote:"R&D IP & patient data",roleFit:"Medium",roleRationale:"Mid-cap scaling commercial fast \u2014 security function often lags growth, opening Deputy-CISO/program-build or vCISO-advisory work. Cambridge-local.",src:"Alnylam SEC \u2014 confirm leaders"}),
+rec({company:"Sanofi US / Genzyme",sector:"Pharma",state:"MA",hq:"Cambridge",status:"US/Genzyme site of Sanofi (France parent; SNY)",ceo:"Global pharma",ciso:"Global CISO at HQ (confirm)",ticker:"SNY",paysWell:"High",mfg:"Yes",itot:"Yes (biologics plant OT)",revStr:"Site of \u2248\u20ac40B global",keyProducts:"Rare disease (Genzyme), immunology (Dupixent), vaccines",compliance:"FDA GxP/GMP, 21 CFR Part 11, HIPAA, GDPR, IEC 62443, SOX",hhsNote:"Assess at Sanofi global level",roleFit:"Low",roleRationale:"Major Cambridge site but security is led from Paris HQ \u2014 limited standalone role. Biologics OT-security advisory is the only realistic local angle.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Charles River Laboratories",sector:"Pharma",state:"MA",hq:"Wilmington",status:"Public (NYSE: CRL)",ceo:"CRO / preclinical",ciso:ND,ticker:"CRL",paysWell:"Above-market",mfg:"Partial (labs/vivaria)",itot:"Partial",revStr:"\u22484B",keyProducts:"Preclinical & discovery CRO, safety assessment, cell & gene therapy services",compliance:"FDA GLP, 21 CFR Part 11, client IP/data, HIPAA, SOX",hhsNote:"Custodian of large volumes of client R&D IP",roleFit:"Medium",roleRationale:"A CRO holds enormous third-party client IP/data \u2014 third-party-risk + IP-protection program is central, and they're M&A-active (your specialty). Wilmington-local. Good Deputy-CISO/vCISO-advisory target.",src:"CRL SEC \u2014 confirm leaders"}),
+rec({company:"Ginkgo Bioworks",sector:"Pharma",state:"MA",hq:"Boston",status:"Public (NYSE: DNA)",ceo:"Synthetic biology platform",ciso:ND,ticker:"DNA",paysWell:"Above-market",mfg:"Yes (automated foundry)",itot:"Yes (lab automation OT)",revStr:"\u2248200M (declining)",keyProducts:"Cell programming / synthetic-biology foundry, biosecurity services",compliance:"Biosecurity/dual-use, IP, SOC 2, export controls, GxP (some)",hhsNote:"Dual-use biosecurity & sequence-data governance",roleFit:"High",roleRationale:"Synbio biosecurity + lab-automation OT + AI/bio convergence = a novel risk surface that fits your AI-governance and IT/OT angles. Smaller, restructuring \u2192 real vCISO/security-leadership opening. Boston-local.",src:"Ginkgo SEC \u2014 confirm leaders"}),
+rec({company:"Lonza (Portsmouth)",sector:"Pharma",state:"NH",hq:"Portsmouth",status:"US site of Lonza (Swiss parent)",ceo:"CDMO / biologics manufacturing",ciso:"Global CISO at HQ (confirm)",ticker:"LONN (SIX)",paysWell:"Above-market",mfg:"Yes (biologics CDMO)",itot:"Yes (GMP plant OT)",revStr:"US site of \u2248CHF 6B global",keyProducts:"Contract biologics manufacturing (mammalian, microbial), cell & gene",compliance:"FDA GMP, 21 CFR Part 11, IEC 62443, client data, SOX",hhsNote:"Custodian of client GMP/process IP",roleFit:"Medium",roleRationale:"CDMO with heavy GMP manufacturing OT in NH \u2014 OT/IEC 62443 and client-data-protection work fits your IT/OT background. Security led from Basel HQ, so the lane is OT-security advisory. NH-local.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Adimab",sector:"Pharma",state:"NH",hq:"Lebanon",status:"Private",ceo:"Antibody discovery platform",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"Limited (discovery)",itot:"No",revStr:"Private (platform/partnerships)",keyProducts:"Antibody discovery & engineering platform (partnered programs)",compliance:"IP protection, GLP, SOC 2, export controls",hhsNote:"IP-centric; partner-data confidentiality",roleFit:"High",roleRationale:"Private, IP-rich antibody platform in NH \u2014 likely no full-time CISO = clean vCISO / first-security-leader engagement. IP-protection + partner-data focus. NH-local.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Amgen Rhode Island",sector:"Pharma",state:"RI",hq:"West Greenwich",status:"Manufacturing site of Amgen (HQ CA; AMGN)",ceo:"Biologics manufacturing",ciso:"Corp CISO at Amgen HQ (confirm)",ticker:"AMGN",paysWell:"High",mfg:"Yes (biologics)",itot:"Yes (GMP plant OT)",revStr:"Site of \u224833B global",keyProducts:"Biologics drug-substance manufacturing (one of Amgen's largest sites)",compliance:"FDA GMP, 21 CFR Part 11, IEC 62443, SOX",hhsNote:"Assess at Amgen corporate level",roleFit:"Low",roleRationale:"Major RI biologics plant, but security is run from Thousand Oaks HQ \u2014 no standalone role. OT/ICS-security advisory for the site is the only realistic angle.",src:"Public \u2014 confirm leaders"}),
+rec({company:"EpiVax",sector:"Pharma",state:"RI",hq:"Providence",status:"Private (immunology/informatics)",ceo:"Immunology / vaccine informatics",ciso:ND,ticker:"Private",paysWell:"Market/Varies",mfg:"No",itot:"No",revStr:"Private, small",keyProducts:"Immunoinformatics, vaccine design, deimmunization (T-cell epitope analysis)",compliance:"IP, data integrity, GLP, SOC 2; AI/algorithm governance",hhsNote:"IP & algorithm/data governance",roleFit:"High",roleRationale:"Small, private, IP- and algorithm-heavy (immunoinformatics/AI) \u2014 textbook fractional-vCISO candidate, and the AI-governance angle is squarely yours. RI-local.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Upsher-Smith Laboratories",sector:"Pharma",state:"MN",hq:"Maple Grove",status:"Private (owned by Sawai, Japan)",ceo:"Generic & branded pharma",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"Yes (pharma)",itot:"Yes (GMP plant OT)",revStr:"Private",keyProducts:"Generic & branded pharmaceuticals (CNS, etc.)",compliance:"FDA GMP, 21 CFR Part 11, DEA (controlled substances), IEC 62443",hhsNote:"DEA controlled-substance & GMP records",roleFit:"Medium",roleRationale:"Private MN pharma manufacturer \u2014 GMP OT + DEA controlled-substance compliance is heavy, and a foreign-owned private often lacks a full-time CISO (vCISO/program-build). MN-local.",src:"Private \u2014 confirm leaders"}),
+
+/* ===== MED DEVICE (expanded roster) ===== */
+rec({company:"ZOLL Medical",sector:"MedDevice",state:"MA",hq:"Chelmsford",status:"Private (Asahi Kasei)",ceo:"Resuscitation/critical care",ciso:ND,ticker:"Private (Asahi Kasei)",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"\u22482B (est)",employees:"\u224810,000+",keyProducts:"Defibrillators (LifeVest wearable, AEDs), resuscitation, critical-care software",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, GDPR",cisaCount:1,cisaNote:"1 CISA ICS medical advisory on record",hhsNote:"Wearable defib transmits patient data \u2014 verify HHS",glassdoor:GDF,roleFit:"Medium",roleRationale:"Connected/wearable defibrillators = real product-security need; large, parent-owned (security may sit at Asahi). Deputy-CISO/product-security or OT angle. Chelmsford-local.",src:"ZoomInfo; CISA tally"}),
+rec({company:"Olympus Corp. of the Americas",sector:"MedDevice",state:"MA",hq:"Westborough",status:"Americas HQ (Japan parent)",ceo:"Endoscopy/surgical",ciso:"Global CISO at parent (confirm)",ticker:"7733 (Tokyo)",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"Americas site of \u2248$8B global",employees:"\u22485,000 (Americas)",keyProducts:"Endoscopy, surgical devices, medical imaging",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443",cisaCount:0,cisaNote:"None in CISA list (verify; endoscopy reprocessing history)",hhsNote:"Verify on HHS portal",glassdoor:GDF,roleFit:"Medium",roleRationale:"Americas HQ in MA but security led from Tokyo \u2014 product-security/quality-systems angle and connected-scope reprocessing risk. Local presence; confirm where security decisions sit.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Butterfly Network",sector:"MedDevice",state:"MA",hq:"Burlington",status:"Public (NYSE: BFLY)",ceo:"Handheld ultrasound",ciso:ND,ticker:"BFLY",paysWell:"Above-market",mfg:"Yes",itot:"Partial",revStr:"\u2248$80M",employees:"\u2248500",keyProducts:"Handheld whole-body ultrasound (Butterfly iQ) + cloud/app + AI",compliance:"FDA 524B, HIPAA, ISO 13485/27001, SOC 2, GDPR",cisaCount:0,cisaNote:"None in CISA list (verify)",hhsNote:"Imaging + cloud + AI = PHI exposure; verify HHS",glassdoor:GDF,roleFit:"High",roleRationale:"Connected handheld ultrasound + cloud + AI in a small company = high product-security need and likely a thin team \u2192 strong product-security-lead / vCISO fit, squarely in your connected-device + AI-governance lane. Burlington-local.",src:"BFLY SEC \u2014 confirm leaders"}),
+rec({company:"Vicarious Surgical",sector:"MedDevice",state:"MA",hq:"Waltham",status:"Public (NYSE: RBOT)",ceo:"Surgical robotics (pre-commercial)",ciso:ND,ticker:"RBOT",paysWell:"Above-market",mfg:"Yes",itot:"Partial",revStr:"Pre-revenue",employees:"\u2248150",keyProducts:"Single-incision surgical robotics platform (in development)",compliance:"FDA 524B, ISO 13485/27001, IEC 62304 (software)",cisaCount:0,cisaNote:"None (pre-commercial)",hhsNote:"\u2014",glassdoor:GDF,roleFit:"High",roleRationale:"Pre-commercial surgical robot \u2014 the moment to build secure-by-design (IEC 62304/524B) before submission. Small team, no CISO = clean product-security-lead/vCISO engagement matching your threat-modeling strength. Waltham-local.",src:"RBOT SEC \u2014 confirm leaders"}),
+rec({company:"Organogenesis",sector:"MedDevice",state:"MA",hq:"Canton",status:"Public (NASDAQ: ORGO)",ceo:"Regenerative medicine",ciso:ND,ticker:"ORGO",paysWell:"Above-market",mfg:"Yes",itot:"Partial",revStr:"\u2248$450M",employees:"\u22482,500",keyProducts:"Advanced wound care & surgical/regenerative biologics (Apligraf, Affinity)",compliance:"FDA, HIPAA, ISO 13485/27001, SOX",cisaCount:0,cisaNote:"None in CISA list",hhsNote:"Verify on HHS portal",glassdoor:GDF,roleFit:"Medium",roleRationale:"Mid-cap regenerative; lower connected-device surface, so value is GRC/enterprise security + HIPAA. Decent Deputy-CISO/vCISO target. Canton-local.",src:"ORGO SEC \u2014 confirm leaders"}),
+rec({company:"Vericel",sector:"MedDevice",state:"MA",hq:"Cambridge",status:"Public (NASDAQ: VCEL)",ceo:"Cell therapy / advanced biologics",ciso:ND,ticker:"VCEL",paysWell:"Above-market",mfg:"Yes",itot:"Partial",revStr:"\u2248$240M",employees:"\u22481,000",keyProducts:"Autologous cell therapies (MACI cartilage, Epicel skin), Burn care",compliance:"FDA GxP/524B, HIPAA, ISO 13485/27001, 21 CFR Part 11, SOX",cisaCount:0,cisaNote:"None in CISA list",hhsNote:"Patient cell/clinical data; verify HHS",glassdoor:GDF,roleFit:"Medium",roleRationale:"Cell-therapy w/ patient-specific clinical data and GxP manufacturing \u2014 GRC + data-protection focus. Cambridge-local. Deputy-CISO/vCISO-advisory target.",src:"VCEL SEC \u2014 confirm leaders"}),
+rec({company:"Cynosure Lutronic",sector:"MedDevice",state:"MA",hq:"Westford",status:"Private (PE-owned)",ceo:"Aesthetic/medical lasers",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"Yes",itot:"Partial",revStr:"Private",employees:"\u22481,000",keyProducts:"Aesthetic laser & energy devices (body, skin, hair)",compliance:"FDA 524B, ISO 13485/27001, GDPR",cisaCount:0,cisaNote:"None in CISA list",hhsNote:"Verify on HHS portal",glassdoor:GDF,roleFit:"High",roleRationale:"PE-owned and likely lean on security \u2192 fractional-vCISO / first-real-CISO fit, with PE diligence/exit pressure as the budget driver. Westford-local.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Analogic",sector:"MedDevice",state:"MA",hq:"Peabody",status:"Private (Altaris)",ceo:"Medical imaging & detection",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"Yes",itot:"Yes (plant OT)",revStr:"Private",employees:"\u22481,500",keyProducts:"CT/ultrasound subsystems, airport security detection (dual-use)",compliance:"FDA, ISO 13485/27001, IEC 62443, TSA/aviation-security, export controls",cisaCount:0,cisaNote:"None in CISA list",hhsNote:"Verify on HHS portal",glassdoor:GDF,roleFit:"High",roleRationale:"PE-owned (Altaris), dual-use medical + aviation-security detection = unusually broad compliance + OT surface that fits your IT/OT and regulated-industry profile. Strong vCISO/Deputy-CISO target. Peabody-local.",src:"Private \u2014 confirm leaders"}),
+rec({company:"DEKA Research & Development",sector:"MedDevice",state:"NH",hq:"Manchester",status:"Private (Dean Kamen)",ceo:"Medical device R&D",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"Limited (R&D/proto)",itot:"Partial",revStr:"Private (R&D/licensing)",employees:"\u2248600",keyProducts:"Insulin pumps, prosthetics (LUKE arm), dialysis, infusion R&D",compliance:"FDA 524B, ISO 13485/27001, IEC 62304, IP protection",cisaCount:0,cisaNote:"None (R&D house)",hhsNote:"IP-centric; partner clinical data",glassdoor:GDF,roleFit:"High",roleRationale:"\u2605 Dean Kamen's IP-rich device-R&D house in NH \u2014 connected medical devices (insulin pumps, infusion) + heavy IP = product-security + IP-protection, your exact lane, with no CISO likely. NH-local. Top NH target.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Nuwellis",sector:"MedDevice",state:"MN",hq:"Eden Prairie",status:"Public (NASDAQ: NUWE) \u2014 micro-cap",ceo:"Fluid management / heart failure",ciso:ND,ticker:"NUWE",paysWell:"Market/Varies",mfg:"Yes",itot:"Partial",revStr:"<$20M (micro-cap)",employees:"\u224860",keyProducts:"Aquadex ultrafiltration (aquapheresis) for fluid overload",compliance:"FDA 524B, HIPAA, ISO 13485/27001",cisaCount:0,cisaNote:"None in CISA list",hhsNote:"Verify on HHS portal",glassdoor:GDF,roleFit:"High",roleRationale:"Micro-cap public with no full-time CISO almost certainly \u2192 textbook fractional-vCISO / first-security-leader engagement, including SEC cyber-disclosure readiness. MN-local.",src:"ZoomInfo; LinkedIn"}),
+rec({company:"NeuroOne Medical",sector:"MedDevice",state:"MN",hq:"Eden Prairie",status:"Public (NASDAQ: NMTC) \u2014 small-cap",ceo:"Neuro diagnostics/ablation",ciso:ND,ticker:"NMTC",paysWell:"Market/Varies",mfg:"Yes",itot:"Partial",revStr:"Small (early commercial)",employees:"\u224850",keyProducts:"Thin-film sEEG electrodes, recording/ablation neuro devices",compliance:"FDA 524B, HIPAA, ISO 13485/27001",cisaCount:0,cisaNote:"None in CISA list",hhsNote:"Verify on HHS portal",glassdoor:GDF,roleFit:"High",roleRationale:"Small neuro device-maker, early commercial \u2192 build-the-program vCISO/first-CISO fit with SEC-disclosure and 524B readiness. MN-local.",src:"NMTC SEC \u2014 confirm leaders"}),
+rec({company:"Nonin Medical",sector:"MedDevice",state:"MN",hq:"Plymouth",status:"Private",ceo:"Noninvasive monitoring",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"Yes",itot:"Partial",revStr:"Private (\u2248$? \u2014 verify)",employees:"\u2248254",keyProducts:"Pulse & cerebral oximetry, capnography, OEM/eHealth sensors",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443",cisaCount:0,cisaNote:"None in CISA list",hhsNote:"Verify on HHS portal",glassdoor:GDF,contact:"info@nonin.com / +1 763-553-9968 (general, from company site)",roleFit:"Medium",roleRationale:"Private, mid-size, OEM/eHealth connected sensors (data flows into other systems) \u2014 product-security + OEM-supply-chain angle; likely vCISO candidate. MN-local.",src:"LeadIQ/ZoomInfo; nonin.com"}),
+rec({company:"Coloplast US",sector:"MedDevice",state:"MN",hq:"Minneapolis",status:"US HQ (Danish parent)",ceo:"Ostomy/continence/urology",ciso:"Global CISO at parent (confirm)",ticker:"COLO.B (Copenhagen)",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"US site of \u2248DKK 25B global",employees:"\u22482,000 (US)",keyProducts:"Ostomy care, continence care, wound & interventional urology",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, GDPR",cisaCount:0,cisaNote:"None in CISA list",hhsNote:"Verify on HHS portal",glassdoor:GDF,roleFit:"Low",roleRationale:"Large US HQ in MN but security led from Denmark \u2014 limited standalone role; OT/plant-security or US-region program angle only.",src:"Public \u2014 confirm leaders"}),
+
+/* ===== OUT-OF-STATE COMPANIES WITH MAJOR MA/NH/RI/MN SITES ===== */
+rec({company:"General Dynamics Electric Boat",sector:"Tech",state:"RI",hq:"North Kingstown (Quonset Point)",status:"Major site \u2014 submarine mfg (HQ: Groton, CT; GD: Reston, VA)",ceo:"Defense shipbuilding",ciso:"Corp CISO at General Dynamics (confirm)",ticker:"GD",paysWell:"High",mfg:"Yes",itot:"Yes (heavy shipyard OT/ICS)",revStr:"Site of GD \u2248$47B",employees:"\u22487,000 (Quonset)",keyProducts:"Submarine hull fabrication & module assembly (Virginia/Columbia class)",compliance:"CMMC L2 / DFARS 252.204-7012, NIST 800-171, ITAR, NISPOM",cisaCount:0,cisaNote:"N/A (defense)",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 400-acre submarine shipyard = heavy OT/ICS + CUI \u2014 your CMMC RP + IT/OT combo is a near-perfect match. Security runs from GD corp, but supplier-assurance/CMMC and shipyard-OT advisory are strong consulting lanes. RI-local.",src:"gdeb.com; WorkBoat (verified)"}),
+rec({company:"General Dynamics Mission Systems",sector:"Tech",state:"MA",hq:"Pittsfield",status:"Major site \u2014 defense systems (HQ: Fairfax, VA)",ceo:"Defense C4ISR",ciso:"Corp CISO at GD (confirm)",ticker:"GD",paysWell:"High",mfg:"Yes",itot:"Yes (defense plant OT)",revStr:"Site of GD \u2248$47B",employees:"\u2248site (multi-hundred)",keyProducts:"Maritime/naval combat & mission systems, C4ISR",compliance:"CMMC L2 / DFARS, NIST 800-171, ITAR, NISPOM",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 CUI-handling defense site in MA \u2014 CMMC/NIST 800-171 and CUI-enclave work fits your CMMC RP credential. MA-local supplier-assurance lane.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Elbit Systems of America (Kollsman)",sector:"Tech",state:"NH",hq:"Merrimack",status:"Major site \u2014 defense electro-optics (HQ: Israel / Fort Worth, TX)",ceo:"Defense electro-optics",ciso:"Corp CISO (confirm)",ticker:"ESLT",paysWell:"High",mfg:"Yes",itot:"Yes (defense plant OT)",revStr:"Site of \u2248$6B global",employees:"\u2248site",keyProducts:"Electro-optical/infrared systems, defense electronics",compliance:"CMMC L2 / DFARS, NIST 800-171, ITAR, NISPOM, foreign-ownership (FOCI)",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Defense + foreign-owned (FOCI/NISPOM) in NH \u2014 CMMC and FOCI-mitigation security is a specialized lane your CMMC RP credential supports. NH-local.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Sig Sauer",sector:"Tech",state:"NH",hq:"Newington",status:"US HQ / major mfg site (German SIG group)",ceo:"Firearms manufacturing",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"Yes",itot:"Yes (plant OT)",revStr:"Private",employees:"\u22482,500",keyProducts:"Firearms, ammunition, optics, suppressors (defense & commercial)",compliance:"ITAR, CMMC (DoD work), NIST 800-171, ATF, export controls",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"Major NH manufacturer with DoD/ITAR exposure and OT plants \u2014 CMMC/ITAR + OT-security fit, and likely leaner security than a prime = vCISO/program-build. NH-local.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Pfizer",sector:"Pharma",state:"MA",hq:"Andover",status:"Major site \u2014 biologics mfg/R&D (HQ: New York, NY)",ceo:"Global pharma",ciso:"Global CISO at HQ (confirm)",ticker:"PFE",paysWell:"High",mfg:"Yes",itot:"Yes (GMP plant OT)",revStr:"Site of \u2248$60B global",employees:"\u22482,000+ (Andover)",keyProducts:"Biologics drug-substance manufacturing & clinical supply",compliance:"FDA GMP, 21 CFR Part 11, IEC 62443, ITAR (n/a), SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"Assess at Pfizer global level",roleFit:"Medium",roleRationale:"Large biologics GMP site in MA \u2014 plant-OT/IEC 62443 security is the realistic local angle; enterprise security is run from NY HQ. MA-local OT lane.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Novartis",sector:"Pharma",state:"MA",hq:"Cambridge",status:"Major R&D hub (HQ: Basel, Switzerland)",ceo:"Global pharma",ciso:"Global CISO at HQ (confirm)",ticker:"NVS",paysWell:"High",mfg:"No (R&D)",itot:"Partial (labs)",revStr:"Site of \u2248$50B global",employees:"\u2248site (R&D, thousands)",keyProducts:"Biomedical R&D (one of Novartis's largest global research hubs)",compliance:"FDA GxP, 21 CFR Part 11, HIPAA, GDPR, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"R&D IP exposure",roleFit:"Low",roleRationale:"Major Cambridge R&D hub but security led from Basel \u2014 limited standalone role; R&D-IP-protection advisory only.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Bristol Myers Squibb",sector:"Pharma",state:"MA",hq:"Cambridge",status:"Major R&D site (HQ: New York/Princeton)",ceo:"Global pharma",ciso:"Global CISO at HQ (confirm)",ticker:"BMY",paysWell:"High",mfg:"No (R&D)",itot:"Partial (labs)",revStr:"Site of \u2248$48B global",employees:"\u2248site (R&D)",keyProducts:"Oncology, immunology, cardiovascular R&D",compliance:"FDA GxP, 21 CFR Part 11, HIPAA, GDPR, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"R&D IP & trial data",roleFit:"Low",roleRationale:"R&D site; security at corporate HQ. R&D-IP/clinical-data advisory is the only local angle.",src:"Public \u2014 confirm leaders"}),
+rec({company:"GE HealthCare",sector:"MedDevice",state:"MA",hq:"Marlborough",status:"Major site \u2014 imaging/life sciences (HQ: Chicago, IL)",ceo:"Medical imaging/dx",ciso:"Corp CISO at HQ (confirm)",ticker:"GEHC",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"Site of \u2248$20B global",employees:"\u2248site",keyProducts:"Medical imaging (MRI/CT/ultrasound), patient monitoring, life sciences",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, SOX",cisaCount:1,cisaNote:"GE HealthCare / GE appear in CISA medical advisories",hhsNote:"Imaging PHI exposure; verify HHS",roleFit:"Medium",roleRationale:"\u2605 One of your named M&A/carve-out case studies. Large MA imaging site with connected-device + OT surface; product-security/OT advisory and your carve-out knowledge both apply. MA-local.",src:"Public; CISA tally"}),
+rec({company:"Philips North America",sector:"MedDevice",state:"MA",hq:"Cambridge / Andover",status:"Major US site (HQ: Amsterdam, Netherlands)",ceo:"Health technology",ciso:"Global CISO at HQ (confirm)",ticker:"PHG",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"Site of \u2248\u20ac18B global",employees:"\u2248site",keyProducts:"Patient monitoring, imaging, sleep & respiratory care",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, GDPR",cisaCount:37,cisaNote:"~37+ CISA medical advisories (Philips is the #1-disclosed vendor)",hhsNote:"Extensive connected-device + PHI footprint; verify HHS",roleFit:"Medium",roleRationale:"Most-disclosed device vendor (mature PSIRT) \u2014 security led from NL, so the local angle is product-security/PSIRT or OT advisory. Strong reference value for your PSIRT/SBOM work. MA-local.",src:"Public; CISA tally"}),
+rec({company:"Siemens Healthineers",sector:"MedDevice",state:"MA",hq:"Walpole",status:"Major site \u2014 diagnostics (HQ: Erlangen, Germany)",ceo:"Diagnostics/imaging",ciso:"Global CISO at HQ (confirm)",ticker:"SHL",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"Site of \u2248\u20ac22B global",employees:"\u2248site",keyProducts:"Point-of-care & lab diagnostics, imaging",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, GDPR",cisaCount:2,cisaNote:"Siemens appears in CISA medical/ICS advisories",hhsNote:"Dx data exposure; verify HHS",roleFit:"Medium",roleRationale:"Diagnostics manufacturing site in MA \u2014 product-security + OT angle; enterprise security at German HQ. MA-local OT/PSIRT lane.",src:"Public; CISA tally"}),
+rec({company:"Abbott",sector:"MedDevice",state:"MN",hq:"St. Paul",status:"Major site \u2014 cardiovascular (ex-St. Jude) (HQ: Abbott Park, IL)",ceo:"Diversified medtech/dx",ciso:"Corp CISO at HQ (confirm)",ticker:"ABT",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"Site of \u2248$42B global",employees:"\u2248several thousand (MN)",keyProducts:"Cardiac rhythm, structural heart, neuromodulation (legacy St. Jude)",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, SOX",cisaCount:1,cisaNote:"St. Jude/Abbott cardiac devices in CISA advisories (famous cardiac vuln)",hhsNote:"Implant/remote-monitoring data; verify HHS",roleFit:"Medium",roleRationale:"\u2605 Major MN cardiovascular-device manufacturing (ex-St. Jude, the canonical implant-cyber case). Connected-implant product-security + OT; your implantable threat-modeling fits. Security at IL HQ \u2014 product-security/OT lane. MN-local.",src:"Public; CISA tally"}),
+rec({company:"Seagate Technology",sector:"Tech",state:"MN",hq:"Shakopee / Bloomington",status:"Major site \u2014 storage R&D/mfg (HQ: Fremont, CA / Ireland)",ceo:"Data storage",ciso:"Corp CISO at HQ (confirm)",ticker:"STX",paysWell:"High",mfg:"Yes",itot:"Yes (fab/test OT)",revStr:"Site of \u2248$8B global",employees:"\u2248several thousand (MN)",keyProducts:"Hard-disk drives, storage systems R&D & manufacturing",compliance:"ISO 27001, IEC 62443, SOX, export controls, supply-chain security",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Large MN storage R&D/manufacturing with real fab/test OT \u2014 IEC 62443/OT-security and supply-chain angle fits your IT/OT profile. Security at CA HQ; OT-advisory lane. MN-local.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Dell Technologies",sector:"Tech",state:"MA",hq:"Hopkinton",status:"Major site \u2014 enterprise tech (EMC legacy) (HQ: Round Rock, TX)",ceo:"Enterprise IT/storage",ciso:"Corp CISO at HQ (confirm)",ticker:"DELL",paysWell:"High",mfg:"Limited (R&D)",itot:"No",revStr:"Site of \u2248$90B global",employees:"\u2248several thousand (MA)",keyProducts:"Enterprise storage & infrastructure R&D (legacy EMC)",compliance:"SOC 2, ISO 27001, SOX, FedRAMP (some), supply-chain security",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Low",roleRationale:"Large MA R&D campus but mature security at TX HQ \u2014 product-security or specialized-program angle only. Limited standalone gap.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Toray Plastics (America)",sector:"Tech",state:"RI",hq:"North Kingstown",status:"Major mfg site (HQ: Japan)",ceo:"Advanced materials mfg",ciso:ND,ticker:"Private (Toray)",paysWell:"Above-market",mfg:"Yes",itot:"Yes (plant OT)",revStr:"Site of Toray global",employees:"\u2248site",keyProducts:"Films, foams & advanced polymer materials manufacturing",compliance:"IEC 62443, ISO 27001, NIST CSF, export controls",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"RI advanced-materials manufacturer with plant OT and foreign ownership \u2014 OT/IEC 62443 security and possibly lean local IT = vCISO/OT-advisory potential. RI-local.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Wells Fargo",sector:"Financial",state:"MN",hq:"Minneapolis",status:"Major ops/mortgage hub (HQ: San Francisco, CA)",ceo:"Bank",ciso:"Corp CISO at HQ (confirm)",ticker:"WFC",paysWell:"High",mfg:"No",itot:"No",revStr:"Site of \u2248$80B global",employees:"\u224820,000+ (MN region)",keyProducts:"Retail/commercial banking, mortgage operations hub",compliance:"FFIEC, GLBA, SOX, OCC, NYDFS, PCI DSS",cisaCount:0,cisaNote:"N/A",hhsNote:"FFIEC/OCC incident reporting",roleFit:"Medium",roleRationale:"One of MN's largest financial employers (major ops hub) \u2014 security at SF HQ, but regional/program roles and third-party-risk work exist. MN-local presence.",src:"Public \u2014 confirm leaders"}),
+rec({company:"RBC Wealth Management \u2013 US",sector:"Financial",state:"MN",hq:"Minneapolis",status:"US HQ (parent: Royal Bank of Canada)",ceo:"Wealth management",ciso:"Corp CISO at RBC (confirm)",ticker:"RY",paysWell:"High",mfg:"No",itot:"No",revStr:"US arm of RBC",employees:"\u2248several thousand (MN)",keyProducts:"US wealth management & advisory (HQ in Minneapolis)",compliance:"SEC, FINRA, GLBA, SOX, NYDFS, PCI",cisaCount:0,cisaNote:"N/A",hhsNote:"SEC/state incident reporting",roleFit:"Medium",roleRationale:"US wealth-management HQ in Minneapolis \u2014 SEC/FINRA + client-PII program; security ties to RBC corp but the US arm has its own footprint. MN-local.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Stryker",sector:"MedDevice",state:"MA",hq:"Tewksbury / Mansfield",status:"Major site \u2014 neurovascular/instruments (HQ: Portage, MI)",ceo:"Medical devices",ciso:"Corp CISO at HQ (confirm)",ticker:"SYK",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"Site of \u2248$22B global",employees:"\u2248site",keyProducts:"Neurovascular, surgical instruments, endoscopy (MA sites)",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, SOX",cisaCount:1,cisaNote:"Stryker appears in CISA medical advisories",hhsNote:"Verify on HHS portal",roleFit:"Medium",roleRationale:"MA device-manufacturing sites with connected-device + OT surface; product-security/OT angle (enterprise security at MI HQ). MA-local.",src:"Public; CISA tally"}),
+rec({company:"Smith+Nephew",sector:"MedDevice",state:"MA",hq:"Andover",status:"Major US site (HQ: London, UK)",ceo:"Orthopedics/wound",ciso:"Global CISO at HQ (confirm)",ticker:"SNN",paysWell:"High",mfg:"Yes",itot:"Yes (plant OT)",revStr:"Site of \u2248$5.5B global",employees:"\u2248site",keyProducts:"Orthopedic implants, sports medicine, advanced wound management",compliance:"FDA 524B, HIPAA, ISO 13485/27001, IEC 62443, GDPR",cisaCount:0,cisaNote:"None in CISA list (verify)",hhsNote:"Verify on HHS portal",roleFit:"Medium",roleRationale:"MA orthopedics manufacturing site; product-security/OT angle with enterprise security in the UK. MA-local OT/PSIRT lane.",src:"Public \u2014 confirm leaders"}),
+
+/* ===== SMALL & MID-MARKET (representative; prime vCISO market) ===== */
+rec({company:"CVRx",sector:"MedDevice",state:"MN",hq:"Brooklyn Park",status:"Public (NASDAQ: CVRX) \u2014 small-cap",ceo:"Neuromodulation",ciso:ND,ticker:"CVRX",paysWell:"Above-market",mfg:"Yes",itot:"Partial",revStr:"\u2248$50M",employees:"\u2248300",keyProducts:"Barostim implantable neuromodulation for heart failure (+ programmer/app)",compliance:"FDA 524B, HIPAA, ISO 13485/27001, SOX",cisaCount:0,cisaNote:"None in CISA list",hhsNote:"Implant + programmer data; verify HHS",roleFit:"High",roleRationale:"Small-cap implantable + companion programmer = real product-security need with no full-time CISO likely \u2192 first-CISO/vCISO + SEC-disclosure readiness. MN-local.",src:"CVRX SEC \u2014 confirm leaders"}),
+rec({company:"Visura Technologies",sector:"MedDevice",state:"MN",hq:"Twin Cities",status:"Private (early-stage)",ceo:"Intubation/airway device",ciso:ND,ticker:"Private",paysWell:"Market/Varies",mfg:"Limited",itot:"No",revStr:"Private (early)",employees:"\u224830",keyProducts:"TEECAD / camera-assisted intubation & airway devices",compliance:"FDA 524B, ISO 13485/27001, IP protection",cisaCount:0,cisaNote:"None",hhsNote:"\u2014",glassdoor:GDF,roleFit:"High",roleRationale:"Early-stage device startup \u2014 build secure-by-design + 524B readiness from the start; fractional/vCISO model. MN-local (Medical Alley).",src:"Medical Alley \u2014 confirm details"}),
+rec({company:"Definitive Healthcare",sector:"Tech",state:"MA",hq:"Framingham",status:"Public (NASDAQ: DH)",ceo:"Healthcare commercial intelligence",ciso:ND,ticker:"DH",paysWell:"Above-market",mfg:"No",itot:"No",revStr:"\u2248$250M",employees:"\u2248800",keyProducts:"Healthcare commercial-intelligence SaaS & data platform",compliance:"SOC 2, ISO 27001, HIPAA (healthcare data), GDPR, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"Aggregates healthcare data \u2014 privacy-sensitive",roleFit:"Medium",roleRationale:"Mid-market health-data SaaS \u2014 SOC 2 + HIPAA-adjacent data governance program; Deputy-CISO/vCISO-advisory fit. Framingham-local (near you).",src:"DH SEC \u2014 confirm leaders"}),
+rec({company:"Akili Interactive",sector:"MedDevice",state:"MA",hq:"Boston",status:"Digital therapeutics (small)",ceo:"Prescription digital therapeutics",ciso:ND,ticker:"was AKLI",paysWell:"Above-market",mfg:"No",itot:"No",revStr:"Small",employees:"\u2248100",keyProducts:"EndeavorRx prescription digital therapeutic (FDA-cleared video-game therapy for ADHD)",compliance:"FDA (SaMD/524B), HIPAA, SOC 2, COPPA (pediatric), GDPR",cisaCount:0,cisaNote:"None",hhsNote:"Pediatric patient data \u2014 COPPA + HIPAA",roleFit:"High",roleRationale:"FDA-cleared software-as-a-medical-device for kids \u2014 SaMD product security + pediatric-privacy (COPPA/HIPAA) is a distinctive, on-profile vCISO/security-lead engagement. Boston-local.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Biofourmis",sector:"MedDevice",state:"MA",hq:"Needham",status:"Private (digital health)",ceo:"Remote patient monitoring / digital health",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"No",itot:"No",revStr:"Private (VC-backed)",employees:"\u2248500",keyProducts:"AI-driven remote patient monitoring & care-at-home platform (+ wearables)",compliance:"FDA (SaMD), HIPAA, SOC 2, HITRUST, GDPR",cisaCount:0,cisaNote:"None",hhsNote:"Continuous patient physiologic data \u2014 high PHI sensitivity",roleFit:"High",roleRationale:"RPM + wearables + AI on continuous PHI = serious security/privacy surface in a mid-size private \u2014 HITRUST/HIPAA program build, a strong vCISO/security-leader fit and your AI-governance angle. Needham-local.",src:"Private \u2014 confirm leaders"}),
+rec({company:"PathAI",sector:"MedDevice",state:"MA",hq:"Boston",status:"Private (AI pathology)",ceo:"AI digital pathology",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"No",itot:"No",revStr:"Private (VC-backed)",employees:"\u2248400",keyProducts:"AI-powered digital pathology & diagnostic algorithms, lab (PathAI Diagnostics)",compliance:"FDA (SaMD), CLIA/CAP, HIPAA, SOC 2, GDPR",cisaCount:0,cisaNote:"None",hhsNote:"Pathology images + patient data; AI-model governance",roleFit:"High",roleRationale:"AI diagnostics on patient pathology data \u2014 SaMD + AI-model governance + HIPAA in a mid-size private. Squarely your AI-governance + healthcare lane; likely vCISO/first-CISO. Boston-local.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Cohere Health",sector:"Tech",state:"MA",hq:"Boston",status:"Private (health SaaS)",ceo:"Prior-authorization / utilization SaaS",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"No",itot:"No",revStr:"Private (VC-backed)",employees:"\u2248600",keyProducts:"AI prior-authorization & clinical-intelligence platform for payers/providers",compliance:"HIPAA, SOC 2, HITRUST, NIST CSF",cisaCount:0,cisaNote:"N/A",hhsNote:"Processes PHI for payers \u2014 BAA/HITRUST obligations",roleFit:"High",roleRationale:"Health SaaS handling payer PHI \u2014 HITRUST/HIPAA + AI governance program in a growth-stage private = textbook vCISO/security-leader engagement. Boston-local.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Flywire",sector:"Financial",state:"MA",hq:"Boston",status:"Public (NASDAQ: FLYW)",ceo:"Global payments fintech",ciso:ND,ticker:"FLYW",paysWell:"High",mfg:"No",itot:"No",revStr:"\u2248$500M",employees:"\u22481,200",keyProducts:"Cross-border payments platform (education, healthcare, travel, B2B)",compliance:"PCI DSS, SOC 2, GLBA, ISO 27001, global money-transmitter regs",cisaCount:0,cisaNote:"N/A",hhsNote:"Payments + healthcare-vertical data; breach-reporting obligations",roleFit:"High",roleRationale:"Mid-cap cross-border payments \u2014 PCI + global regulatory + healthcare-vertical exposure; fast growth often outpaces security. Deputy-CISO/vCISO-advisory fit and your financial-sector lane. Boston-local.",src:"FLYW SEC \u2014 confirm leaders"}),
+rec({company:"Markforged",sector:"Tech",state:"MA",hq:"Waltham",status:"Public/PE (industrial 3D printing)",ceo:"Industrial additive manufacturing",ciso:ND,ticker:"MKFG",paysWell:"Above-market",mfg:"Yes",itot:"Yes (connected printers/OT)",revStr:"\u2248$90M",employees:"\u2248400",keyProducts:"Industrial 3D printers + cloud (The Digital Forge), metal/composite additive",compliance:"SOC 2, IEC 62443, ITAR (defense customers), NIST 800-171, export controls",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Connected industrial 3D printers + cloud, with ITAR/defense customers \u2014 product/OT security + supply-chain (CUI) angle fits your IT/OT + CMMC profile. Waltham-local.",src:"MKFG \u2014 confirm leaders"}),
+rec({company:"DataRobot",sector:"Tech",state:"MA",hq:"Boston",status:"Private (AI platform)",ceo:"Enterprise AI/ML platform",ciso:"Has a CISO (confirm name)",ticker:"Private",paysWell:"High",mfg:"No",itot:"No",revStr:"Private (\u2248$300M)",employees:"\u22481,000",keyProducts:"Enterprise AI/ML lifecycle & governance platform",compliance:"SOC 2, ISO 27001, FedRAMP (some), GDPR; AI governance",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Enterprise-AI platform vendor \u2014 AI-governance + customer-data security; your AI-governance angle, though they likely have a security team. Product-security/AI-risk advisory. Boston-local.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Albany International",sector:"Tech",state:"NH",hq:"Rochester",status:"Public (NYSE: AIN)",ceo:"Engineered composites & machine clothing",ciso:ND,ticker:"AIN",paysWell:"Above-market",mfg:"Yes",itot:"Yes (plant OT)",revStr:"\u2248$1.2B",employees:"\u22484,000",keyProducts:"Aerospace engineered composites (Albany Engineered Composites) + paper-machine clothing",compliance:"CMMC L2 / DFARS (aerospace), NIST 800-171, ITAR, IEC 62443, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 NH-HQ aerospace composites (defense supply chain) + plant OT \u2014 CMMC/CUI + IEC 62443 fits your CMMC RP + IT/OT profile. NH-local, and a real HQ (not a site).",src:"AIN SEC \u2014 confirm leaders"}),
+rec({company:"Hitchiner Manufacturing",sector:"Tech",state:"NH",hq:"Milford",status:"Private",ceo:"Investment castings (aerospace/defense)",ciso:ND,ticker:"Private",paysWell:"Above-market",mfg:"Yes",itot:"Yes (foundry OT)",revStr:"Private",employees:"\u22481,000",keyProducts:"Precision investment castings for aerospace, defense, automotive",compliance:"CMMC L2 / DFARS, NIST 800-171, ITAR, IEC 62443, AS9100",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Private NH defense/aerospace foundry \u2014 CMMC/CUI + foundry OT, and a private mid-market likely without a CISO = vCISO/program-build. NH-local.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Microspec",sector:"MedDevice",state:"NH",hq:"Peterborough",status:"Private (device component supplier)",ceo:"Medical extrusion/tubing",ciso:ND,ticker:"Private",paysWell:"Market/Varies",mfg:"Yes",itot:"Partial (plant OT)",revStr:"Private (SMB)",employees:"\u2248200",keyProducts:"Precision medical micro-extrusion & multi-lumen tubing (OEM supplier)",compliance:"FDA/ISO 13485, ISO 27001, customer supply-chain security",cisaCount:0,cisaNote:"None",hhsNote:"\u2014",glassdoor:GDF,roleFit:"Medium",roleRationale:"SMB medtech OEM supplier in NH \u2014 supply-chain-security expectations from device-maker customers + plant OT; fractional-vCISO candidate. NH-local.",src:"Private \u2014 confirm details"}),
+
+/* ===== DEFENSE / CMMC + PRE-IPO (CA / TX / CO / VA / DC / GA) ===== */
+rec({company:"Anduril Industries",sector:"Tech",state:"CA",hq:"Costa Mesa",status:"Pre-IPO (private, >$60B val May 2026)",stage:"Pre-IPO",ceo:"Defense autonomy",ciso:ND,ticker:"Pre-IPO",paysWell:"High",mfg:"Yes",itot:"Yes (defense mfg OT)",revStr:"\u2248$1B+ (private)",employees:"\u22486,000",keyProducts:"Lattice autonomy/C2 software, drones, counter-UAS, solid rocket motors",compliance:"CMMC L2 / DFARS, NIST 800-171, ITAR, FedRAMP/IL, SOC 2, CUI",cisaCount:0,cisaNote:"N/A (defense)",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Hyper-scaling defense-tech with software + manufacturing OT + CUI, racing toward IPO (security must mature fast). Your CMMC RP + product-security + IT/OT combo fits across the board. Pre-IPO = security-leadership build.",src:"CNBC May 2026; Motley Fool (verified pre-IPO)"}),
+rec({company:"Shield AI",sector:"Tech",state:"CA",hq:"San Diego",status:"Pre-IPO (private, $12.7B val Mar 2026)",stage:"Pre-IPO",ceo:"Autonomous defense AI",ciso:ND,ticker:"Pre-IPO",paysWell:"High",mfg:"Yes",itot:"Yes (defense mfg)",revStr:"Private",employees:"\u22481,000",keyProducts:"Hivemind autonomy software, V-BAT drones, AI pilot",compliance:"CMMC L2 / DFARS, NIST 800-171, ITAR, IL/FedRAMP, SOC 2, CUI",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Defense AI/autonomy scaling to IPO \u2014 CUI/CMMC + AI-model + product security. Your CMMC RP + AI-governance lane. Pre-IPO security-leadership opportunity.",src:"Shield AI Mar 2026 (verified pre-IPO)"}),
+rec({company:"Scale AI",sector:"Tech",state:"CA",hq:"San Francisco",status:"Pre-IPO (private)",stage:"Pre-IPO",ceo:"AI data / federal",ciso:ND,ticker:"Pre-IPO",paysWell:"High",mfg:"No",itot:"No",revStr:"Private (\u2248$1B+)",employees:"\u2248900",keyProducts:"AI data labeling/eval; Scale Federal (defense AI)",compliance:"FedRAMP, CMMC (federal), SOC 2, ISO 27001, CUI; AI governance",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"AI-data platform with a federal/defense arm \u2014 FedRAMP/CMMC + AI-governance; your AI-risk lane. Large, likely has security leadership \u2014 advisory/program angle.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Relativity Space",sector:"Tech",state:"CA",hq:"Long Beach",status:"Pre-IPO (private)",stage:"Pre-IPO",ceo:"3D-printed launch vehicles",ciso:ND,ticker:"Pre-IPO",paysWell:"High",mfg:"Yes",itot:"Yes (additive mfg OT)",revStr:"Private",employees:"\u22481,000",keyProducts:"Terran rockets via large-scale metal 3D printing",compliance:"ITAR, CMMC L2 / DFARS, NIST 800-171, IEC 62443, export controls",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Launch + heavy additive-manufacturing OT + ITAR \u2014 your IT/OT + CMMC lane in a pre-IPO scaling phase. Strong vCISO/security-leadership build.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Epirus",sector:"Tech",state:"CA",hq:"Torrance",status:"Pre-IPO (private)",stage:"Pre-IPO",ceo:"Directed-energy / counter-UAS",ciso:ND,ticker:"Pre-IPO",paysWell:"High",mfg:"Yes",itot:"Yes (defense mfg)",revStr:"Private",employees:"\u2248400",keyProducts:"Leonidas high-power microwave counter-drone systems",compliance:"ITAR, CMMC L2 / DFARS, NIST 800-171, CUI, export controls",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Pre-IPO directed-energy defense \u2014 CUI/CMMC + product/OT security with no full CISO likely. Your CMMC RP + IT/OT fit; fractional/build engagement.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Saronic Technologies",sector:"Tech",state:"TX",hq:"Austin",status:"Pre-IPO (private)",stage:"Pre-IPO",ceo:"Autonomous naval vessels",ciso:ND,ticker:"Pre-IPO",paysWell:"High",mfg:"Yes",itot:"Yes (shipyard mfg OT)",revStr:"Private",employees:"\u2248600",keyProducts:"Autonomous surface vessels for defense (Spyglass, Corsair, Marauder)",compliance:"ITAR, CMMC L2 / DFARS, NIST 800-171, CUI, IEC 62443",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Pre-IPO autonomous-shipbuilder scaling mfg fast \u2014 CUI/CMMC + shipyard OT, your exact CMMC RP + IT/OT lane. Security-leadership build. TX.",src:"Private (verified pre-IPO)"}),
+rec({company:"Firefly Aerospace",sector:"Tech",state:"TX",hq:"Cedar Park",status:"Public (NASDAQ: FLY) \u2014 IPO 2025",stage:"Public",ceo:"Launch & lunar",ciso:ND,ticker:"FLY",paysWell:"High",mfg:"Yes",itot:"Yes (rocket mfg OT)",revStr:"\u2248$100M+",employees:"\u22481,200",keyProducts:"Alpha launch vehicle, Blue Ghost lunar lander, propulsion",compliance:"ITAR, CMMC L2 / DFARS, NIST 800-171, IEC 62443, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Newly public space/defense mfg \u2014 post-IPO SOX + CMMC/ITAR + OT maturity push. Your CMMC/IT-OT lane; Deputy-CISO/advisory. TX.",src:"FLY \u2014 confirm leaders"}),
+rec({company:"True Anomaly",sector:"Tech",state:"CO",hq:"Colorado Springs",status:"Pre-IPO (private)",stage:"Pre-IPO",ceo:"Space security / SDA",ciso:ND,ticker:"Pre-IPO",paysWell:"High",mfg:"Yes",itot:"Yes (spacecraft mfg)",revStr:"Private",employees:"\u2248300",keyProducts:"Jackal autonomous orbital vehicles, space-domain-awareness software",compliance:"ITAR, CMMC L2 / DFARS, NIST 800-171, IL/FedRAMP, CUI",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Pre-IPO space-defense \u2014 classified/CUI + spacecraft OT; CMMC RP + IT/OT fit, security-leadership build. CO (Space Force corridor).",src:"Private \u2014 confirm leaders"}),
+rec({company:"Ursa Major Technologies",sector:"Tech",state:"CO",hq:"Berthoud",status:"Pre-IPO (private)",stage:"Pre-IPO",ceo:"Rocket propulsion",ciso:ND,ticker:"Pre-IPO",paysWell:"High",mfg:"Yes",itot:"Yes (propulsion mfg OT)",revStr:"Private",employees:"\u2248400",keyProducts:"Hadley/Ripley rocket engines, solid-rocket-motor additive mfg",compliance:"ITAR, CMMC L2 / DFARS, NIST 800-171, IEC 62443, CUI",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Pre-IPO defense propulsion with heavy mfg OT + ITAR/CUI \u2014 CMMC RP + IT/OT lane; build-the-program engagement. CO.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Sierra Space",sector:"Tech",state:"CO",hq:"Louisville",status:"Pre-IPO (private)",stage:"Pre-IPO",ceo:"Commercial & defense space",ciso:ND,ticker:"Pre-IPO",paysWell:"High",mfg:"Yes",itot:"Yes (spacecraft mfg)",revStr:"Private",employees:"\u22482,000",keyProducts:"Dream Chaser spaceplane, orbital habitats, defense space tech",compliance:"ITAR, CMMC L2 / DFARS, NIST 800-171, IL/FedRAMP, CUI",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Pre-IPO space (commercial + defense) scaling \u2014 CUI/CMMC + spacecraft OT; CMMC RP + IT/OT fit. CO.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Palantir Technologies",sector:"Tech",state:"CO",hq:"Denver",status:"Public (NASDAQ: PLTR)",stage:"Public",ceo:"Gov/defense data & AI",ciso:"Corp CISO (confirm)",ticker:"PLTR",paysWell:"High",mfg:"No",itot:"No",revStr:"\u2248$3B",employees:"\u22484,000",keyProducts:"Gotham (defense), Foundry, AIP \u2014 data integration & AI for gov/defense",compliance:"FedRAMP High/IL5-6, CMMC, NIST 800-171, SOC 2, ITAR, CUI",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Public gov/defense-data platform with very mature security \u2014 product/federal-compliance roles, not vCISO. Strong CMMC/FedRAMP reference; CO-HQ.",src:"PLTR \u2014 confirm leaders"}),
+rec({company:"Lockheed Martin Space",sector:"Tech",state:"CO",hq:"Littleton",status:"Major site \u2014 defense/space (HQ: Bethesda, MD)",stage:"Public",ceo:"Defense prime (space)",ciso:"Corp CISO at HQ (confirm)",ticker:"LMT",paysWell:"High",mfg:"Yes",itot:"Yes (defense mfg OT)",revStr:"Site of \u2248$71B",employees:"\u224810,000+ (CO)",keyProducts:"Satellites, missile defense, Orion \u2014 space systems",compliance:"CMMC L2 / DFARS, NIST 800-171, ITAR, NISPOM, IEC 62443",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Major CO defense-space site; mature security at HQ. CMMC supplier-assurance / CUI-enclave + OT advisory is the lane your CMMC RP supports.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Second Front Systems",sector:"Tech",state:"VA",hq:"Arlington",status:"Pre-IPO (private)",stage:"Pre-IPO",ceo:"Defense DevSecOps",ciso:ND,ticker:"Pre-IPO",paysWell:"High",mfg:"No",itot:"No",revStr:"Private",employees:"\u2248200",keyProducts:"Game Warden secure DevSecOps platform (accredited cloud for DoD ISVs)",compliance:"FedRAMP, IL4-6, CMMC, NIST 800-171/800-53, SOC 2, CUI",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Pre-IPO defense DevSecOps \u2014 the entire product IS accreditation (FedRAMP/IL/CMMC). Deep CMMC RP + product-security fit; security-leadership build. VA (DC metro).",src:"Private \u2014 confirm leaders"}),
+rec({company:"Govini",sector:"Tech",state:"VA",hq:"Arlington",status:"Private (defense analytics)",stage:"Private",ceo:"Defense acquisition analytics",ciso:ND,ticker:"Private",paysWell:"High",mfg:"No",itot:"No",revStr:"Private",employees:"\u2248300",keyProducts:"Ark software for defense acquisition & supply-chain analytics",compliance:"FedRAMP, IL, CMMC, NIST 800-171, SOC 2, CUI",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"High",roleRationale:"\u2605 Defense supply-chain analytics on CUI \u2014 CMMC/FedRAMP + your supply-chain-security background. Mid-size private \u2192 vCISO/security-leadership. VA.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Booz Allen Hamilton",sector:"Tech",state:"VA",hq:"McLean",status:"Public (NYSE: BAH)",stage:"Public",ceo:"Defense/gov consulting",ciso:"Corp CISO (confirm)",ticker:"BAH",paysWell:"High",mfg:"No",itot:"No",revStr:"\u2248$11B",employees:"\u224835,000",keyProducts:"Defense/intel/civil consulting, cyber, AI for government",compliance:"CMMC, FedRAMP, IL, NIST 800-171/800-53, SOC 2, CUI, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Large mature gov-cyber consultancy \u2014 a competitor/partner more than a vCISO client; possible delivery/partner channel for your CMMC work. VA.",src:"BAH \u2014 confirm leaders"}),
+rec({company:"Leidos",sector:"Tech",state:"VA",hq:"Reston",status:"Public (NYSE: LDOS)",stage:"Public",ceo:"Defense IT/services",ciso:"Corp CISO (confirm)",ticker:"LDOS",paysWell:"High",mfg:"No",itot:"Partial",revStr:"\u2248$16B",employees:"\u224848,000",keyProducts:"Defense/intel/health IT systems integration",compliance:"CMMC, FedRAMP, IL, NIST 800-171/800-53, CUI, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Large defense-IT integrator with mature security \u2014 partner/subcontract channel for CMMC supplier work rather than a vCISO seat. VA.",src:"LDOS \u2014 confirm leaders"}),
+rec({company:"CACI International",sector:"Tech",state:"VA",hq:"Reston",status:"Public (NYSE: CACI)",stage:"Public",ceo:"Defense/intel IT",ciso:"Corp CISO (confirm)",ticker:"CACI",paysWell:"High",mfg:"No",itot:"Partial",revStr:"\u2248$8B",employees:"\u224824,000",keyProducts:"Defense/intel technology & expertise, SIGINT, secure networks",compliance:"CMMC, FedRAMP, IL, NIST 800-171/800-53, CUI, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Defense-IT prime; mature internal security. CMMC-supplier/partner channel rather than vCISO. VA.",src:"CACI \u2014 confirm leaders"}),
+rec({company:"Peraton",sector:"Tech",state:"VA",hq:"Reston",status:"Private (Veritas Capital)",stage:"Private",ceo:"Defense/intel mission services",ciso:ND,ticker:"Private (Veritas)",paysWell:"High",mfg:"No",itot:"Partial",revStr:"Private (\u2248$7B)",employees:"\u224818,000",keyProducts:"Defense, intel & space mission IT and cyber services",compliance:"CMMC, FedRAMP, IL, NIST 800-171/800-53, CUI",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"PE-owned (Veritas) defense-IT \u2014 CMMC/CUI program at scale; PE diligence/exit pressure. Possible security-leadership or partner channel. VA.",src:"Private \u2014 confirm leaders"}),
+rec({company:"Lockheed Martin Aeronautics",sector:"Tech",state:"GA",hq:"Marietta",status:"Major site \u2014 aircraft mfg (HQ: Bethesda, MD)",stage:"Public",ceo:"Defense prime (aero)",ciso:"Corp CISO at HQ (confirm)",ticker:"LMT",paysWell:"High",mfg:"Yes",itot:"Yes (aircraft plant OT)",revStr:"Site of \u2248$71B",employees:"\u22485,000+ (GA)",keyProducts:"F-35 components, C-130J, F-22 sustainment (Marietta plant)",compliance:"CMMC L2 / DFARS, NIST 800-171, ITAR, NISPOM, IEC 62443",cisaCount:0,cisaNote:"N/A",hhsNote:"N/A",roleFit:"Medium",roleRationale:"Major GA aircraft-manufacturing site \u2014 CMMC/CUI + heavy plant OT; supplier-assurance/OT advisory lane your CMMC RP supports. GA.",src:"Public \u2014 confirm leaders"}),
+rec({company:"Global Payments",sector:"Financial",state:"GA",hq:"Atlanta",status:"Public (NYSE: GPN)",stage:"Public",ceo:"Payments technology",ciso:"Corp CISO (confirm)",ticker:"GPN",paysWell:"High",mfg:"No",itot:"No",revStr:"\u2248$10B",employees:"\u224827,000",keyProducts:"Merchant payment processing & issuer solutions",compliance:"PCI DSS, SOC 2, GLBA, ISO 27001, SOX",cisaCount:0,cisaNote:"N/A",hhsNote:"Payments breach reporting; PCI obligations",roleFit:"Medium",roleRationale:"Atlanta 'Transaction Alley' payments processor \u2014 deep PCI DSS + financial program; Deputy-CISO/advisory. Your financial-sector lane. GA.",src:"GPN \u2014 confirm leaders"}),
+];
+
+const SITES=new Set(["BD — Davol (site)","Smiths Medical","Abiomed","Olympus Corp. of the Americas","Coloplast US","Amgen Rhode Island","Lonza (Portsmouth)","Sanofi US / Genzyme","BAE Systems Inc.","Takeda (US HQ)","RTX (Raytheon)","General Dynamics Electric Boat","General Dynamics Mission Systems","Elbit Systems of America (Kollsman)","Sig Sauer","Pfizer","Novartis","Bristol Myers Squibb","GE HealthCare","Philips North America","Siemens Healthineers","Abbott","Seagate Technology","Dell Technologies","Toray Plastics (America)","Wells Fargo","RBC Wealth Management \u2013 US","Stryker","Smith+Nephew"]);
+DATA.forEach(d=>{if(SITES.has(d.company))d.presence="Major site";});
+function regsOf(d){
+  const c=(d.compliance||"");
+  const cra=/CRA/i.test(c) || (d.sector==="MedDevice" && !/CRO|coating|tubing|component|design\/development|investment cast|reagent|radiopharm/i.test(d.keyProducts+" "+d.status)) || (d.sector==="Tech" && /software|platform|saas|printer|iot|semiconductor|storage|crm|\bai\b|cloud|payment|3d|autonom|drone|lattice|devsecops|analytics/i.test((d.keyProducts||"").toLowerCase()));
+  return {CMMC:/CMMC/i.test(c),PCI:/PCI/i.test(c),FDA:/FDA/i.test(c),ISO:/ISO/i.test(c),SOC2:/SOC ?2/i.test(c),CRA:cra};
+}
+function regList(d){const r=regsOf(d);return ["CMMC","PCI","FDA","ISO","SOC2","CRA"].filter(k=>r[k]);}
+function stageOf(d){
+  if(d.stage) return d.stage;
+  const s=(d.status||"").toLowerCase();
+  if(/pre-ipo/.test(s)) return "Pre-IPO";
+  if(/public|nasdaq|nyse/.test(s)) return "Public";
+  if(/subsidiary|site of|part of|us hq|major site|site \u2014|innovation center|\(site\)|americas hq/.test(s)) return "Subsidiary/Site";
+  if(/private|mutual|venture|owned by|thoma bravo|altaris|gtcr|perceptive|asahi/.test(s)) return "Private";
+  return "\u2014";
+}
+function stageClass(s){return s==="Pre-IPO"?"stg-PreIPO":s==="Public"?"stg-Public":s==="Private"?"stg-Private":"stg-Sub";}
+function sizeOf(d){
+  const s=(d.employees||EMP[d.company]||"").replace(/,/g,"");
+  const m=s.match(/(\d{2,7})/);
+  if(!m){ if(/several thousand|thousand|site of|global/i.test((d.employees||"")+" "+d.status)) return "Enterprise"; return "\u2014"; }
+  let n=+m[1]; if(/thousand/i.test(s)) n=n*1000;
+  if(n<250) return "SMB"; if(n<=2500) return "Mid-market"; return "Enterprise";
+}
+
+const state={sec:new Set(),presence:new Set(),size:new Set(),stage:new Set(),reg:new Set(),mw:false,states:new Set(),rf:new Set(),q:"",sort:"roleFit",dir:1};
+const $=s=>document.querySelector(s);
+const SECS=["MedDevice","Tech","Financial","Pharma"], STATES=["MA","NH","RI","MN"], RFS=["High","Medium","Low"];
+const secColor={MedDevice:"var(--med)",Tech:"var(--tech)",Financial:"var(--fin)",Pharma:"var(--pharma)"};
+const secLabel={MedDevice:"MedDevice",Tech:"Tech",Financial:"Financial",Pharma:"Pharma/Biotech"};
+const INV={
+ "Anduril Industries":"Founders Fund, a16z, Thrive Capital (led Series H $5B '26), Valor Equity, Lightspeed, Fidelity, Baillie Gifford, Franklin Templeton, Altimeter, Morgan Stanley",
+ "Shield AI":"Advent International & JPMorgan Chase (led $2B Series G '26), a16z, US Innovative Technology Fund, Riot Ventures",
+ "Scale AI":"Accel, Index, Founders Fund, Tiger Global, Coatue; large Meta stake (2025) \u2014 confirm",
+ "Relativity Space":"Fidelity, BlackRock, Coatue, General Catalyst, K5, Tribe \u2014 confirm",
+ "Epirus":"8VC, T. Rowe Price, Bedrock, StepStone \u2014 confirm",
+ "Saronic Technologies":"Kleiner Perkins (led $1.75B Series D '26, ~$9.25B val), a16z, 8VC, General Catalyst \u2014 confirm",
+ "True Anomaly":"Eclipse Ventures & Riot Ventures (led $600M '26), Menlo, ACME \u2014 confirm",
+ "Ursa Major Technologies":"Explorer1, BlackRock, Space Capital, Eclipse \u2014 confirm",
+ "Sierra Space":"LuminArx Capital (led $550M '26), General Atlantic, Coatue \u2014 confirm",
+ "Second Front Systems":"a16z, Moore Strategic Ventures, Salesforce Ventures \u2014 confirm",
+ "Govini":"Founder/PE-backed (private) \u2014 confirm"
+};
+const IPOWIN={
+ "Anduril Industries":"Top near-term defense IPO candidate; '26\u2013'27 discussed, no date set",
+ "Shield AI":"Named IPO candidate (Crunchbase); no timeline announced",
+ "Scale AI":"Staying private near-term; no timeline",
+ "Relativity Space":"No timeline announced",
+ "Epirus":"No timeline announced",
+ "Saronic Technologies":"Early-stage; no near-term timeline",
+ "True Anomaly":"Named IPO candidate; no timeline",
+ "Ursa Major Technologies":"No timeline announced",
+ "Sierra Space":"Named IPO candidate; no timeline",
+ "Second Front Systems":"No timeline announced",
+ "Govini":"No timeline announced"
+};
+const METROWEST=new Set(["Boston Scientific","Hologic","GE HealthCare","Olympus Corp. of the Americas","Insulet","Definitive Healthcare","Dell Technologies","RTX (Raytheon)","Markforged","Vicarious Surgical","Biofourmis"]);
+function isMW(d){return METROWEST.has(d.company);}
+function auditHTML(d){
+  const r=regsOf(d); const active=["CMMC","PCI","FDA","ISO","SOC2","CRA"].filter(k=>r[k]);
+  if(!active.length) return "";
+  const SRC={CMMC:"Cyber AB Marketplace + DoD SPRS",PCI:"QSA Attestation of Compliance (request)",FDA:"FDA 510(k)/PMA DB + ISO 13485 QMS",ISO:"accredited registrar directory (IAF CertSearch)",SOC2:"company trust center (report under NDA)",CRA:"EU CRA self-assessment / notified body (phasing in '26\u2013'27)"};
+  return `<div class="box" style="border-color:#E6DcC2"><div class="h" style="color:var(--sec)">Audit status \u2014 required vs. evidenced</div>`+
+    `<p style="margin:0 0 8px;font-size:12.5px;color:var(--muted)">Completion status &amp; audit firm are generally <b>not public</b>. Below shows what's applicable/required and where to verify actual certification.</p>`+
+    `<ul class="rep-recs" style="font-size:12.5px">${active.map(k=>`<li><b>${k==='CRA'?'EU-CRA':k}</b>: required \u2014 verify via ${SRC[k]}</li>`).join("")}</ul>`+
+    `<div style="font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:6px">Audit firm: not publicly disclosed \u2014 request report under NDA (common firms: A-LIGN, Schellman, Coalfire, Prescient).</div></div>`;
+}
+function preipoHTML(d){
+  if(stageOf(d)!=="Pre-IPO") return "";
+  return `<div class="box" style="border-color:#D8CEF0"><div class="h" style="color:var(--tech)">Pre-IPO details</div>`+
+    `<div class="row" style="border:none;padding:4px 0"><div class="k">Investors</div><div class="v" style="font-size:13px">${INV[d.company]||"Not disclosed \u2014 confirm (Crunchbase/PitchBook)"}</div></div>`+
+    `<div class="row" style="border:none;padding:4px 0"><div class="k">Likely IPO</div><div class="v" style="font-size:13px">${IPOWIN[d.company]||"No timeline announced"}</div></div></div>`;
+}
+const EMP={"Boston Scientific":"≈54,000","Insulet":"≈3,500","Hologic":"≈7,000","Haemonetics":"≈3,000","Abiomed":"≈3,000 (J&J)","Lantheus":"≈1,000","Anika Therapeutics":"≈450","Vapotherm":"≈150","BD — Davol (site)":"≈70,000 (BD)","Ximedica (Veranex)":"≈120","Nabsys":"≈50","Medtronic":"≈95,000","Solventum (3M spin-off)":"≈22,000","Tactile Medical":"≈900","Inspire Medical":"≈1,400","Starkey Hearing":"≈5,000","Bio-Techne":"≈3,500","Surmodics":"≈750","Smiths Medical":"≈7,000 (ICU)","RTX (Raytheon)":"≈185,000","Analog Devices":"≈24,000","PTC":"≈7,000","Akamai":"≈10,000","HubSpot":"≈8,000","3M":"≈60,000","Best Buy":"≈85,000","BAE Systems Inc.":"≈35,000 (US)","Bottomline Technologies":"≈2,500","Textron":"≈35,000","Hasbro":"≈5,000","Fidelity Investments":"≈75,000","State Street":"≈50,000","Liberty Mutual":"≈45,000","MassMutual":"≈12,000","U.S. Bancorp":"≈70,000","Ameriprise Financial":"≈13,000","Thrivent":"≈3,500","Securian Financial":"≈5,000","Citizens Financial Group":"≈17,000","Amica Mutual Insurance":"≈4,000","Biogen":"≈7,000","Moderna":"≈5,000","Vertex Pharmaceuticals":"≈5,000","Takeda (US HQ)":"≈50,000 (global)","Alnylam Pharmaceuticals":"≈2,000","Sanofi US / Genzyme":"site of ≈85,000","Charles River Laboratories":"≈20,000","Ginkgo Bioworks":"≈1,000","Lonza (Portsmouth)":"site of ≈18,000","Adimab":"≈250","Amgen Rhode Island":"≈2,000 (site)","EpiVax":"≈40","Upsher-Smith Laboratories":"≈1,000"};
+function empOf(d){return d.employees||EMP[d.company]||"≈ — verify (ZoomInfo/LinkedIn)";}
+function insuranceOf(d){
+  const big=d.paysWell==="High"; const priv=/Private|Subsidiary|site|mutual/i.test(d.status); const small=/Varies/.test(d.paysWell);
+  if(d.insurance) return d.insurance;
+  if(small||/Vapotherm|Nuwellis|NeuroOne|Nabsys|EpiVax|Adimab/.test(d.company))
+    return "Likely under-insured / hard to place — controls uplift (MFA, EDR, IR plan) needed to qualify; readiness gap = clear vCISO hook";
+  if(big) return "Almost certainly carries cyber cover — controls-attestation & risk-transfer review is a board-level hook at renewal";
+  return "Probably insured — renewal-control gaps (MFA, EDR, segmentation, IR testing) = engagement hook";
+}
+const rfRank={High:0,Medium:1,Low:2};
+const payCls=p=>p==="High"?"pay-High":p==="Above-market"?"pay-Above":"pay-Market";
+const ynCls=v=>/^Yes/.test(v)?"yn-y":/^Partial|^Limited/.test(v)?"yn-p":"yn-n";
+
+$("#s-total").textContent=DATA.length;
+$("#s-med").textContent=DATA.filter(d=>d.sector==="MedDevice").length;
+$("#s-tech").textContent=DATA.filter(d=>d.sector==="Tech").length;
+$("#s-fin").textContent=DATA.filter(d=>d.sector==="Financial").length;
+$("#s-pharma").textContent=DATA.filter(d=>d.sector==="Pharma").length;
+$("#s-high").textContent=DATA.filter(d=>d.roleFit==="High").length;
+$("#s-preipo").textContent=DATA.filter(d=>stageOf(d)==="Pre-IPO").length;
+
+function chip(label,cls,host,fn){const b=document.createElement('button');b.className="chip "+cls;b.textContent=label;b.onclick=()=>{b.classList.toggle('on');fn();render();};host.appendChild(b);return b;}
+SECS.forEach(s=>chip(secLabel[s],"sec-"+s,$("#secChips"),()=>tog(state.sec,s)));
+STATES.forEach(s=>chip(s,"st-"+s,$("#stateChips"),()=>tog(state.states,s)));
+["HQ","Major site"].forEach(p=>chip(p,"pres-"+p.replace(" ","-"),$("#presChips"),()=>tog(state.presence,p)));
+["SMB","Mid-market","Enterprise"].forEach(z=>chip(z,"size-"+z.replace("-",""),$("#sizeChips"),()=>tog(state.size,z)));
+["Pre-IPO","Public","Private","Subsidiary/Site"].forEach(s=>chip(s,"stg-f",$("#stageChips"),()=>tog(state.stage,s)));
+["CMMC","PCI","FDA","ISO","SOC2","CRA"].forEach(r=>chip(r==="CRA"?"EU-CRA":r,"reg-f",$("#regChips"),()=>tog(state.reg,r)));
+if($("#mwToggle"))$("#mwToggle").onclick=function(){state.mw=!state.mw;this.classList.toggle("on");render();};
+RFS.forEach(r=>chip(r,"rf-"+r,$("#rfChips"),()=>tog(state.rf,r)));
+function tog(set,v){set.has(v)?set.delete(v):set.add(v);}
+$("#q").addEventListener('input',e=>{state.q=e.target.value.toLowerCase();render();});
+document.querySelectorAll('thead th[data-k]').forEach(th=>{th.onclick=()=>{const k=th.dataset.k;state.dir=(state.sort===k)?-state.dir:1;state.sort=k;render();};});
+
+function matches(d){
+  if(state.sec.size && !state.sec.has(d.sector))return false;
+  if(state.states.size && !state.states.has(d.state))return false;
+  if(state.rf.size && !state.rf.has(d.roleFit))return false;
+  if(state.presence.size && !state.presence.has(d.presence))return false;
+  if(state.size.size && !state.size.has(sizeOf(d)))return false;
+  if(state.stage.size && !state.stage.has(stageOf(d)))return false;
+  if(state.reg.size){const rl=regList(d);for(const r of state.reg){if(!rl.includes(r))return false;}}
+  if(state.mw && !isMW(d))return false;
+  if(state.q){const hay=(d.company+" "+d.hq+" "+d.keyProducts+" "+d.compliance+" "+d.ciso+" "+d.status+" "+d.sector).toLowerCase();if(!hay.includes(state.q))return false;}
+  return true;
+}
+function sortFn(a,b){
+  const k=state.sort;let x,y;
+  if(k==="roleFit"){x=rfRank[a.roleFit];y=rfRank[b.roleFit];}
+  else if(k==="stage"){x=stageOf(a);y=stageOf(b);}
+  else if(k==="regs"){x=regList(a).length;y=regList(b).length;}
+  else{x=(a[k]||"").toString().toLowerCase();y=(b[k]||"").toString().toLowerCase();}
+  return x<y?-state.dir:x>y?state.dir:0;
+}
+function render(){
+  const list=DATA.filter(matches).sort(sortFn);
+  const tb=$("#rows");tb.innerHTML="";
+  list.forEach(d=>{
+    const tr=document.createElement('tr');tr.onclick=()=>openModal(d.company);
+    const cisoND=d.ciso===ND||/CONFIRM/.test(d.ciso);
+    tr.innerHTML=`
+      <td><div class="cname"><span class="bar" style="background:${secColor[d.sector]}"></span>${d.company}</div><div class="sub">${d.ticker} ${d.presence==='Major site'?'· site':''}${isMW(d)?' · <span style="color:var(--med)">MetroWest</span>':''}</div></td>
+      <td><span class="pill sec-${d.sector}">${secLabel[d.sector]}</span></td>
+      <td>${d.state}<div class="sub">${d.hq.split('(')[0].trim()}</div></td>
+      <td><span class="stg ${stageClass(stageOf(d))}">${stageOf(d)}</span></td>
+      <td class="num">${empOf(d)}<div class="sub">${sizeOf(d)}</div></td>
+      <td>${regList(d).map(r=>`<span class="flag fl-${r}">${r==='CRA'?'EU-CRA':r}</span>`).join('')||'<span class="sub">—</span>'}</td>
+      <td class="leader ${cisoND?'nd':''}">${d.ciso.split('(')[0].split('—')[0].trim()||'—'}${/verified/.test(d.ciso)?' ✓':''}</td>
+      <td><span class="pill rf-${d.roleFit}">${d.roleFit}</span></td>`;
+    tb.appendChild(tr);
+  });
+  $("#shown").textContent=list.length;
+  $("#empty").style.display=list.length?"none":"block";
+}
+function rr(k,v,nd){return `<div class="row"><div class="k">${k}</div><div class="v ${nd?'nd':''}">${v||'—'}</div></div>`;}
+function openModal(name){
+  const d=DATA.find(x=>x.company===name);if(!d)return;
+  const nd=s=>s===ND||/CONFIRM/.test(s)||!s;
+  $("#modal").innerHTML=`
+    <button class="close" onclick="closeModal()">×</button>
+    <h2>${d.company}</h2>
+    <div class="badges">
+      <span class="pill sec-${d.sector}">${secLabel[d.sector]}</span>
+      <span class="pill" style="color:${secColor[d.sector]};background:#F4F6FA">${d.state} · ${d.hq.split('(')[0].trim()}</span>
+      <span class="pill rf-${d.roleFit}">Role fit: ${d.roleFit}</span>
+      ${d.cisaCount>0?`<span class="pill" style="color:var(--fin);background:var(--fin-bg)">${d.cisaCount} CISA advisories</span>`:''}
+    </div>
+    <div class="grid2">
+      <div>${rr("Stage",stageOf(d))}${rr("Presence",(d.presence==="Major site"?"Major site (HQ elsewhere)":"In-state HQ")+(isMW(d)?" · MetroWest MA":""))}${rr("Status",d.status)}${rr("Employees (≈)",empOf(d)+"  ·  "+sizeOf(d))}${rr("Revenue",d.revStr)}${rr("Pays well",d.paysWell)}${rr("Manufacturing",d.mfg)}${rr("IT / OT",d.itot)}</div>
+      <div>${rr("CIO",d.cio,nd(d.cio))}${rr("CTO",d.cto,nd(d.cto))}${rr("CISO",d.ciso,nd(d.ciso))}${rr("Culture (Glassdoor)",d.glassdoor)}${rr("Contact",d.contact)}</div>
+    </div>
+    ${rr("Key products / business",d.keyProducts)}
+    <div class="box" style="border-color:#D9E2F0"><div class="h" style="color:var(--tech)">Cyber-insurance signal (heuristic)</div><p style="margin:0">${insuranceOf(d)}</p></div>
+    <div class="box comp"><div class="h">Regulations flagged</div><div style="margin-bottom:10px">${["CMMC","PCI","FDA","ISO","SOC2","CRA"].map(r=>`<span class="flag fl-${r}" style="${regsOf(d)[r]?'':'opacity:.22'}">${r==='CRA'?'EU-CRA':r}</span>`).join('')}</div><p style="margin:0;font-size:12.5px;color:var(--muted)">${d.compliance}</p></div>
+    ${preipoHTML(d)}
+    ${auditHTML(d)}
+    <div class="box role"><div class="h">Role fit for your practice — ${d.roleFit}</div><p>${d.roleRationale}</p></div>
+    <div class="box sec"><div class="h">Security-incident signals</div>
+      <p><b>CISA:</b> ${d.cisaNote}</p>
+      <p><b>HHS / FBI:</b> ${d.hhsNote}. <span style="color:var(--faint)">CISA medical advisories are coordinated disclosures, not PHI breaches.</span></p></div>
+    <div class="src">Source: ${d.src}</div>`;
+  $("#scrim").classList.add('open');
+}
+function closeModal(){$("#scrim").classList.remove('open');}
+$("#scrim").addEventListener('click',e=>{if(e.target.id==='scrim')closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+function dl(name,text,type){const b=new Blob([text],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();URL.revokeObjectURL(a.href);}
+$("#json").onclick=()=>dl("target_intel.json",JSON.stringify(DATA.filter(matches),null,2),"application/json");
+$("#csv").onclick=()=>{
+  DATA.forEach(d=>{d.stage=stageOf(d);d.regulations=regList(d).join("|");});
+  const cols=["company","sector","state","stage","presence","size","regulations","hq","status","employees","revStr","paysWell","mfg","itot","keyProducts","cio","cto","ciso","compliance","glassdoor","insurance","contact","investors","ipoWindow","metrowest","cisaNote","hhsNote","roleFit","roleRationale","src"];
+  DATA.forEach(d=>{if(!d.employees)d.employees=empOf(d);if(!d.insurance)d.insurance=insuranceOf(d);d.size=sizeOf(d);d.investors=INV[d.company]||"";d.ipoWindow=stageOf(d)==="Pre-IPO"?(IPOWIN[d.company]||"No timeline"):"";d.metrowest=isMW(d)?"Yes":"No";});
+  const esc=s=>`"${(s==null?"":s).toString().replace(/"/g,'""')}"`;
+  const rows=[cols.join(",")].concat(DATA.filter(matches).map(d=>cols.map(c=>esc(d[c])).join(",")));
+  dl("target_intel.csv",rows.join("\n"),"text/csv");
+};
+
+/* ================= UPDATE AGENT (Ollama-backed, rule-based fallback) ================= */
+const OLLAMA_URL="http://localhost:11434", OLLAMA_MODEL="llama3.1:8b";
+let ollamaLive=false;
+async function checkOllama(){
+  const b=$("#ollamaBadge"),t=$("#ollamaTxt");
+  try{const r=await fetch(OLLAMA_URL+"/api/tags");if(r&&r.ok){ollamaLive=true;b.classList.add("live");t.textContent="Ollama live";}else throw 0;}
+  catch(e){ollamaLive=false;b.classList.remove("live");t.textContent="Ollama offline \u00b7 rule-based";}
+}
+if($("#ollamaBadge")){$("#ollamaBadge").onclick=checkOllama;checkOllama();}
+
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+function audit(){
+  const confirmLead=DATA.filter(d=>[d.cio,d.cto,d.ciso].some(x=>/confirm/i.test(x||"")));
+  const approx=DATA.filter(d=>/\u2248|verify|est\b/i.test((d.revStr||"")+" "+(d.employees||"")));
+  const preipo=DATA.filter(d=>stageOf(d)==="Pre-IPO");
+  const gdUnver=DATA.filter(d=>!/verified|reviews/i.test(d.glassdoor||""));
+  return {confirmLead,approx,preipo,gdUnver};
+}
+function names(arr,n){return arr.slice(0,n).map(d=>d.company).join(", ")+(arr.length>n?` +${arr.length-n} more`:"");}
+function tline(stage,msg){const t=$("#agentTrace");const d=document.createElement('div');d.className='tl';
+  d.innerHTML=`<span class="ts">${new Date().toLocaleTimeString('en-US',{hour12:false})}</span><span class="st ${stage}">${stage.toUpperCase()}</span><span>${msg}</span>`;
+  t.appendChild(d);t.scrollTop=t.scrollHeight;}
+
+function rulePlan(a){
+  return [
+    a.preipo.length?`<b>Re-verify IPO status</b> for ${a.preipo.length} pre-IPO companies (most time-sensitive): ${names(a.preipo,5)}.`:null,
+    a.confirmLead.length?`<b>Confirm CIO/CTO/CISO</b> for ${a.confirmLead.length} companies via LinkedIn/Sales Navigator: ${names(a.confirmLead,5)}.`:null,
+    a.approx.length?`<b>Refresh financials</b> (revenue/headcount) for ${a.approx.length} companies from latest 10-K / ZoomInfo: ${names(a.approx,5)}.`:null,
+    a.gdUnver.length?`<b>Pull Glassdoor ratings</b> for ${a.gdUnver.length} companies lacking a verified score.`:null,
+    `<b>Import fresh data</b> to fill gaps \u2014 use \u201cImport data\u2026\u201d with a registry / Crunchbase / Forge / ZoomInfo CSV or JSON (matched by company name).`
+  ].filter(Boolean);
+}
+async function ollamaPlan(a){
+  const summary={total:DATA.length,pre_ipo:a.preipo.map(d=>d.company),leadership_to_confirm:a.confirmLead.length,approx_figures:a.approx.length,glassdoor_unverified:a.gdUnver.length};
+  const prompt="You are a data-ops agent maintaining a prospecting database for a vCISO. Given this weekly audit JSON, output a SHORT prioritized update plan as 4-6 bullet lines (plain text, no markdown headers). Most time-sensitive first. Audit: "+JSON.stringify(summary);
+  const r=await fetch(OLLAMA_URL+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:OLLAMA_MODEL,prompt,stream:false,options:{temperature:0.3}})});
+  if(!r.ok) throw new Error("ollama http "+r.status);
+  const data=await r.json();
+  return data.response.split(/\n+/).map(s=>s.replace(/^[-*\d.\s]+/,"").trim()).filter(s=>s.length>4);
+}
+function renderReport(a,recs){
+  const cards=[["Pre-IPO to re-verify",a.preipo.length],["Leadership to confirm",a.confirmLead.length],["Approx. figures",a.approx.length],["Glassdoor unverified",a.gdUnver.length]];
+  $("#agentReport").innerHTML=
+    `<div class="rep-grid">${cards.map(c=>`<div class="rep-card"><div class="n">${c[1]}</div><div class="l">${c[0]}</div></div>`).join("")}</div>`+
+    `<div style="font-family:var(--mono);font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">Recommended update plan ${ollamaLive?"\u00b7 via Ollama":"\u00b7 rule-based"}</div>`+
+    `<ul class="rep-recs">${recs.map(r=>`<li>${r}</li>`).join("")}</ul>`+
+    `<div style="font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:10px">Note: this is a static file \u2014 the agent re-derives fields, audits staleness, and (with Ollama) reasons about updates. Live values arrive via Import or a scheduled server-side run (see weekly-update.yml).</div>`;
+}
+async function runUpdateAgent(auto){
+  const btn=$("#runAgentBtn"); if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span> running\u2026';}
+  $("#agentBody").style.display="block"; $("#agentTrace").innerHTML=""; $("#agentReport").innerHTML="";
+  const step=(s,m,delay)=>new Promise(r=>setTimeout(()=>{tline(s,m);r();},delay));
+  await step("perceive",`Scanning ${DATA.length} records across ${SECS.length} sectors, ${[...new Set(DATA.map(d=>d.state))].length} states\u2026`,250);
+  const a=audit();
+  await step("perceive",`${a.confirmLead.length} leadership fields to confirm \u00b7 ${a.approx.length} approximate figures \u00b7 ${a.preipo.length} pre-IPO to re-verify \u00b7 ${a.gdUnver.length} Glassdoor gaps.`,400);
+  await step("reason","Prioritizing by volatility: IPO status > leadership > financials > culture ratings.",400);
+  DATA.forEach(d=>{d.stage=stageOf(d);d.size=sizeOf(d);d.regulations=regList(d).join("|");if(!d.insurance)d.insurance=insuranceOf(d);});
+  await step("act","Re-derived stage, size, regulation flags & insurance signals for all records.",400);
+  let recs;
+  if(ollamaLive){ tline("act","Querying local llama3.1:8b for a prioritized weekly plan\u2026");
+    try{recs=await ollamaPlan(a);tline("verify","LLM plan received & validated.");}
+    catch(e){recs=rulePlan(a);tline("verify","LLM call failed \u2192 rule-based plan. ("+(e.message||e)+")");}
+  } else { recs=rulePlan(a); await step("verify","Composed rule-based update plan (Ollama offline).",350); }
+  render();
+  lsSet("bitsense_lastRun",new Date().toISOString());
+  tline("done",`Update complete${auto?" (scheduled weekly run)":""}. ${DATA.length} records refreshed & re-rendered.`);
+  renderReport(a,recs); updateRunMeta();
+  if(btn){btn.disabled=false;btn.textContent="Run update now";}
+}
+function updateRunMeta(){
+  const last=lsGet("bitsense_lastRun"), wk=lsGet("bitsense_weekly")==="1";
+  if($("#weeklyToggle"))$("#weeklyToggle").checked=wk;
+  let s="Never run";
+  if(last){const ld=new Date(last);s="Last run: "+ld.toLocaleDateString();
+    if(wk){const nx=new Date(ld.getTime()+7*864e5);s+=" \u00b7 next \u2248 "+nx.toLocaleDateString();}}
+  if($("#runMeta"))$("#runMeta").textContent=s;
+}
+if($("#weeklyToggle"))$("#weeklyToggle").onchange=function(){lsSet("bitsense_weekly",this.checked?"1":"0");updateRunMeta();};
+if($("#runAgentBtn"))$("#runAgentBtn").onclick=()=>runUpdateAgent(false);
+
+/* import / merge real data by company name */
+function splitCsv(line){const out=[];let cur="",q=false;for(let i=0;i<line.length;i++){const ch=line[i];
+  if(ch==='"'){if(q&&line[i+1]==='"'){cur+='"';i++;}else q=!q;}else if(ch===','&&!q){out.push(cur);cur="";}else cur+=ch;}out.push(cur);return out;}
+function csvToObjs(txt){const ln=txt.split(/\r?\n/).filter(x=>x.length);const hdr=splitCsv(ln[0]);
+  return ln.slice(1).map(l=>{const c=splitCsv(l);const o={};hdr.forEach((hh,i)=>o[hh.trim()]=c[i]);return o;});}
+if($("#importBtn"))$("#importBtn").onclick=()=>$("#importFile").click();
+if($("#importFile"))$("#importFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{let arr=f.name.toLowerCase().endsWith(".json")?JSON.parse(rd.result):csvToObjs(rd.result);
+    if(!Array.isArray(arr))arr=[arr];let upd=0,add=0;
+    arr.forEach(r=>{const nm=r.company||r.Company;if(!nm)return;const d=DATA.find(x=>x.company===nm);
+      if(d){Object.keys(r).forEach(k=>{if(r[k]!=null&&r[k]!=="")d[k]=r[k];});upd++;}
+      else{DATA.push(rec(Object.assign({company:nm,sector:r.sector||"Tech",state:r.state||"\u2014",hq:r.hq||"\u2014",status:r.status||"\u2014",ceo:r.ceo||"\u2014",ticker:r.ticker||"\u2014",paysWell:r.paysWell||"Market/Varies",mfg:r.mfg||"\u2014",itot:r.itot||"\u2014",keyProducts:r.keyProducts||"\u2014",compliance:r.compliance||"",roleFit:r.roleFit||"Medium",roleRationale:r.roleRationale||"Imported \u2014 review.",src:r.src||"Imported"},r)));add++;}});
+    render();$("#s-total").textContent=DATA.length;
+    alert(`Import complete \u2014 updated ${upd}, added ${add} (matched by company name).`);
+  }catch(err){alert("Import failed: "+err.message);}};
+  rd.readAsText(f);};
+
+/* weekly auto-run on load if due */
+(function(){updateRunMeta();const wk=lsGet("bitsense_weekly")==="1",last=lsGet("bitsense_lastRun");
+  if(wk&&(!last||Date.now()-new Date(last).getTime()>7*864e5)){setTimeout(()=>runUpdateAgent(true),1200);}})();
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+# .github/workflows/weekly-update.yml
+# Weekly server-side refresh for the BitSense Target Intelligence sheet.
+#
+# The in-page "Update Agent" re-derives fields, audits staleness, and (with a
+# local Ollama) reasons about what to refresh — but a static GitHub Pages file
+# can't fetch live data on its own. This workflow is the server-side half:
+# run a refresh script weekly, regenerate the embedded data, and commit it so
+# the published page is always current.
+#
+# To make it do real work, drop a refresh script at scripts/refresh.(py|js)
+# that pulls from your chosen source (FDA establishment registry, Crunchbase /
+# PitchBook export, ZoomInfo/Apollo API, Forge export, etc.), writes an updated
+# data file, and rebuilds index.html. Wire secrets in repo Settings → Secrets.
+
+name: Weekly Target-Intel Refresh
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"   # every Monday 12:00 UTC
+  workflow_dispatch: {}     # manual "Run update now" from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # - name: Install deps
+      #   run: pip install requests pandas
+
+      - name: Run refresh script (pulls from your data source, rebuilds index.html)
+        # Provide scripts/refresh.py to enable. It should read your source(s),
+        # update the embedded DATA array, and write index.html.
+        run: |
+          if [ -f scripts/refresh.py ]; then
+            python scripts/refresh.py
+          else
+            echo "No scripts/refresh.py yet — skipping data pull."
+            echo "Add one to enable live weekly refresh."
+          fi
+        env:
+          # Example secrets — add the ones your source needs:
+          CRUNCHBASE_API_KEY: ${{ secrets.CRUNCHBASE_API_KEY }}
+          ZOOMINFO_TOKEN: ${{ secrets.ZOOMINFO_TOKEN }}
+
+      - name: Commit refreshed sheet
+        run: |
+          git config user.name  "bitsense-bot"
+          git config user.email "bot@users.noreply.github.com"
+          if ! git diff --quiet -- index.html; then
+            git add index.html
+            git commit -m "chore: weekly target-intel refresh ($(date -u +%Y-%m-%d))"
+            git push
+          else
+            echo "No changes to commit."
+          fi
