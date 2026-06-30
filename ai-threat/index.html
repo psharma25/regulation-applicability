@@ -13,7 +13,52 @@
     --crit:#e23d2e; --high:#d97316; --med:#b5870f; --low:#3a63ad;
     --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
     --sans:"Inter","Helvetica Neue",system-ui,-apple-system,sans-serif;
+    --card-pad:15px 16px 14px; --main-pad:22px 28px 60px; --gap:13px;
+    --card-min:310px; --fs:14px; --h4:14.5px; --cardp:12.5px; --aside-pad:20px 18px;
   }
+  /* ---- Dark (black background) theme ---- */
+  [data-theme="dark"]{
+    --ink:#0c0e13; --panel:#15181f; --panel-2:#1b1f28; --line:#2a2f3a;
+    --text:#e8ebf1; --muted:#9aa2b2; --dim:#6b7385;
+    --accent:#2dd4bf; --accent-dim:#155e57;
+  }
+  [data-theme="dark"] header{background:linear-gradient(180deg,#15181f,#0c0e13)}
+  [data-theme="dark"] aside{background:#10131a}
+  [data-theme="dark"] .analyst{background:radial-gradient(120% 140% at 0% 0%,#10211f,#15181f 60%)}
+  [data-theme="dark"] .ask textarea{background:#0c0e13}
+  [data-theme="dark"] .reality .seg{background:#2a2f3a}
+  [data-theme="dark"] .b-Critical{background:rgba(226,61,46,.22)}
+  [data-theme="dark"] .b-High{background:rgba(217,115,22,.22)}
+  [data-theme="dark"] .b-Medium{background:rgba(181,135,15,.22)}
+  [data-theme="dark"] .b-Low{background:rgba(58,99,173,.28)}
+  /* ---- Black & White (monochrome) theme ---- */
+  [data-theme="bw"]{
+    --ink:#ffffff; --panel:#ffffff; --panel-2:#ffffff; --line:#000000;
+    --text:#000000; --muted:#333333; --dim:#666666;
+    --accent:#000000; --accent-dim:#000000;
+    --realized:#000000; --demonstrated:#000000; --feasible:#000000;
+    --crit:#000000; --high:#000000; --med:#000000; --low:#000000;
+  }
+  [data-theme="bw"] header{background:#ffffff}
+  [data-theme="bw"] aside{background:#ffffff}
+  [data-theme="bw"] .analyst{background:#ffffff}
+  [data-theme="bw"] .ask textarea{background:#ffffff}
+  [data-theme="bw"] .ask button{background:#000000;color:#ffffff}
+  [data-theme="bw"] .reality .seg{background:#cfcfcf}
+  [data-theme="bw"] .reality .seg.f,[data-theme="bw"] .reality .seg.d,[data-theme="bw"] .reality .seg.r{background:#000000}
+  [data-theme="bw"] .sevbadge{background:#ffffff !important;color:#000000 !important;border:1px solid #000000}
+  [data-theme="bw"] a,[data-theme="bw"] .ref,[data-theme="bw"] .card-id,[data-theme="bw"] .src,[data-theme="bw"] .dr-id{color:#000000 !important}
+  /* ---- Compact density ---- */
+  [data-density="compact"]{
+    --card-pad:9px 11px 8px; --main-pad:14px 18px 40px; --gap:8px;
+    --card-min:240px; --fs:13px; --h4:13px; --cardp:11.5px; --aside-pad:13px 13px;
+  }
+  [data-density="compact"] header{padding:8px 18px}
+  [data-density="compact"] .stat .n{font-size:21px}
+  [data-density="compact"] .card{gap:6px}
+  [data-density="compact"] .card p{-webkit-line-clamp:2}
+  [data-density="compact"] .rail-h{margin:11px 0 5px}
+  body{font-size:var(--fs)}
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
   body{background:var(--ink);color:var(--text);font-family:var(--sans);
@@ -35,8 +80,8 @@
   .pill.btn{cursor:pointer}.pill.btn:hover{color:var(--text);border-color:var(--muted)}
   .pill.busy{color:var(--demonstrated);border-color:var(--demonstrated)}
 
-  .wrap{display:grid;grid-template-columns:236px 1fr;gap:0;min-height:calc(100% - 67px)}
-  aside{border-right:1px solid var(--line);padding:20px 18px;background:#fafbfd;
+  .wrap{display:grid;grid-template-columns:var(--aside-w,236px) 1fr;gap:0;min-height:calc(100% - 67px)}
+  aside{border-right:1px solid var(--line);padding:var(--aside-pad);background:#fafbfd;
     position:sticky;top:0;align-self:start;height:calc(100vh - 67px);overflow:auto}
   .rail-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;
     text-transform:uppercase;color:var(--dim);margin:18px 0 8px}
@@ -51,11 +96,14 @@
     border:1px dashed var(--line);border-radius:7px;padding:8px;font-size:12px}
   .reset:hover{color:var(--text);border-color:var(--muted)}
 
-  main{padding:22px 28px 60px;min-width:0}
-  .analyst{border:1px solid var(--line);border-radius:12px;background:
-    radial-gradient(120% 140% at 0% 0%,#f0fbfa,#f5f7fa 60%);padding:18px 20px;margin-bottom:22px}
-  .analyst-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-  .analyst-top h2{margin:0;font-size:15px;letter-spacing:-0.01em}
+  main{padding:var(--main-pad);min-width:0}
+  .analyst{border:1px solid var(--line);border-radius:8px;background:
+    radial-gradient(120% 140% at 0% 0%,#f0fbfa,#f5f7fa 60%);padding:3px 8px;margin-bottom:8px}
+  .analyst-top{display:flex;align-items:center;gap:6px;margin-bottom:0}
+  .analyst.collapsed .analyst-top{margin-bottom:0}
+  .analyst:not(.collapsed) .analyst-top{margin-bottom:5px}
+  .analyst-top h2{margin:0;font-size:10.5px;letter-spacing:-0.01em;font-weight:700}
+  .analyst-body{max-height:130px;overflow:auto}
   .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
   .analyst-sub{color:var(--muted);font-size:12px;margin-left:auto;font-family:var(--mono)}
   .ask{display:flex;gap:10px}
@@ -85,20 +133,63 @@
   .mit{font-size:12.5px;color:var(--text);padding:5px 0;border-bottom:1px solid var(--line)}
   .mit .id{font-family:var(--mono);color:var(--demonstrated);font-size:11px;margin-right:8px}
 
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
-  .stat{border:1px solid var(--line);border-radius:11px;background:var(--panel);padding:14px 16px}
-  .stat .n{font-size:26px;font-weight:800;letter-spacing:-0.03em;font-family:var(--mono)}
-  .stat .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+  .stats{display:flex;flex-direction:column;gap:3px;margin-bottom:14px}
+  /* ---- live source tracker (compact) ---- */
+  .tracker{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:6px 10px;margin-bottom:10px;display:none}
+  .tracker.shown{display:block}
+  .tk-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .tk-head .dot{width:6px;height:6px}
+  .tk-head h3{margin:0;font-size:11.5px;letter-spacing:.02em;font-weight:700}
+  .tk-sub{font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .tk-ctrls{margin-left:auto;display:flex;gap:6px;align-items:center}
+  .tk-ctrls select{width:auto;padding:3px 6px;font-size:10.5px}
+  .tk-ctrls button{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-weight:700;font-size:11px}
+  .tk-ctrls button:disabled{opacity:.5;cursor:wait}
+  [data-theme="bw"] .tk-ctrls button{background:#000}
+  .tk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:5px;margin-top:9px}
+  .tk-row{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:6px;padding:4px 7px;font-size:11px;background:var(--ink)}
+  .tk-row .sw{width:7px;height:7px;border-radius:2px;flex:none}
+  .tk-row .tk-nm{flex:1;min-width:0}
+  .tk-row .tk-nm b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tk-row .tk-nm span{font-size:9px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .tk-row .tk-st{font-family:var(--mono);font-size:8.5px;padding:1px 5px;border-radius:4px;white-space:nowrap}
+  .tk-st.ok{color:#0a7f5f;background:rgba(15,181,166,.14)}
+  .tk-st.live{color:#0a7f5f;background:rgba(15,181,166,.2);font-weight:700}
+  .tk-st.embedded{color:var(--muted);background:var(--panel);border:1px solid var(--line)}
+  .tk-st.blocked{color:#b5870f;background:rgba(181,135,15,.14)}
+  .tk-st.err{color:#c92a2a;background:rgba(201,42,42,.12)}
+  .tk-go{color:var(--dim);text-decoration:none;font-size:11px}.tk-go:hover{color:var(--accent)}
+  .tk-cat{grid-column:1/-1;font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:2px 0 0}
+  .tk-log{margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--muted);max-height:96px;overflow:auto;
+    border-top:1px solid var(--line);padding-top:6px;display:none}
+  .tk-log.show{display:block}
+  .tk-log div{padding:1px 0}
+  /* ---- analyst collapse ---- */
+  .an-chev{transition:transform .18s;font-size:11px;color:var(--dim);cursor:pointer}
+  .analyst.collapsed .an-chev{transform:rotate(-90deg)}
+  .analyst.collapsed .analyst-body{display:none}
+  .analyst-top{cursor:pointer}
+  .stat{display:flex;align-items:baseline;gap:6px;border:none;border-radius:0;background:transparent;padding:1px 0;flex-wrap:wrap}
+  .stat .n{font-size:13px;font-weight:800;letter-spacing:-0.02em;font-family:var(--mono);min-width:34px}
+  .stat .l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:0}
   .stat.realworld .n{color:var(--realized)}.stat.crit .n{color:var(--high)}
-  .stat .bar{display:flex;height:5px;border-radius:3px;overflow:hidden;margin-top:11px;gap:1px}
+  .stat .bar{display:flex;height:4px;border-radius:2px;overflow:hidden;margin-top:3px;gap:1px;flex:1 0 100%;width:100%}
   .stat .bar i{display:block}
 
-  .grid-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+  .grid-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .grid-head h3{align-self:baseline}
+  #analystOpen{margin-left:auto}
+  .analyst-fab{align-self:center}
+  .popout{margin-left:8px;background:transparent;border:1px solid var(--line);border-radius:7px;
+    padding:4px 10px;font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+  .popout:hover{border-color:var(--muted);color:var(--text)}
+  .gridwrap.maxed{position:fixed;inset:0;z-index:55;background:var(--ink);padding:18px 24px;overflow:auto}
+  .gridwrap.maxed .grid-head{position:sticky;top:0;background:var(--ink);padding:6px 0;z-index:2}
   .grid-head h3{margin:0;font-size:14px}.grid-head .count{font-family:var(--mono);font-size:12px;color:var(--muted)}
   .sortsel{margin-left:auto}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--card-min),1fr));gap:var(--gap)}
   .card{border:1px solid var(--line);border-radius:11px;background:var(--panel);
-    padding:15px 16px 14px;cursor:pointer;transition:border-color .15s,transform .15s;
+    padding:var(--card-pad);cursor:pointer;transition:border-color .15s,transform .15s;
     display:flex;flex-direction:column;gap:9px;animation:fade .35s ease both}
   .card:hover{border-color:var(--muted);transform:translateY(-2px)}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
@@ -106,8 +197,8 @@
   .card-id{font-family:var(--mono);font-size:11px;color:var(--dim)}
   .src{font-family:var(--mono);font-size:10px;color:var(--muted);
     border:1px solid var(--line);border-radius:5px;padding:1px 6px;margin-left:auto}
-  .card h4{margin:0;font-size:14.5px;line-height:1.3;letter-spacing:-0.01em}
-  .card p{margin:0;font-size:12.5px;color:var(--muted);
+  .card h4{margin:0;font-size:var(--h4);line-height:1.3;letter-spacing:-0.01em}
+  .card p{margin:0;font-size:var(--cardp);color:var(--muted);
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .card-foot{display:flex;align-items:center;gap:10px;margin-top:auto;padding-top:4px}
   .sevbadge{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px}
@@ -116,6 +207,62 @@
   .b-Medium{background:rgba(244,207,82,.13);color:var(--med)}
   .b-Low{background:rgba(93,131,196,.15);color:var(--low)}
   .scoretxt{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  /* ---- compact table (one line per threat) ---- */
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .tbl thead th{position:sticky;top:0;background:var(--panel);text-align:left;font-family:var(--mono);
+    font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:600;
+    padding:7px 9px;border-bottom:1px solid var(--line);z-index:1;cursor:pointer;user-select:none;white-space:nowrap}
+  .tbl thead th:hover{color:var(--text)}
+  .tbl tbody tr{border-bottom:1px solid var(--line);cursor:pointer}
+  .tbl tbody tr:hover{background:var(--panel)}
+  .tbl td{padding:6px 9px;vertical-align:middle}
+  .tbl .c-sev{width:40px;text-align:center}
+  .tbl .c-sev .sevbadge{padding:1px 6px;font-size:11px}
+  .tbl .c-id{color:var(--accent);font-size:11px;white-space:nowrap}
+  .tbl .c-name{font-weight:500;color:var(--text);min-width:200px}
+  .tbl .c-date{white-space:nowrap;color:var(--muted);font-size:11px}
+  .tbl .c-actor,.tbl .c-org{color:var(--muted);max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card-org{font-size:11.5px;color:var(--muted);margin:2px 0 8px}
+  .card-org .k{color:var(--accent);font-weight:600;margin-right:5px;text-transform:uppercase;letter-spacing:.04em;font-size:10px}
+  .tbl .c-fin{white-space:nowrap;color:var(--text);font-family:var(--mono);font-size:11px}
+  .tbl .c-cvss{width:52px;text-align:center}
+  .cvss-badge{font-family:var(--mono);font-size:11px;font-weight:700;padding:1px 6px;border-radius:6px}
+  .cvss-na{color:var(--dim)}
+  .tbl .c-type{white-space:nowrap;color:var(--muted)}
+  [data-theme="bw"] .tbl .c-id{color:#000}
+  @media(max-width:900px){.tbl .c-actor,.tbl .c-org,.tbl .c-type{display:none}}
+
+  /* ---- ultra-compact single thin-line table ---- */
+  .tbl.line{font-size:11.5px}
+  .tbl.line thead th{padding:3px 8px;font-size:9px}
+  .tbl.line td{padding:1px 8px;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tbl.line tbody tr{border-bottom:1px solid var(--line)}
+  .tbl.line .c-name{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+  .tbl.line .c-sev .sevbadge{padding:0 5px;font-size:10px}
+  .tbl.line .c-cvss{display:none}
+
+  /* ---- Threat Analyst: small launcher button ---- */
+  .analyst-fab{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);
+    background:var(--accent);color:#fff;border-radius:999px;padding:5px 13px;font-size:12px;
+    font-weight:700;cursor:pointer;letter-spacing:-0.01em}
+  .analyst-fab:hover{filter:brightness(1.05)}
+  .analyst-fab .dot{width:7px;height:7px;border-radius:50%;background:#fff;opacity:.9}
+  [data-theme="bw"] .analyst-fab{background:#000;color:#fff}
+
+  /* ---- Threat Analyst: popable window (modal overlay) ---- */
+  .analyst-pop{position:fixed;inset:0;z-index:60;display:none}
+  .analyst-pop.open{display:block}
+  .analyst-pop .ap-scrim{position:absolute;inset:0;background:rgba(12,14,19,.42)}
+  .analyst-pop .ap-win{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:min(680px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 18px 60px rgba(12,14,19,.32);padding:16px 18px 18px}
+  [data-theme="dark"] .analyst-pop .ap-win{background:#15181f}
+  .analyst-pop .ap-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .analyst-pop .ap-head h2{margin:0;font-size:14px;font-weight:700;letter-spacing:-0.01em}
+  .analyst-pop .ap-close{margin-left:auto;background:transparent;border:1px solid var(--line);
+    border-radius:7px;width:26px;height:26px;font-size:14px;cursor:pointer;color:var(--muted)}
+  .analyst-pop .ap-close:hover{color:var(--text)}
 
   .reality{margin-left:auto;display:flex;align-items:center;gap:6px}
   .reality .segs{display:flex;gap:2px}
@@ -131,7 +278,7 @@
   .scrim{position:fixed;inset:0;background:rgba(20,26,40,.35);opacity:0;pointer-events:none;
     transition:opacity .2s;z-index:40}
   .scrim.show{opacity:1;pointer-events:auto}
-  .drawer{position:fixed;top:0;right:0;height:100%;width:min(560px,94vw);background:var(--panel-2);
+  .drawer{position:fixed;top:0;right:0;height:100%;width:var(--drawer-w,560px);max-width:96vw;background:var(--panel-2);
     border-left:1px solid var(--line);z-index:50;transform:translateX(100%);
     transition:transform .25s ease;overflow:auto;padding:24px 26px 60px}
   .drawer.show{transform:none}
@@ -142,6 +289,31 @@
   .dr-badges{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
   .dr-sec{margin-top:20px}.dr-sec .rail-h{margin:0 0 8px}
   .dr-desc{font-size:14px;line-height:1.65;color:#2a3142;white-space:pre-wrap}
+  .pipe{width:100%;height:auto;margin-top:4px}
+  .oll-fallback{margin-top:10px;font-size:12px;color:var(--high);background:rgba(217,115,22,.1);
+    border:1px solid rgba(217,115,22,.3);border-radius:7px;padding:8px 10px}
+  /* ---- engine / ollama controls ---- */
+  .engine-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0 2px;font-size:12.5px}
+  .eng-lbl{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--dim);display:flex;align-items:center;gap:6px}
+  .engine-row select{width:auto;padding:4px 8px;font-size:12px}
+  .ollama-cfg{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .ollama-cfg input{width:160px;padding:4px 8px;font-size:12px;font-family:var(--mono)}
+  .ollama-cfg input:last-of-type{width:110px}
+  .mini{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:4px 11px;font-size:12px;font-weight:700}
+  [data-theme="bw"] .mini{background:#000}
+  .oll-st{font-size:11px;color:var(--muted);font-family:var(--mono)}
+  .oll-st.ok{color:#0a7f5f}.oll-st.err{color:#c92a2a}
+  .pipe-legend{font-size:11px;color:var(--dim);margin-top:6px;line-height:1.4}
+  .intel{display:flex;flex-direction:column;gap:1px}
+  .intel-row{display:grid;grid-template-columns:130px 1fr;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .intel-row .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding-top:2px}
+  .intel-row .v{color:var(--text)}
+  .intel-row .v.mono{font-family:var(--mono);font-size:11.5px;word-break:break-word}
+  .fin-tag{font-family:var(--mono);font-size:9.5px;padding:1px 6px;border-radius:5px;margin-left:4px;vertical-align:1px}
+  .fin-tag.doc{background:rgba(15,181,166,.16);color:#0a7f5f}
+  .fin-tag.mod{background:var(--panel);color:var(--muted);border:1px solid var(--line)}
+  .muted-note{font-size:11px;color:var(--dim)}
+  [data-theme="dark"] .dr-desc{color:var(--text)}
   .tag{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);
     border-radius:6px;padding:3px 8px;background:var(--panel)}
   .tags{display:flex;gap:6px;flex-wrap:wrap}
@@ -161,6 +333,81 @@
     border:1px solid var(--line);border-radius:8px;padding:10px 16px;font-size:13px;z-index:60;
     opacity:0;transition:opacity .2s;pointer-events:none}
   .toast.show{opacity:1}
+  /* ---- resizable frames ---- */
+  .aside-grip{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:6}
+  .aside-grip:hover{background:linear-gradient(90deg,transparent,var(--accent-dim))}
+  .drawer-grip{position:absolute;top:0;left:0;width:7px;height:100%;cursor:col-resize;z-index:6}
+  .drawer-grip:hover{background:linear-gradient(90deg,var(--accent-dim),transparent)}
+  /* ---- collapsible left-rail dropdown groups ---- */
+  .rail-grp{border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:2px}
+  .rail-grp .grp-tog{display:flex;align-items:center;width:100%;background:transparent;border:none;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+    margin:14px 0 8px;padding:0;cursor:pointer}
+  .rail-grp .grp-tog:hover{color:var(--text)}
+  .rail-grp .chev{margin-left:auto;transition:transform .18s;font-size:11px}
+  .rail-grp.collapsed .chev{transform:rotate(-90deg)}
+  .rail-grp.collapsed .grp-body{display:none}
+  .rail-grp .grp-ct{font-family:var(--mono);font-size:10px;color:var(--accent);margin-left:6px;letter-spacing:0}
+  .rail-h.sub{margin:10px 0 5px;letter-spacing:.12em}
+  .rail-h.sub:first-child{margin-top:0}
+  /* ---- tracker collapse + strip divider ---- */
+  .tk-head{cursor:pointer}
+  .tk-chev{transition:transform .18s;font-size:11px;color:var(--dim)}
+  .tracker.collapsed .tk-chev{transform:rotate(-90deg)}
+  .tracker.collapsed .tk-body{display:none}
+  .tracker.collapsed{padding-bottom:14px}
+  .tk-ctrls{cursor:default}
+  .src-strip .strip-div{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
+  .tk-cat{grid-column:1/-1;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--dim);margin:4px 0 0}
+  /* ---- source / type nav in left rail ---- */
+  .navlist{display:flex;flex-direction:column;gap:3px}
+  .navitem{display:flex;align-items:center;gap:8px;width:100%;text-align:left;
+    background:transparent;border:1px solid transparent;border-radius:7px;padding:6px 8px;
+    font-size:12.5px;color:var(--text);font-family:inherit}
+  .navitem:hover{border-color:var(--line);background:var(--panel)}
+  .navitem.on{border-color:var(--accent-dim);background:var(--panel);font-weight:600}
+  .navitem .swatch{width:9px;height:9px;border-radius:3px;flex:none;background:var(--dim)}
+  .navitem .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .navitem .ct{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .navitem.on .ct{color:var(--accent)}
+  .navitem .nm{display:flex;flex-direction:column;line-height:1.25}
+  .navitem .nm .sub{font-size:9.5px;color:var(--dim);font-weight:400;letter-spacing:.01em}
+  .srcgo{flex:none;font-size:11px;color:var(--dim);text-decoration:none;padding:0 2px}
+  .srcgo:hover{color:var(--accent)}
+  .src-pill .srcgo{margin-left:2px}
+  .top-seg{font-family:var(--mono);font-size:11.5px;color:var(--muted);border:1px solid var(--line);
+    border-radius:999px;padding:4px 14px;background:var(--ink)}
+  .top-seg:hover{border-color:var(--muted);color:var(--text)}
+  .top-seg.on{color:#fff;background:var(--accent);border-color:var(--accent)}
+  [data-theme="bw"] .top-seg.on{background:#000;border-color:#000}
+  .top-seg .ct{opacity:.8;margin-left:3px}
+  /* ---- header controls + source strip ---- */
+  .ctrls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .seg-ctrl{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--panel)}
+  .seg-ctrl button{background:transparent;border:none;padding:4px 11px;font-size:11.5px;
+    font-family:var(--mono);color:var(--muted);border-right:1px solid var(--line)}
+  .seg-ctrl button:last-child{border-right:none}
+  #typeSelect{border:1px solid var(--line);border-radius:999px;background:var(--panel);
+    color:inherit;padding:3px 7px;font-size:10.5px;cursor:pointer;max-width:130px}
+  .seg-ctrl button.on{background:var(--accent);color:#fff}
+  [data-theme="bw"] .seg-ctrl button.on{background:#000;color:#fff}
+  .ctrl-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-right:2px}
+  .mini-toggle{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 11px;
+    font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .mini-toggle:hover{border-color:var(--muted);color:var(--text)}
+  .mini-toggle.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="bw"] .mini-toggle.on{background:#000;border-color:#000}
+  .src-strip{display:flex;gap:7px;align-items:center;flex-wrap:wrap;
+    padding:9px 28px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .src-strip .lab{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-right:4px}
+  .src-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;
+    color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--ink)}
+  .src-pill:hover{border-color:var(--muted);color:var(--text)}
+  .src-pill.on{color:var(--accent);border-color:var(--accent-dim)}
+  [data-theme="bw"] .src-pill.on{color:#000;border-color:#000;font-weight:700}
+  .src-pill .swatch{width:8px;height:8px;border-radius:2px;background:var(--dim)}
+  .src-pill .ct{opacity:.8}
   @media(max-width:780px){.wrap{grid-template-columns:1fr}aside{position:static;height:auto;
     border-right:none;border-bottom:1px solid var(--line)}}
 </style>
@@ -168,43 +415,120 @@
 <body>
 <header>
   <div class="brand">ATLAS<b>Watch</b></div>
-  <div class="tagline">AI&#8209;security threat intelligence &middot; MITRE ATLAS &amp; OWASP GenAI</div>
+  <div class="tagline">AI&#8209;security threat intelligence &middot; multi&#8209;source</div>
+  <div class="ctrls" id="ctrls">
+    <button class="mini-toggle" id="trackerBtn" title="Show or hide the Live Source Tracker, which polls external feeds for new AI-security incidents">↻ Tracker</button>
+    <span class="ctrl-lbl">Theme</span>
+    <div class="seg-ctrl" id="themeCtrl">
+      <button data-theme-val="light" title="Light theme">Light</button>
+      <button data-theme-val="dark" title="Dark theme">Dark</button>
+      <button data-theme-val="bw" title="High-contrast black &amp; white theme">B&amp;W</button>
+    </div>
+    <span class="ctrl-lbl">Layout</span>
+    <span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:nowrap">
+    <div class="seg-ctrl" id="layoutCtrl">
+      <button data-layout-val="cards" title="Card grid — full detail per threat">Cards</button>
+      <button data-layout-val="table" title="Standard table view">Table</button>
+      <button data-layout-val="compact" title="Compact single-line table — maximum density">Compact</button>
+    </div>
+    <select id="typeSelect" title="Filter by incident type — Real-world (confirmed/realized), Hypothetical (demonstrated/exercise), or Reference">
+      <option value="all" title="Show every entry regardless of type">All Types</option>
+      <option value="real" title="Confirmed, real-world incidents only">Real-world incident</option>
+      <option value="hyp" title="Hypothetical, demonstrated, or exercise entries">Hypothetical</option>
+      <option value="ref" title="Reference entries (frameworks, taxonomies)">Reference</option>
+    </select>
+    </span>
+  </div>
   <div class="meta-pills" id="metaPills"></div>
 </header>
+<div class="src-strip" id="srcStrip"></div>
 
 <div class="wrap">
   <aside>
+    <div class="rail-h">Overview</div>
+    <div class="stats" id="stats"></div>
     <div class="rail-h">Search</div>
     <div class="search"><input id="q" placeholder="prompt injection, deepfake…"/></div>
-    <div class="rail-h">Source</div>
-    <select id="f-source"><option value="">All sources</option></select>
-    <div class="rail-h">Type</div>
-    <select id="f-kind"><option value="">All types</option>
-      <option value="technique">Technique (TTP)</option>
-      <option value="case-study">Case study</option>
-      <option value="risk">OWASP risk</option></select>
-    <div class="rail-h">Severity</div>
-    <select id="f-band"><option value="">Any severity</option>
-      <option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
-    <div class="rail-h">Maturity</div>
-    <select id="f-maturity"><option value="">Any maturity</option>
-      <option>Realized</option><option>Demonstrated</option><option>Feasible</option></select>
-    <div class="rail-h">Platform</div>
-    <select id="f-platform"><option value="">All platforms</option></select>
-    <div class="rail-h">Evidence</div>
-    <label class="toggle"><input type="checkbox" id="f-real"/> Real&#8209;world only</label>
+
+    <div class="rail-grp" data-grp="filters">
+      <button class="rail-h grp-tog">Filters <span class="chev">▾</span></button>
+      <div class="grp-body">
+        <div class="rail-h sub">Severity</div>
+        <select id="f-band"><option value="">Any severity</option>
+          <option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+        <div class="rail-h sub">Maturity</div>
+        <select id="f-maturity"><option value="">Any maturity</option>
+          <option>Realized</option><option>Demonstrated</option><option>Feasible</option></select>
+        <div class="rail-h sub">Platform</div>
+        <select id="f-platform"><option value="">All platforms</option></select>
+      </div>
+    </div>
+
+    <div class="rail-grp" data-grp="reality">
+      <button class="rail-h grp-tog">Evidence <span class="chev">▾</span></button>
+      <div class="grp-body"><div class="navlist" id="realityNav"></div></div>
+    </div>
+
+    <div class="rail-grp" data-grp="sources">
+      <button class="rail-h grp-tog">Sources <span class="grp-ct" id="srcGrpCt"></span><span class="chev">▾</span></button>
+      <div class="grp-body"><div class="navlist" id="sourceNav"></div></div>
+    </div>
+
+    <div class="rail-grp" data-grp="frameworks">
+      <button class="rail-h grp-tog">Frameworks <span class="grp-ct" id="fwGrpCt"></span><span class="chev">▾</span></button>
+      <div class="grp-body"><div class="navlist" id="frameworkNav"></div></div>
+    </div>
+
     <button class="reset" id="reset">Clear filters</button>
+    <div class="aside-grip" id="asideGrip" title="Drag to resize the panel"></div>
   </aside>
 
   <main>
-    <section class="analyst">
-      <div class="analyst-top">
+    <section class="tracker" id="tracker">
+      <div class="tk-head" id="tkHead">
+        <span class="dot"></span><h3>Live Source Tracker</h3>
+        <span class="chev tk-chev">▾</span>
+        <span class="tk-sub" id="tkLast">—</span>
+        <div class="tk-ctrls" id="tkCtrls">
+          <select id="tkFreq" title="How often the tracker should auto-run">
+            <option value="ondemand">On-demand</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+          </select>
+          <button id="tkRun">Run now</button>
+        </div>
+      </div>
+      <div class="tk-body">
+        <div class="tk-grid" id="tkGrid"></div>
+        <div class="tk-log" id="tkLog"></div>
+      </div>
+    </section>
+    <div class="analyst-pop" id="analystPop">
+      <div class="ap-scrim" id="apScrim"></div>
+      <div class="ap-win">
+      <div class="ap-head">
         <span class="dot"></span><h2>Threat Analyst</h2>
         <span class="analyst-sub" id="engineTag">RAG · grounded in ATLAS + OWASP</span>
+        <button class="ap-close" id="apClose" title="Close">✕</button>
       </div>
+      <div class="analyst-body">
       <div class="ask">
         <textarea id="ask" placeholder="Ask about a real-world AI threat — e.g. &quot;How are agents being hijacked through MCP tools?&quot;"></textarea>
         <button id="askBtn">Analyze</button>
+      </div>
+      <div class="engine-row">
+        <label class="eng-lbl">Engine
+          <select id="engineSel">
+            <option value="deterministic">Deterministic (offline)</option>
+            <option value="ollama">Ollama (live LLM)</option>
+          </select>
+        </label>
+        <span class="ollama-cfg" id="ollamaCfg" style="display:none">
+          <input id="ollamaUrl" placeholder="http://localhost:11434" spellcheck="false"/>
+          <input id="ollamaModel" placeholder="llama3.1" spellcheck="false"/>
+          <button id="ollamaTest" class="mini">Test</button>
+          <span id="ollamaStatus" class="oll-st"></span>
+        </span>
       </div>
       <div class="chips" id="exampleChips"></div>
       <div class="result" id="result">
@@ -213,16 +537,23 @@
         <div class="ret-row" id="retRow"></div>
         <div class="mits" id="mitBox"></div>
       </div>
-    </section>
-    <div class="stats" id="stats"></div>
+      </div>
+      </div>
+    </div>
+    <div class="gridwrap" id="gridWrap">
     <div class="grid-head">
       <h3 id="gridTitle">Threats</h3>
       <span class="count" id="gridCount"></span>
       <select class="sortsel" id="sort" style="width:auto">
         <option value="severity">Sort: severity</option>
         <option value="name">Sort: name</option></select>
+      <button class="analyst-fab" id="analystOpen" title="Open the Threat Analyst"><span class="dot"></span>Threat Analyst</button>
+      <button class="popout" id="dlExcel" title="Download the current threat list as an Excel sheet">⬇ Excel</button>
+      <button class="popout" id="popOut" title="Pop the threats list into a separate window">⤢ Pop out</button>
+      <button class="popout" id="popBack" style="display:none" title="Restore">⤡ Pop back in</button>
     </div>
     <div class="grid" id="grid"></div>
+    </div>
   </main>
 </div>
 
@@ -252,13 +583,69 @@ const toast=(m)=>{const t=$("#toast");t.textContent=m;t.classList.add("show");
 const HIGH_IMPACT = new Set(["Impact","Exfiltration","Initial Access","Execution",
   "Privilege Escalation","Credential Access","Command and Control"]);
 const MAT_BASE = {Realized:64,Demonstrated:44,Feasible:26};
+const isRealWorld=t=>t.incident_type==="Incident"||(t.incident_count||0)>0||t.kind==="incident"||t.kind==="vulnerability";
+/* Real-world (documented evidence) vs Hypothetical (lab/PoC) vs Reference (framework/taxonomy) */
+function realityClass(t){
+  if(t.kind==="risk"||t.kind==="risk-class")return "Reference";
+  if(isRealWorld(t)||t.maturity==="Realized")return "Real-world";
+  return "Hypothetical";
+}
+/* ---- threat-actor / impacted org / TTP / business-impact model ---- */
+const KNOWN_IMPACT={
+ "CVE-2023-48022":{financial:"~$1B in exposed compute (Oligo est.)",operational:"AI compute hijack, data & credential theft across clusters"},
+ "AML.CS0023":{financial:"~$1B exposed compute (ShadowRay)",operational:"Hijacked AI workloads, data theft"},
+ "AML.CS0030":{financial:"~$46K/day per abused model (Sysdig)",operational:"Unauthorized LLM usage resold, runaway cloud cost"},
+ "AML.CS0004":{financial:"$77M fraudulent collection",operational:"Facial-recognition bypass, large-scale tax fraud"},
+ "AML.CS0017":{financial:"$3.4M fraudulent claims",operational:"Identity-verification bypass, benefits fraud"},
+ "AIID-ITUTOR":{financial:"$365K EEOC settlement",operational:"Discriminatory hiring, regulatory/legal liability"},
+ "AIID-AIRCANADA":{financial:"Tribunal damages + refund liability",operational:"Customer-facing misinformation, policy liability"},
+ "AIID-SAMSUNG":{financial:"Confidential IP exposure (unquantified)",operational:"Source-code leakage, internal tool ban"},
+ "AIID-CHEVY":{financial:"Brand / PR cost (unquantified)",operational:"Chatbot abuse, reputational harm"},
+ "AIID-DPD":{financial:"Brand / PR cost (unquantified)",operational:"Public reputational harm, bot taken offline"}
+};
+const FIN_MODEL={Critical:"$1M–$50M+ (modeled)",High:"$100K–$5M (modeled)",Medium:"$10K–$500K (modeled)",Low:"<$50K (modeled)"};
+function opImpactFromTactics(tac){
+  const m={Impact:"service disruption / degraded operations",Exfiltration:"data loss / IP theft",
+   "Credential Access":"account & credential compromise","Initial Access":"unauthorized access / foothold",
+   Execution:"unauthorized code execution",Persistence:"durable compromise","Privilege Escalation":"privilege escalation",
+   "Command and Control":"remote control of systems","Defense Evasion":"detection evasion"};
+  const hits=[...new Set((tac||[]).map(x=>m[x]).filter(Boolean))];
+  return hits.length?hits.join("; "):"degraded trust / operational review burden";
+}
+function impactModel(t){
+  const k=KNOWN_IMPACT[t.id]||{};
+  const actor=(t.actor&&!["Unknown","Reported"].includes(t.actor))?t.actor:
+    (t.kind==="incident"?"Reported (see source)":(t.kind==="vulnerability"?"Opportunistic attackers":"Various adversaries"));
+  const org=(t.target&&!/^Various/.test(t.target)&&t.target!=="Multiple systems")?t.target:"Multiple / sector-wide";
+  let ttp;
+  if(t.kind==="technique")ttp=[t.id,t.attack_reference?("ATT&CK "+t.attack_reference):""].filter(Boolean).join(" · ");
+  else if(t.kind==="case-study")ttp=(t.techniques_used||[]).slice(0,8).join(", ")||"(see source)";
+  else ttp=(t.tactics||[]).join(", ")||"—";
+  return {actor,org,ttp,operational:k.operational||opImpactFromTactics(t.tactics),
+    financial:k.financial||FIN_MODEL[t.severity.band]||"—",known:!!k.financial};
+}
+function dateVal(t){const ts=Date.parse(t.date||t.modified||"");return isNaN(ts)?null:ts;}
 
 /* ---- severity scoring (ports backend store.score_threat) ---- */
 function scoreThreat(t){
   const factors=[]; let score;
-  if(t.kind==="risk"){
+  const BAND_SCORE={Critical:88,High:72,Medium:52,Low:32};
+  if(t.kind==="vulnerability"){
+    if(typeof t.cvss==="number"){score=Math.round(t.cvss*10);factors.push(`CVSS ${t.cvss} (NVD)`);}
+    else if(t.sevBand){score=BAND_SCORE[t.sevBand]??52;factors.push(`Reported severity '${t.sevBand}'`);}
+    else {score=60;factors.push("Catalogued AI/dependency vulnerability");}
+    if(t.cve)factors.push(`Tracked as ${t.cve}`);
+    const hi=[...new Set((t.tactics||[]).filter(x=>HIGH_IMPACT.has(x)))].sort();
+    if(hi.length){score+=Math.min(8,3*hi.length);factors.push(`Enables: ${hi.join(", ")}`);}
+  }else if(t.kind==="incident"){
+    score=t.base||70; factors.push("Documented real-world AI incident");
+    const hi=[...new Set((t.tactics||[]).filter(x=>HIGH_IMPACT.has(x)))].sort();
+    if(hi.length){score+=Math.min(12,4*hi.length);factors.push(`Real-world impact: ${hi.join(", ")} (+)`);}
+  }else if(t.kind==="risk-class"){
+    score=t.base||52; factors.push("AI risk-taxonomy domain (mapping reference)");
+  }else if(t.kind==="risk"){
     const rank=t.rank||10; score=92-(rank-1)*4;
-    factors.push(`OWASP GenAI rank #${rank} (production-observed risk)`);
+    factors.push(`Framework rank #${rank} (production-observed risk)`);
   }else{
     const mat=t.maturity||"Feasible"; score=MAT_BASE[mat]??26;
     factors.push(`Maturity '${mat}' (base ${score})`);
@@ -334,7 +721,10 @@ function match(t,f){
   if(f.band&&t.severity.band!==f.band)return false;
   if(f.maturity&&t.maturity!==f.maturity)return false;
   if(f.platform&&!(t.platforms||[]).includes(f.platform))return false;
-  if(f.real_world&&!(t.incident_type==="Incident"||(t.incident_count||0)>0))return false;
+  if(f.real_world&&!isRealWorld(t))return false;
+  if(f.reality&&realityClass(t)!==f.reality)return false;
+  if(f.realtop==="real"&&realityClass(t)!=="Real-world")return false;
+  if(f.realtop==="others"&&realityClass(t)==="Real-world")return false;
   return true;
 }
 function listThreats(sort,filters){
@@ -367,7 +757,7 @@ function stats(){
   STATE.threats.forEach(t=>{band[t.severity.band]=(band[t.severity.band]||0)+1;
     src[t.source]=(src[t.source]||0)+1;kind[t.kind]=(kind[t.kind]||0)+1;
     mat[t.maturity||"n/a"]=(mat[t.maturity||"n/a"]||0)+1;});
-  const real=STATE.threats.filter(t=>t.incident_type==="Incident"||(t.incident_count||0)>0).length;
+  const real=STATE.threats.filter(isRealWorld).length;
   return {total:STATE.threats.length,by_band:band,by_source:src,by_kind:kind,
     real_world_threats:real,atlas_version:STATE.atlasVersion};
 }
@@ -381,7 +771,7 @@ function analyze(query,k=8){
   const ord=["Low","Medium","High","Critical"];
   const summary={max:Math.max(...scores),mean:+(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1),
     top_band:bands.reduce((a,b)=>ord.indexOf(b)>ord.indexOf(a)?b:a,"Low"),
-    real_world:retrieved.filter(t=>t.incident_type==="Incident"||(t.incident_count||0)>0).length};
+    real_world:retrieved.filter(isRealWorld).length};
   const techIds=retrieved.filter(t=>t.kind==="technique").map(t=>t.id);
   const mitigations=mitigationsFor(techIds);
   const answer=deterministicBrief(retrieved,mitigations,summary);
@@ -414,7 +804,11 @@ function deterministicBrief(retrieved,mitigations,s){
 function loadSnapshot(data){
   STATE.atlasVersion=data.atlas_version; STATE.generated=data.generated;
   STATE.mitigations=data.mitigations||{}; STATE.techMit=data.tech_mitigations||{};
-  STATE.threats=data.threats.map(t=>({...t,severity:scoreThreat(t)}));
+  const base=(data.threats||[]).slice(); const have=new Set(base.map(t=>t.id));
+  extraThreats().forEach(t=>{if(!have.has(t.id)){base.push(t);have.add(t.id);}});
+  /* Vulnerabilities/CVEs are excluded — this build tracks incidents (and the
+     ATLAS/framework context around them) only. */
+  STATE.threats=base.filter(t=>t.kind!=="vulnerability").map(t=>({...t,severity:scoreThreat(t)}));
   STATE.byId={}; STATE.threats.forEach(t=>STATE.byId[t.id]=t);
   buildIndex();
 }
@@ -443,6 +837,162 @@ function owaspThreats(){
     platforms:["Generative AI","Agentic AI"],
     references:[{title:"OWASP Top 10 for LLM Applications (2025)",url:"https://genai.owasp.org/llm-top-10/"}]}));
 }
+
+
+/* ===================================================================
+   Multi-source registry — real, published AI-threat sources.
+   Each source has a homepage link and a type. Curated entries are
+   embedded for offline use; the Tracker (below) can pull live feeds.
+   =================================================================== */
+const SOURCE_META={
+  "MITRE ATLAS":{url:"https://atlas.mitre.org/",color:"#0fb5a6",type:"Adversary TTPs + case studies",feed:"atlas",group:"framework"},
+  "OWASP GenAI":{url:"https://genai.owasp.org/llm-top-10/",color:"#d97316",type:"Framework risks (LLM)",group:"framework"},
+  "OWASP ML":{url:"https://owasp.org/www-project-machine-learning-security-top-10/",color:"#b5870f",type:"Framework risks (ML)",group:"framework"},
+  "NIST AI 100-2":{url:"https://csrc.nist.gov/pubs/ai/100/2/e2025/final",color:"#3a63ad",type:"Adversarial-ML taxonomy",group:"framework"},
+  "MIT AI Risk Repository":{url:"https://airisk.mit.edu/",color:"#1864ab",type:"Risk taxonomy (map to controls)",group:"framework"},
+  "AI Incident Database":{url:"https://incidentdatabase.ai/",color:"#e23d2e",type:"Real-world incidents",group:"source"},
+  "MIT AI Incident Tracker":{url:"https://airisk.mit.edu/ai-incident-tracker",color:"#b5179e",type:"Classified / severity-scored incidents",group:"source"},
+  "OECD AIM":{url:"https://oecd.ai/en/incidents",color:"#7048e8",type:"Policy-grade incident & hazard monitor",group:"source"},
+  "AVID":{url:"https://avidml.org/database/",color:"#0ca678",type:"Technical AI/LLM vulnerabilities",group:"source"},
+  "AIAAIC":{url:"https://www.aiaaic.org/aiaaic-repository",color:"#e8590c",type:"AI / algorithmic controversies",group:"source"},
+  "NVD / CVE":{url:"https://nvd.nist.gov/",color:"#c92a2a",type:"CVEs in AI infrastructure",feed:"nvd",group:"source"},
+  "OSV / GitHub Advisory":{url:"https://github.com/advisories",color:"#5c5f66",type:"Dependency vulns (AI stack)",feed:"osv",group:"source"}
+};
+const SRC_COLORS={}; Object.entries(SOURCE_META).forEach(([k,v])=>SRC_COLORS[k]=v.color);
+const srcCat=s=>(SOURCE_META[s]||{}).group||"source";
+
+/* ---- OWASP ML Top 10 ---- */
+const OWASP_ML=[["ML01","Input Manipulation Attack","Adversarial perturbation of inputs (evasion) crafted to force a model into misclassification or unintended behaviour while appearing benign to humans."],
+["ML02","Data Poisoning Attack","Tampering with training data to embed bias, backdoors, or degraded behaviour that activates under attacker-chosen conditions."],
+["ML03","Model Inversion Attack","Reconstructing sensitive training data or private attributes by repeatedly probing a model's outputs and confidence scores."],
+["ML04","Membership Inference Attack","Determining whether a specific record was part of the training set, leaking privacy and potentially regulated data."],
+["ML05","Model Theft","Extracting a functional copy of a proprietary model via query access, stealing intellectual property and enabling offline attacks."],
+["ML06","AI Supply Chain Attacks","Compromise of third-party models, datasets, packages, or pipelines that are incorporated into the ML system."],
+["ML07","Transfer Learning Attack","Poisoning or backdooring a base/pre-trained model so the malicious behaviour survives downstream fine-tuning."],
+["ML08","Model Skewing","Feeding manipulated feedback or production data to gradually shift a continuously-learning model's decision boundary."],
+["ML09","Output Integrity Attack","Tampering with model outputs in transit or at the integration layer so downstream systems act on falsified results."],
+["ML10","Model Poisoning","Directly altering model parameters or architecture to change behaviour or implant a backdoor."]];
+function owaspMlThreats(){
+  return OWASP_ML.map(([code,name,desc],i)=>({id:`OWASP-${code}`,source:"OWASP ML",kind:"risk",
+    name:`${code}: ${name}`,description:desc,maturity:"Realized",rank:i+1,tactics:[],
+    platforms:["Predictive AI","Generative AI"],
+    references:[{title:"OWASP Machine Learning Security Top 10",url:"https://owasp.org/www-project-machine-learning-security-top-10/"}]}));
+}
+
+/* ---- NIST AI 100-2 adversarial-ML taxonomy ---- */
+const NIST=[["Evasion Attack","Adversarial examples crafted at inference time to evade a deployed model. NIST AI 100-2 classifies these by adversary knowledge (white-box, black-box) and goal (targeted, untargeted).","Realized",["Defense Evasion","Impact"],["Predictive AI"]],
+["Availability Poisoning","Poisoning the training data or process to broadly degrade model accuracy, denying reliable service to legitimate users.","Demonstrated",["Impact"],["Predictive AI","Generative AI"]],
+["Targeted Poisoning","Poisoning aimed at causing misclassification of specific inputs while preserving overall accuracy to avoid detection.","Demonstrated",["Impact","Persistence"],["Predictive AI","Generative AI"]],
+["Backdoor Poisoning","Embedding a hidden trigger during training so the model behaves normally until the attacker-chosen trigger appears.","Demonstrated",["Persistence","Impact"],["Predictive AI","Generative AI"]],
+["Model Poisoning","Directly manipulating model parameters or the training pipeline (e.g. in federated learning) to implant malicious behaviour.","Demonstrated",["Persistence"],["Predictive AI","Generative AI","Agentic AI"]],
+["Membership Inference","Privacy attack determining whether a given sample was in the training set, exposing potentially sensitive data.","Feasible",["Exfiltration"],["Predictive AI","Generative AI"]],
+["Model Extraction","Privacy/IP attack reconstructing a functional copy of a model through inference queries.","Feasible",["Exfiltration"],["Predictive AI","Generative AI"]],
+["Data Reconstruction","Recovering individual training records or their attributes from a model, a severe confidentiality violation.","Feasible",["Exfiltration"],["Predictive AI","Generative AI"]],
+["Direct Prompt Injection","Abuse attack where a user-supplied prompt overrides developer instructions of a generative model.","Realized",["Execution","Initial Access"],["Generative AI","Agentic AI"]],
+["Indirect Prompt Injection","Abuse attack where malicious instructions are embedded in third-party content (web pages, documents) and ingested by the model.","Realized",["Execution","Initial Access"],["Generative AI","Agentic AI"]]];
+function nistThreats(){
+  return NIST.map(([name,desc,mat,tac,plat],i)=>({id:`NIST-AML-${String(i+1).padStart(2,"0")}`,
+    source:"NIST AI 100-2",kind:"technique",name,description:desc,maturity:mat,tactics:tac,platforms:plat,
+    incident_count:0,references:[{title:"NIST AI 100-2e2025 — Adversarial Machine Learning: A Taxonomy and Terminology",url:"https://csrc.nist.gov/pubs/ai/100/2/e2025/final"}]}));
+}
+
+/* ---- AI Incident Database (curated real incidents) ---- */
+const AIID=[["AIID-AIRCANADA","Air Canada Chatbot Issues Wrong Refund Policy","Air Canada's website chatbot gave a passenger incorrect information about its bereavement-fare refund policy. A tribunal held the airline liable for its chatbot's statements — an early ruling on accountability for generative-AI customer agents.","2024-02-14","Air Canada virtual assistant",["Impact"],["Generative AI"]],
+["AIID-CHEVY","Chevrolet Dealership Chatbot Manipulated via Prompt Injection","A GPT-powered dealership chatbot was steered by users into agreeing to sell a vehicle for $1 and into making off-brand statements — prompt-injection and excessive-agency risk in a deployed customer bot.","2023-12-17","Chevrolet of Watsonville chatbot",["Execution","Impact"],["Generative AI"]],
+["AIID-DPD","DPD Chatbot Swears at and Criticizes Its Own Company","Parcel firm DPD's AI chatbot was prompted by a customer into swearing and writing a poem disparaging the company — a public reputational-harm incident for a deployed support agent.","2024-01-18","DPD support chatbot",["Impact"],["Generative AI"]],
+["AIID-SAMSUNG","Samsung Employees Leak Source Code into ChatGPT","Samsung engineers pasted confidential source code and meeting notes into ChatGPT, causing sensitive corporate data to leave controlled systems and prompting an internal ban on the tool.","2023-04-04","Samsung Semiconductor",["Exfiltration"],["Generative AI"]],
+["AIID-ITUTOR","iTutorGroup AI Hiring Tool Screens Out Older Applicants","An AI recruiting screening tool automatically rejected female applicants over 55 and male applicants over 60. The U.S. EEOC reached a settlement — early enforcement over algorithmic hiring discrimination.","2023-08-09","iTutorGroup recruiting system",["Impact"],["Predictive AI"]],
+["AIID-MYCITY","NYC MyCity Chatbot Gives Illegal Business Advice","New York City's MyCity small-business chatbot confidently produced answers encouraging illegal practices — a misinformation / over-reliance incident in a government deployment.","2024-03-29","NYC MyCity chatbot",["Impact"],["Generative AI"]]];
+function aiidThreats(){
+  return AIID.map(([id,name,desc,date,target,tac,plat])=>({id,source:"AI Incident Database",kind:"incident",
+    name,description:desc,incident_type:"Incident",maturity:"Realized",actor:"Reported",target,reporter:"AI Incident Database",
+    date,tactics:tac,platforms:plat,techniques_used:[],
+    references:[{title:"AI Incident Database",url:"https://incidentdatabase.ai/"}]}));
+}
+
+/* ---- MIT AI Incident Tracker (AIID incidents classified by MIT domain taxonomy + CSET harm severity + EU AI Act risk) ---- */
+const MIT_TRACK=[["MITAIT-DISC","Discrimination & Toxicity incidents","Incidents where deployed AI produced discriminatory, biased, or toxic outcomes (hiring, lending, content). Classified in the tracker by harm severity and EU AI Act risk level.",["Impact"]],
+["MITAIT-PRIV","Privacy & Security incidents","Incidents involving leakage of personal data, model/data exfiltration, or security compromise of an AI system.",["Exfiltration","Credential Access"]],
+["MITAIT-MISINFO","Misinformation incidents","Incidents where AI generated or amplified false or misleading information that caused real-world harm or over-reliance.",["Impact"]],
+["MITAIT-MISUSE","Malicious-use incidents (fraud / deepfakes)","Incidents of AI used for fraud, scams, deepfake impersonation, or other intentional misuse against people or organizations.",["Impact","Initial Access"]],
+["MITAIT-SAFETY","AI system safety & failure incidents","Incidents of system malfunction, robustness failure, or unsafe autonomous behaviour — the largest category in the tracker.",["Impact"]]];
+function mitTrackerThreats(){
+  return MIT_TRACK.map(([id,name,desc,tac])=>({id,source:"MIT AI Incident Tracker",kind:"incident",
+    name,description:desc,incident_type:"Incident",maturity:"Realized",actor:"Reported",target:"Various (AIID-sourced)",
+    reporter:"MIT FutureTech",tactics:tac,platforms:["Generative AI","Predictive AI","Agentic AI"],techniques_used:[],base:72,
+    references:[{title:"MIT AI Incident Tracker (MIT FutureTech)",url:"https://airisk.mit.edu/ai-incident-tracker"}]}));
+}
+
+/* ---- OECD AI Incidents & Hazards Monitor — thematic clusters ---- */
+const OECD=[["OECD-SYNMEDIA","Synthetic media & deepfakes","OECD AIM cluster: media-reported incidents involving AI-generated synthetic images, audio, and video used for impersonation, fraud, or disinformation.",["Impact"]],
+["OECD-CHILDSAFE","Child safety","AIM cluster: incidents where AI systems contributed to harms affecting minors, including generated abuse material and unsafe recommendations.",["Impact"]],
+["OECD-CYBER","AI-enabled cyberattacks","AIM cluster: incidents where AI was used to support or scale cyberattacks against organizations or individuals.",["Initial Access","Impact"]],
+["OECD-PRIVACY","Privacy violations","AIM cluster: incidents of AI systems infringing privacy through surveillance, data leakage, or unlawful processing.",["Exfiltration"]],
+["OECD-HEALTH","Health & safety harms","AIM cluster: incidents where AI in health or safety-critical contexts produced harmful outcomes or unsafe guidance.",["Impact"]]];
+function oecdThreats(){
+  return OECD.map(([id,name,desc,tac])=>({id,source:"OECD AIM",kind:"incident",
+    name,description:desc,incident_type:"Incident",maturity:"Realized",actor:"Reported",target:"Various (media-reported)",
+    reporter:"OECD.AI",tactics:tac,platforms:["Generative AI","Predictive AI"],techniques_used:[],base:68,
+    references:[{title:"OECD AI Incidents & Hazards Monitor (AIM)",url:"https://oecd.ai/en/incidents"}]}));
+}
+
+/* ---- AVID — AI Vulnerability Database (SEP taxonomy: Security / Ethics / Performance) ---- */
+const AVID=[["AVID-SEC-INJECT","Security: Prompt injection / evasion","AVID Security (S) failure modes: inputs that subvert model instructions or evade detection, including jailbreaks and adversarial evasion of GPAI systems.","Critical",["Execution","Defense Evasion"]],
+["AVID-SEC-EXFIL","Security: Data & model exfiltration","AVID Security (S): extraction of training data, model weights, or system prompts, and leakage of sensitive information through model outputs.","High",["Exfiltration"]],
+["AVID-SEC-SUPPLY","Security: GPAI supply-chain CVEs","AVID now ingests GPAI supply-chain CVEs and red-team results (garak, Inspect AI, 0DIN). Vulnerable AI packages, tools, and agent components.","High",["Initial Access"]],
+["AVID-ETH-BIAS","Ethics: Bias, toxicity & fairness","AVID Ethics (E): discriminatory, toxic, or unfair model behaviour across protected groups, and misinformation harms.","Medium",["Impact"]],
+["AVID-PERF-ROBUST","Performance: Robustness & reliability","AVID Performance (P): accuracy degradation, distribution shift, and reliability failures that cause incorrect or unsafe outputs.","Medium",["Impact"]]];
+function avidThreats(){
+  return AVID.map(([id,name,desc,band,tac])=>({id,source:"AVID",kind:"vulnerability",
+    name,description:desc,maturity:"Realized",sevBand:band,tactics:tac,platforms:["Generative AI","Predictive AI","Agentic AI"],
+    references:[{title:"AI Vulnerability Database (AVID)",url:"https://avidml.org/database/"}]}));
+}
+
+/* ---- AIAAIC — broader AI/algorithmic/automation controversies ---- */
+const AIAAIC=[["AIAAIC-FACEREC","Facial recognition misuse & wrongful arrests","AIAAIC repository: controversies where facial-recognition systems led to wrongful identification, arrests, or pervasive surveillance.",["Impact"]],
+["AIAAIC-DEEPFAKE","Deepfake harms & non-consensual imagery","AIAAIC: incidents and controversies involving deepfakes used for harassment, fraud, political manipulation, or non-consensual imagery.",["Impact"]],
+["AIAAIC-ALGOBIAS","Algorithmic decision bias & opacity","AIAAIC: controversies over opaque or biased automated decisions in welfare, policing, education, and credit.",["Impact"]],
+["AIAAIC-CHATHARM","Chatbot & companion-AI harms","AIAAIC: incidents where conversational or companion AI gave harmful advice or contributed to psychological harm.",["Impact"]]];
+function aiaaicThreats(){
+  return AIAAIC.map(([id,name,desc,tac])=>({id,source:"AIAAIC",kind:"incident",
+    name,description:desc,incident_type:"Incident",maturity:"Realized",actor:"Reported",target:"Various",
+    reporter:"AIAAIC",tactics:tac,platforms:["Generative AI","Predictive AI"],techniques_used:[],base:62,
+    references:[{title:"AIAAIC Repository",url:"https://www.aiaaic.org/aiaaic-repository"}]}));
+}
+
+/* ---- MIT AI Risk Repository — Domain Taxonomy (7 domains) for mapping incidents to controls ---- */
+const MITRR=[["MITRR-D1","Domain 1 — Discrimination & Toxicity","Unfair treatment, exposure to toxic content, and unequal performance across groups. Use to map discrimination incidents to fairness and content controls.",["Impact"]],
+["MITRR-D2","Domain 2 — Privacy & Security","Compromise of privacy (data leakage) and security (system vulnerability). Maps to data-protection, access-control, and AI-security mitigations.",["Exfiltration","Credential Access"]],
+["MITRR-D3","Domain 3 — Misinformation","False or misleading information and erosion of shared reality. Maps to grounding, provenance, and output-validation controls.",["Impact"]],
+["MITRR-D4","Domain 4 — Malicious Actors & Misuse","Use of AI for disinformation, cyberattacks, fraud, and weapons. Maps to misuse-prevention, guardrail, and monitoring controls.",["Initial Access","Impact"]],
+["MITRR-D5","Domain 5 — Human-Computer Interaction","Over-reliance, loss of agency, and unsafe automation in human-AI interaction. Maps to human-in-the-loop and UX-safety controls.",["Impact"]],
+["MITRR-D6","Domain 6 — Socioeconomic & Environmental","Concentration of power, labour and economic harms, and environmental cost. Maps to governance and impact-assessment controls.",["Impact"]],
+["MITRR-D7","Domain 7 — AI System Safety, Failures & Limitations","Robustness failures, goal misalignment, and loss of control — including multi-agent risks. Maps to evaluation, testing, and control-assurance mitigations.",["Impact","Persistence"]]];
+function mitrrThreats(){
+  return MITRR.map(([id,name,desc,tac])=>({id,source:"MIT AI Risk Repository",kind:"risk-class",
+    name,description:desc,maturity:"Realized",tactics:tac,platforms:["Generative AI","Predictive AI","Agentic AI"],base:55,
+    references:[{title:"MIT AI Risk Repository — Domain Taxonomy",url:"https://airisk.mit.edu/"}]}));
+}
+
+/* ---- NVD/CVE + OSV/GitHub Advisory — real CVEs in AI infrastructure (seed; Tracker pulls live) ---- */
+const CVES=[["CVE-2023-48022","Ray — unauthenticated remote code execution (\"ShadowRay\")","Ray's Job API allows arbitrary remote code execution by design with no authentication; exposed clusters were actively exploited to hijack AI compute and steal data. Disputed by the maintainer as a configuration issue.","Critical","OSV / GitHub Advisory",["Initial Access","Execution"],"https://nvd.nist.gov/vuln/detail/CVE-2023-48022",9.8,"2023-11-16"],
+["CVE-2024-37032","Ollama — path traversal RCE (\"Probllama\")","A path-traversal flaw in the Ollama model server allowed remote code execution when pulling a malicious model manifest, affecting locally hosted LLM deployments.","Critical","NVD / CVE",["Initial Access","Execution"],"https://nvd.nist.gov/vuln/detail/CVE-2024-37032",9.8,"2024-06-24"],
+["CVE-2024-50050","Meta Llama Stack — unsafe pickle deserialization RCE","Use of an unsafe deserialization path in the llama-stack reference server allowed remote code execution via crafted objects sent to the inference socket.","Critical","NVD / CVE",["Initial Access","Execution"],"https://nvd.nist.gov/vuln/detail/CVE-2024-50050",9.3,"2024-10-30"],
+["CVE-2023-29374","LangChain — code injection via LLMMathChain","LangChain's LLMMathChain passed LLM-generated expressions to Python's eval, enabling arbitrary code execution from crafted prompts.","Critical","OSV / GitHub Advisory",["Execution"],"https://nvd.nist.gov/vuln/detail/CVE-2023-29374",9.8,"2023-04-05"],
+["CVE-2019-20634","ProofPoint email ML model extraction (\"Proof Pudding\")","Researchers built a copy-cat of ProofPoint's email-protection ML model from exposed scores and crafted messages to bypass the live system.","High","NVD / CVE",["Exfiltration","Defense Evasion"],"https://nvd.nist.gov/vuln/detail/CVE-2019-20634",null,"2020-01-30"]];
+function cveThreats(){
+  return CVES.map(([id,name,desc,band,src,tac,url,cvss,date])=>({id,source:src,kind:"vulnerability",
+    name,description:desc,maturity:"Realized",sevBand:band,tactics:tac,platforms:["Generative AI","Predictive AI","Agentic AI","Enterprise"],
+    cve:id,cvss:(typeof cvss==="number"?cvss:undefined),date,
+    references:[{title:`${id} — National Vulnerability Database`,url}]}));
+}
+
+/* All embedded sources beyond the ATLAS snapshot / live pull */
+function extraThreats(){
+  return [...owaspMlThreats(),...nistThreats(),...aiidThreats(),...mitTrackerThreats(),
+    ...oecdThreats(),...avidThreats(),...aiaaicThreats(),...mitrrThreats(),...cveThreats()];
+}
+
 
 async function fetchLatestAtlas(){
   let url=ATLAS_BASE+"/ATLAS.yaml";
@@ -522,7 +1072,139 @@ async function liveRefresh(){
   syncPills();
 }
 
-/* =================== rendering =================== */
+/* =================== live source tracker =================== */
+const FREQ_MS={daily:864e5,weekly:6048e5,ondemand:Infinity};
+const AI_RE=/\b(ai[\s\-](agent|agents|model|models|system|systems|assistant|chatbot|pipeline|inference)|agentic|llm|llms|genai|gen[\s\-]ai|langchain|langgraph|llamaindex|pytorch|tensorflow|transformers|hugging\s?face|huggingface|mlflow|vllm|ollama|llama|openai|chatgpt|\bgpt-?\d|gemini|anthropic|\bclaude\b|gradio|autogpt|prompt\s?inject|llm\s?prompt|onnx|keras|diffusers|comfyui|anythingllm|litellm|model\s?context\s?protocol|\bmcp\b|\brag\b|machine\s?learning|neural\s?network)\b/i;
+function aiRelevant(txt){return AI_RE.test(txt||"");}
+function bandFromSeverity(sev){const m={critical:"Critical",high:"High",moderate:"Medium",medium:"Medium",low:"Low"};
+  return m[(sev||"").toLowerCase()]||"Medium";}
+
+function mergeLiveThreats(arr){
+  if(!arr||!arr.length)return 0; let added=0;
+  arr.forEach(t=>{ if(t.kind==="vulnerability")return; if(STATE.byId[t.id])return;
+    const scored={...t,severity:scoreThreat(t)}; STATE.threats.push(scored); STATE.byId[t.id]=scored; added++; });
+  if(added){buildIndex();}
+  return added;
+}
+
+/* GitHub Advisory Database (CORS-enabled api.github.com) — AI-relevant advisories */
+async function feedGithubAdvisory(){
+  const r=await fetch("https://api.github.com/advisories?per_page=100&sort=published&direction=desc",
+    {headers:{"Accept":"application/vnd.github+json"}});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  const adv=await r.json();
+  const out=[];
+  for(const a of adv){
+    const pkgs=(a.vulnerabilities||[]).map(v=>v.package&&v.package.name).filter(Boolean).join(" ");
+    const blob=(a.summary||"")+" "+(a.description||"")+" "+pkgs;
+    if(!aiRelevant(blob))continue;
+    out.push({id:a.ghsa_id,source:"OSV / GitHub Advisory",kind:"vulnerability",
+      name:(a.summary||a.ghsa_id).slice(0,140),
+      description:((a.description||a.summary||"").slice(0,360)).trim(),
+      maturity:"Realized",sevBand:bandFromSeverity(a.severity),
+      cvss:(a.cvss&&typeof a.cvss.score==="number")?a.cvss.score:undefined,
+      cve:(a.cve_id||undefined),date:(a.published_at||"").slice(0,10),
+      tactics:["Initial Access"],platforms:["Enterprise","Generative AI","Agentic AI"],
+      references:[{title:a.ghsa_id+(a.cve_id?(" / "+a.cve_id):""),url:a.html_url||("https://github.com/advisories/"+a.ghsa_id)}]});
+    if(out.length>=40)break;
+  }
+  return out;
+}
+
+/* OSV.dev batch query for known AI packages (CORS-enabled) — counts only */
+async function feedOSV(){
+  const pkgs=[["langchain","PyPI"],["transformers","PyPI"],["torch","PyPI"],["mlflow","PyPI"],
+    ["vllm","PyPI"],["ray","PyPI"],["gradio","PyPI"]];
+  const r=await fetch("https://api.osv.dev/v1/querybatch",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({queries:pkgs.map(([n,e])=>({package:{name:n,ecosystem:e}}))})});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  const d=await r.json();
+  const n=(d.results||[]).reduce((a,x)=>a+((x.vulns||[]).length),0);
+  return {count:n};
+}
+
+/* NVD keyword search (CORS often blocked — best effort) */
+async function feedNVD(){
+  const r=await fetch("https://services.nvd.nist.gov/rest/json/cves/2.0?keywordSearch=artificial%20intelligence&resultsPerPage=20");
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  const d=await r.json(); return {count:d.totalResults||0};
+}
+
+async function trackAtlas(){
+  const atlas=await fetchLatestAtlas(); const data=normalizeAtlas(atlas); loadSnapshot(data);
+  return {count:STATE.threats.filter(t=>t.source==="MITRE ATLAS").length};
+}
+
+let TRACK=Object.assign({freq:"ondemand",last:0,runs:{}},(loadPrefs().track||{}));
+function saveTrack(){const p=loadPrefs();p.track=TRACK;savePrefs(p);}
+function tkLog(msg){const l=$("#tkLog");l.classList.add("show");
+  const d=el("div",null,`<span style="color:var(--dim)">${new Date().toLocaleTimeString()}</span> ${esc(msg)}`);
+  l.prepend(d);}
+
+async function runTracker(manual){
+  const btn=$("#tkRun"); if(btn){btn.disabled=true;btn.textContent="Running…";}
+  if(manual)tkLog("Tracker run started.");
+  for(const [name,meta] of Object.entries(SOURCE_META)){
+    const rec=TRACK.runs[name]||{};
+    if(meta.feed){
+      try{
+        let res;
+        if(meta.feed==="atlas")res=await trackAtlas();
+        else if(meta.feed==="osv"){
+          let added=0; try{const gh=await feedGithubAdvisory();added=mergeLiveThreats(gh);}catch(e){}
+          let osvN=0; try{osvN=(await feedOSV()).count;}catch(e){}
+          res={count:STATE.threats.filter(t=>t.source==="OSV / GitHub Advisory").length,note:`+${added} new · OSV ${osvN} vulns`};
+        }
+        else if(meta.feed==="nvd")res=await feedNVD();
+        rec.status="live"; rec.count=res.count; rec.note=res.note||""; rec.when=Date.now();
+        tkLog(`${name}: live ✓ ${res.count} items${res.note?(" · "+res.note):""}`);
+      }catch(e){
+        rec.status="blocked"; rec.when=Date.now();
+        rec.count=STATE.threats.filter(t=>t.source===name).length;
+        tkLog(`${name}: live feed blocked (CORS/offline) — using embedded.`);
+      }
+    }else{
+      rec.status="embedded"; rec.when=Date.now();
+      rec.count=STATE.threats.filter(t=>t.source===name).length;
+    }
+    TRACK.runs[name]=rec;
+  }
+  TRACK.last=Date.now(); saveTrack();
+  renderAll(); renderTracker();
+  if(manual)tkLog("Tracker run complete.");
+  if(btn){btn.disabled=false;btn.textContent="Run now";}
+}
+
+function renderTracker(){
+  $("#tkFreq").value=TRACK.freq;
+  const last=TRACK.last?("last run "+new Date(TRACK.last).toLocaleString()):"not yet run";
+  const next=TRACK.freq==="ondemand"?"manual only":("auto: "+TRACK.freq);
+  $("#tkLast").textContent=last+" · "+next;
+  const g=$("#tkGrid"); g.innerHTML="";
+  const rowFor=(name,meta)=>{
+    const rec=TRACK.runs[name]||{};
+    const cnt=STATE.threats.filter(t=>t.source===name).length;
+    const stCls=rec.status||(meta.feed?"":"embedded");
+    const stTxt=rec.status==="live"?"LIVE":rec.status==="blocked"?"embedded*":rec.status==="err"?"error":
+      (meta.feed?"live-capable":"embedded");
+    const row=el("div","tk-row");
+    row.innerHTML=`<span class="sw" style="background:${srcColor(name)}"></span>`+
+      `<span class="tk-nm"><b>${esc(name)}</b><span>${esc(meta.type||"")} · ${cnt} entries${rec.note?(" · "+esc(rec.note)):""}</span></span>`+
+      `<span class="tk-st ${stCls||"embedded"}">${stTxt}</span>`+
+      `<a class="tk-go" href="${meta.url}" target="_blank" rel="noopener" title="Open source ↗">↗</a>`;
+    return row;
+  };
+  const section=(label,cat)=>{
+    const entries=Object.entries(SOURCE_META).filter(([n,m])=>(m.group||"source")===cat);
+    if(!entries.length)return;
+    g.append(el("div","tk-cat",label));
+    entries.forEach(([n,m])=>g.append(rowFor(n,m)));
+  };
+  section("Sources — incident & vulnerability databases","source");
+  section("Frameworks — taxonomies & standards","framework");
+}
+function trackerDue(){return TRACK.freq!=="ondemand" && (Date.now()-(TRACK.last||0))>=FREQ_MS[TRACK.freq];}
+
 const MAT={Realized:{cls:"r",segs:3},Demonstrated:{cls:"d",segs:2},Feasible:{cls:"f",segs:1}};
 function realityMeter(m){const o=MAT[m]||MAT.Feasible;
   const segs=[0,1,2].map(i=>`<i class="seg ${i<o.segs?o.cls:""}"></i>`).join("");
@@ -532,16 +1214,93 @@ function linkifyRefs(text){return esc(text).replace(/\[((?:AML\.(?:T|CS|M)[\w.]+
 
 function syncPills(){
   const mp=$("#metaPills"); mp.innerHTML="";
-  mp.append(el("span","pill","ATLAS "+STATE.atlasVersion));
   mp.append(el("span","pill",STATE.threats.length+" threats"));
-  const r=el("span","pill btn","↻ Refresh from MITRE"); r.id="refreshPill"; r.onclick=liveRefresh;
-  mp.append(r);
 }
+let FILT={source:"",kind:"",reality:"",realtop:"real"};
+const KIND_LABELS={"technique":"Technique (TTP)","case-study":"Case study","risk":"Framework risk",
+  "incident":"Real-world incident","vulnerability":"Vulnerability / CVE","risk-class":"Risk taxonomy"};
+const srcColor=s=>SRC_COLORS[s]||"#9aa2b2";
+
 function renderFacets(){
+  const fp=$("#f-platform"); if(fp.length>1)return; // build once, preserve selection
   const plats=[...new Set(STATE.threats.flatMap(t=>t.platforms||[]))].sort();
-  const srcs=[...new Set(STATE.threats.map(t=>t.source))].sort();
-  const fs=$("#f-source"); fs.length=1; srcs.forEach(s=>{const o=el("option",null,s);o.value=s;fs.append(o);});
-  const fp=$("#f-platform"); fp.length=1; plats.forEach(p=>{const o=el("option",null,p);o.value=p;fp.append(o);});
+  plats.forEach(p=>{const o=el("option",null,p);o.value=p;fp.append(o);});
+}
+function refresh(){renderSourceNav();renderFrameworkNav();renderRealityNav();renderKindNav();renderSrcStrip();renderStats();renderGrid();}
+function sourceCounts(){const c={};STATE.threats.forEach(t=>c[t.source]=(c[t.source]||0)+1);return c;}
+function kindCounts(){const c={};STATE.threats.forEach(t=>c[t.kind]=(c[t.kind]||0)+1);return c;}
+
+function srcLink(s){const m=SOURCE_META[s];return m&&m.url?
+  `<a class="srcgo" href="${m.url}" target="_blank" rel="noopener" title="Open ${esc(s)} ↗" onclick="event.stopPropagation()">↗</a>`:"";}
+function srcNavItem(s,c){
+  const m=SOURCE_META[s]||{};
+  const b=el("button","navitem"+(FILT.source===s?" on":""));
+  b.innerHTML=`<span class="swatch" style="background:${srcColor(s)}"></span>`+
+    `<span class="nm">${esc(s)}<span class="sub">${esc(m.type||"")}</span></span>`+
+    `<span class="ct">${c[s]||0}</span>${srcLink(s)}`;
+  b.onclick=()=>{FILT.source=FILT.source===s?"":s;refresh();};
+  return b;
+}
+function renderSourceNav(){
+  const nav=$("#sourceNav"); nav.innerHTML=""; const c=sourceCounts(); let tot=0;
+  Object.keys(c).filter(s=>srcCat(s)==="source").sort().forEach(s=>{tot+=c[s];nav.append(srcNavItem(s,c));});
+  const h=$("#srcGrpCt"); if(h)h.textContent=tot;
+}
+function renderFrameworkNav(){
+  const nav=$("#frameworkNav"); if(!nav)return; nav.innerHTML=""; const c=sourceCounts(); let tot=0;
+  Object.keys(c).filter(s=>srcCat(s)==="framework").sort().forEach(s=>{tot+=c[s];nav.append(srcNavItem(s,c));});
+  const h=$("#fwGrpCt"); if(h)h.textContent=tot;
+}
+function renderRealityNav(){
+  const nav=$("#realityNav"); if(!nav)return; nav.innerHTML="";
+  const counts={"Real-world":0,"Hypothetical":0,"Reference":0};
+  STATE.threats.forEach(t=>{counts[realityClass(t)]=(counts[realityClass(t)]||0)+1;});
+  const mk=(val,label,count,color)=>{
+    const b=el("button","navitem"+(FILT.reality===val?" on":""));
+    b.innerHTML=(color?`<span class="swatch" style="background:${color}"></span>`:"")+
+      `<span class="nm">${esc(label)}</span><span class="ct">${count}</span>`;
+    b.onclick=()=>{FILT.reality=FILT.reality===val?"":val;refresh();};
+    return b;
+  };
+  nav.append(mk("","All evidence levels",STATE.threats.length,"var(--dim)"));
+  nav.append(mk("Real-world","Real-world / realized",counts["Real-world"],"var(--realized)"));
+  nav.append(mk("Hypothetical","Hypothetical / theoretical",counts["Hypothetical"],"var(--feasible)"));
+  nav.append(mk("Reference","Reference (frameworks)",counts["Reference"],"var(--demonstrated)"));
+}
+function renderKindNav(){
+  const nav=$("#kindNav"); if(!nav)return; nav.innerHTML=""; const c=kindCounts();
+  const mk=(val,label,count)=>{
+    const b=el("button","navitem"+(FILT.kind===val?" on":""));
+    b.innerHTML=`<span class="nm">${esc(label)}</span><span class="ct">${count}</span>`;
+    b.onclick=()=>{FILT.kind=FILT.kind===val?"":val;refresh();};
+    return b;
+  };
+  nav.append(mk("","All types",STATE.threats.length));
+  Object.keys(c).sort().forEach(k=>nav.append(mk(k,KIND_LABELS[k]||k,c[k])));
+}
+function renderSrcStrip(){
+  const strip=$("#srcStrip"); strip.innerHTML="";
+  strip.append(el("span","lab","Show"));
+  const counts={real:0,others:0};
+  STATE.threats.forEach(t=>{realityClass(t)==="Real-world"?counts.real++:counts.others++;});
+  const mk=(val,label,ct)=>{
+    const b=el("button","top-seg"+(FILT.realtop===val?" on":""));
+    b.innerHTML=`${esc(label)}${ct!=null?` <span class="ct">${ct}</span>`:""}`;
+    b.onclick=()=>{FILT.realtop=FILT.realtop===val?"":val;refresh();};
+    return b;
+  };
+  strip.append(mk("","All",STATE.threats.length));
+  strip.append(mk("real","Real",counts.real));
+  strip.append(mk("others","Others",counts.others));
+  syncTypeSelect();
+}
+function syncTypeSelect(){
+  const sel=$("#typeSelect"); if(!sel)return;
+  let v="all";
+  if(FILT.reality==="Hypothetical")v="hyp";
+  else if(FILT.reality==="Reference")v="ref";
+  else if(FILT.realtop==="real")v="real";
+  sel.value=v;
 }
 function renderStats(){
   const s=stats(); const g=$("#stats"); g.innerHTML="";
@@ -556,52 +1315,277 @@ function renderStats(){
     if(o.bar)d.append(el("div","bar",o.bar)); g.append(d);});
 }
 function currentFilters(){
-  const m={source:"f-source",kind:"f-kind",band:"f-band",maturity:"f-maturity",platform:"f-platform"};
+  const m={band:"f-band",maturity:"f-maturity",platform:"f-platform"};
   const f={}; for(const k in m){const v=$("#"+m[k]).value;if(v)f[k]=v;}
-  if($("#f-real").checked)f.real_world=true; return f;
+  if(FILT.source)f.source=FILT.source;
+  if(FILT.kind)f.kind=FILT.kind;
+  if(FILT.reality)f.reality=FILT.reality;
+  if(FILT.realtop)f.realtop=FILT.realtop;
+  return f;
+}
+function currentThreats(){
+  const q=$("#q").value.trim();
+  return q?retrieve(q,400,currentFilters()):listThreats($("#sort").value,currentFilters());
 }
 function renderGrid(){
-  const q=$("#q").value.trim(); let threats;
-  if(q){threats=retrieve(q,60,currentFilters());$("#gridTitle").textContent="Search results";}
-  else{threats=listThreats($("#sort").value,currentFilters());$("#gridTitle").textContent="Threats";}
+  const q=$("#q").value.trim();
+  const threats=currentThreats();
+  $("#gridTitle").textContent=q?"Search results":"Threats";
   $("#gridCount").textContent=threats.length+" shown";
   const g=$("#grid"); g.innerHTML="";
-  if(!threats.length){g.append(el("div","empty","No threats match these filters."));return;}
+  if(!threats.length){g.className="grid";g.append(el("div","empty","No threats match these filters."));return;}
+  if((PREFS&&PREFS.layout)==="table"){renderTable(g,threats,false);return;}
+  if((PREFS&&PREFS.layout)==="compact"){renderTable(g,threats,true);return;}
+  g.className="grid";
   threats.forEach((t,i)=>{
     const card=el("div","card"); card.style.animationDelay=Math.min(i*12,260)+"ms"; card.dataset.open=t.id;
     const top=el("div","card-top"); top.append(el("span","card-id",t.id));
     top.append(el("span","src",t.source.replace("MITRE ",""))); card.append(top);
     card.append(el("h4",null,esc(t.name))); card.append(el("p",null,esc(t.description||"")));
+    const im=impactModel(t);
+    const org=el("div","card-org"); org.innerHTML=`<span class="k">Impacted</span> ${esc(im.org)}`;
+    card.append(org);
     const foot=el("div","card-foot");
     foot.append(el("span","sevbadge b-"+t.severity.band,t.severity.band));
     foot.append(el("span","scoretxt",t.severity.score+"/100"));
     foot.insertAdjacentHTML("beforeend",realityMeter(t.maturity)); card.append(foot); g.append(card);
   });
 }
-function renderAll(){syncPills();renderFacets();renderStats();renderGrid();}
+let TSORT={col:"date",dir:-1};
+const cvssOf=t=>(typeof t.cvss==="number"?t.cvss:null);
+const cvssBand=v=>v>=9?"b-Critical":v>=7?"b-High":v>=4?"b-Medium":"b-Low";
+const TCOLS=[["id","ID"],["name","Threat"],["date","Date"],["actor","Threat actor"],
+  ["org","Impacted org"],["fin","Est. financial"],["type","Type"]];
+function tkey(t,c){switch(c){
+  case "sev":return t.severity.score; case "cvss":return cvssOf(t); case "id":return t.id.toLowerCase();
+  case "name":return t.name.toLowerCase(); case "date":return dateVal(t);
+  case "actor":return impactModel(t).actor.toLowerCase(); case "org":return impactModel(t).org.toLowerCase();
+  case "fin":return t.severity.score; case "type":return t.kind; default:return t.severity.score;}}
+function tableSorted(threats){const c=TSORT.col,dir=TSORT.dir;
+  return threats.slice().sort((a,b)=>{let ka=tkey(a,c),kb=tkey(b,c);
+    if(ka==null&&kb==null)return 0; if(ka==null)return 1; if(kb==null)return -1;
+    if(ka<kb)return -dir; if(ka>kb)return dir; return 0;});}
+function renderTable(g,threats,line){
+  g.className=""; threats=tableSorted(threats);
+  const ind=c=>TSORT.col===c?(TSORT.dir<0?" ▼":" ▲"):"";
+  let h='<table class="tbl'+(line?" line":"")+'"><thead><tr>'+TCOLS.map(([c,l])=>`<th class="th-${c}" data-col="${c}">${l}${ind(c)}</th>`).join("")+'</tr></thead><tbody>';
+  threats.forEach(t=>{const im=impactModel(t); const dt=t.date||t.modified||""; const cv=cvssOf(t);
+    h+=`<tr data-open="${t.id}">`+
+      `<td class="c-id mono">${t.id}</td>`+
+      `<td class="c-name">${esc(t.name)}</td>`+
+      `<td class="c-date mono">${esc(dt||"—")}</td>`+
+      `<td class="c-actor">${esc(im.actor)}</td>`+
+      `<td class="c-org">${esc(im.org)}</td>`+
+      `<td class="c-fin"${im.known?' title="documented"':' title="modeled estimate"'}>${esc(im.financial)}</td>`+
+      `<td class="c-type">${esc(KIND_LABELS[t.kind]||t.kind)}</td></tr>`;});
+  h+="</tbody></table>"; g.innerHTML=h;
+  g.querySelectorAll("th[data-col]").forEach(th=>th.onclick=()=>{const c=th.dataset.col;
+    if(TSORT.col===c)TSORT.dir*=-1; else {TSORT.col=c;TSORT.dir=(c==="sev"||c==="date"||c==="cvss")?-1:1;}
+    renderGrid();});
+}
+function renderAll(){syncPills();renderFacets();renderSourceNav();renderFrameworkNav();renderRealityNav();renderKindNav();renderSrcStrip();renderStats();renderGrid();}
 
-function runAnalyze(){
+/* ---- pop the threats frame out into a separate window (or full-screen fallback) ---- */
+function popHtml(rows){
+  const head=["sev","id","name","date","actor","org","fin","type"];
+  const labels={sev:"Severity",id:"ID",name:"Threat",date:"Date",actor:"Threat actor",org:"Impacted org",fin:"Est. financial",type:"Type"};
+  const dark=PREFS.theme==="dark";
+  return `<!doctype html><html><head><meta charset="utf-8"><title>ATLAS Watch — Threats</title><style>
+  body{font-family:Inter,system-ui,sans-serif;margin:0;background:${dark?"#0c0e13":"#fff"};color:${dark?"#e8ebf1":"#1b2130"}}
+  .bar{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid ${dark?"#2a2f3a":"#e2e6ee"};position:sticky;top:0;background:inherit}
+  .bar b{font-size:15px}.bar .c{color:#8891a3;font-size:12px;font-family:monospace}
+  button{margin-left:auto;background:#0fb5a6;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-weight:700;cursor:pointer}
+  input{padding:6px 9px;border:1px solid ${dark?"#2a2f3a":"#e2e6ee"};border-radius:7px;font-size:13px;background:inherit;color:inherit}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{position:sticky;top:48px;background:${dark?"#15181f":"#f5f7fa"};text-align:left;padding:7px 9px;border-bottom:1px solid ${dark?"#2a2f3a":"#e2e6ee"};
+    font:600 10px monospace;letter-spacing:.06em;text-transform:uppercase;color:#8891a3;cursor:pointer;white-space:nowrap}
+  td{padding:6px 9px;border-bottom:1px solid ${dark?"#1c2027":"#eef1f6"}}
+  .sev{font-family:monospace;font-weight:700;padding:1px 7px;border-radius:6px}
+  .b-Critical{background:rgba(226,61,46,.16);color:#e23d2e}.b-High{background:rgba(217,115,22,.15);color:#d97316}
+  .b-Medium{background:rgba(181,135,15,.16);color:#b5870f}.b-Low{background:rgba(58,99,173,.16);color:#5577c0}
+  .id{color:#0fb5a6;font-family:monospace;font-size:11px}</style></head><body>
+  <div class="bar"><b>ATLAS Watch — Threats</b><span class="c" id="cnt"></span>
+  <input id="f" placeholder="filter…"/><button onclick="window.close()">Pop back in ✕</button></div>
+  <table><thead><tr>${head.map(c=>`<th data-c="${c}">${labels[c]}</th>`).join("")}</tr></thead><tbody id="tb"></tbody></table>
+  <script>
+  var ROWS=${JSON.stringify(rows)},sc="date",sd=-1;
+  function esc(s){return (s||"").replace(/[&<>]/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[m];});}
+  function cb(v){return v>=9?"b-Critical":v>=7?"b-High":v>=4?"b-Medium":"b-Low";}
+  function render(){var f=(document.getElementById("f").value||"").toLowerCase();
+    var r=ROWS.filter(function(x){return !f||(x.id+" "+x.name+" "+x.source+" "+x.actor+" "+x.org).toLowerCase().indexOf(f)>=0;});
+    r.sort(function(a,b){var ka=a[sc],kb=b[sc];if(sc==="sev"||sc==="cvss"){ka=(ka==null?-1:+ka);kb=(kb==null?-1:+kb);}else{ka=(""+ka).toLowerCase();kb=(""+kb).toLowerCase();}
+      return ka<kb?-sd:ka>kb?sd:0;});
+    document.getElementById("cnt").textContent=r.length+" shown";
+    document.getElementById("tb").innerHTML=r.map(function(x){return "<tr>"+
+      '<td><span class="sev b-'+x.band+'">'+x.sev+'</span></td>'+
+      '<td class="id">'+esc(x.id)+'</td><td>'+esc(x.name)+
+      '</td><td>'+esc(x.date||"—")+'</td><td>'+esc(x.actor)+'</td><td>'+esc(x.org)+'</td><td>'+esc(x.fin)+'</td><td>'+esc(x.type)+'</td></tr>';}).join("");}
+  var ths=document.querySelectorAll("th");for(var i=0;i<ths.length;i++){ths[i].onclick=(function(th){return function(){var c=th.getAttribute("data-c");if(sc===c)sd*=-1;else{sc=c;sd=(c==="sev"||c==="date"||c==="cvss")?-1:1;}render();};})(ths[i]);}
+  document.getElementById("f").addEventListener("input",render);render();
+  <\/script></body></html>`;
+}
+function downloadThreatsExcel(){
+  const rows=currentThreats();
+  const cols=["ID","Threat","Source","Type","Severity (0-100)","Severity band",
+    "Maturity","Date","Threat actor","Impacted org","Est. financial","Platforms","Tactics","Description"];
+  const xe=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+  const cell=(v,t)=>`<Cell><Data ss:Type="${t||"String"}">${xe(v)}</Data></Cell>`;
+  let body="";
+  rows.forEach(t=>{const im=impactModel(t);
+    body+="<Row>"+
+      cell(t.id)+cell(t.name)+cell(t.source)+cell(KIND_LABELS[t.kind]||t.kind)+
+      cell(t.severity.score,"Number")+cell(t.severity.band)+cell(t.maturity||"")+
+      cell(t.date||t.modified||"")+cell(im.actor)+cell(im.org)+cell(im.financial)+
+      cell((t.platforms||[]).join(", "))+cell((t.tactics||[]).join(", "))+
+      cell(t.description||"")+"</Row>\n";});
+  const head="<Row ss:StyleID=\"h\">"+cols.map(c=>cell(c)).join("")+"</Row>\n";
+  const xml='<?xml version="1.0"?>\n'+
+    '<?mso-application progid="Excel.Sheet"?>\n'+
+    '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" '+
+    'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n'+
+    '<Styles><Style ss:ID="h"><Font ss:Bold="1"/>'+
+    '<Interior ss:Color="#E2E6EE" ss:Pattern="Solid"/></Style></Styles>\n'+
+    '<Worksheet ss:Name="Incidents"><Table>\n'+head+body+'</Table></Worksheet>\n</Workbook>';
+  const blob=new Blob([xml],{type:"application/vnd.ms-excel"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download="atlaswatch-incidents-"+new Date().toISOString().slice(0,10)+".xls";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  toast("Exported "+rows.length+" rows to Excel.");
+}
+function popOutThreats(){
+  const ts=currentThreats().map(t=>{const im=impactModel(t);return {id:t.id,name:t.name,source:t.source,
+    type:KIND_LABELS[t.kind]||t.kind,sev:t.severity.score,band:t.severity.band,cvss:cvssOf(t),date:t.date||t.modified||"",
+    actor:im.actor,org:im.org,fin:im.financial};});
+  const w=window.open("","atlaswatchThreats","width=1180,height=820");
+  if(!w){toast("Pop-out blocked by browser — showing full-screen instead. Allow popups to detach.");toggleMaxGrid(true);return;}
+  w.document.open(); w.document.write(popHtml(ts)); w.document.close();
+}
+function toggleMaxGrid(force){
+  const m=$("#gridWrap"); if(!m)return;
+  const on=force!=null?force:!m.classList.contains("maxed");
+  m.classList.toggle("maxed",on);
+  $("#popBack").style.display=on?"inline-block":"none";
+}
+
+/* ---- Ollama live RAG engine (with deterministic fallback) ---- */
+function ollamaUrl(){return (PREFS.ollamaUrl||"http://localhost:11434").replace(/\/+$/,"");}
+function buildRagPrompt(query,retrieved){
+  const ctx=retrieved.map(t=>{const im=impactModel(t);
+    return `[${t.id}] ${t.name} (source: ${t.source}; type: ${t.kind}; severity: ${t.severity.band} ${t.severity.score}/100; maturity: ${t.maturity||"n/a"}; actor: ${im.actor}; impacted: ${im.org}; financial: ${im.financial})\n${(t.description||"").slice(0,500)}`;
+  }).join("\n\n");
+  return `You are an AI-security threat analyst. Using ONLY the CONTEXT below (real entries from MITRE ATLAS, OWASP, NIST, and incident/vulnerability databases), answer the QUESTION concisely for a security leader. Cite entries inline as [ID]. Cover, where relevant: the threat actor, impacted organization, TTPs, and business impact (lost operations and financial cost). If the context is insufficient, say so.\n\nCONTEXT:\n${ctx}\n\nQUESTION: ${query}\n\nANALYSIS:`;
+}
+async function askOllama(query,retrieved){
+  const r=await fetch(ollamaUrl()+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:(PREFS.ollamaModel||"llama3.1"),prompt:buildRagPrompt(query,retrieved),stream:false})});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  const d=await r.json(); if(!d.response)throw new Error("empty response");
+  return d.response.trim();
+}
+async function testOllama(){
+  const st=$("#ollamaStatus"); st.textContent="testing…"; st.className="oll-st";
+  try{
+    const r=await fetch(ollamaUrl()+"/api/tags"); if(!r.ok)throw new Error("HTTP "+r.status);
+    const d=await r.json(); const models=(d.models||[]).map(m=>m.name);
+    if(models.length&&!$("#ollamaModel").value){$("#ollamaModel").value=models[0];PREFS.ollamaModel=models[0];savePrefs(PREFS);}
+    st.textContent="✓ connected · "+(models.length?models.slice(0,4).join(", "):"no models"); st.className="oll-st ok";
+  }catch(e){ st.textContent="✗ unreachable (is Ollama running? set OLLAMA_ORIGINS for browser access)"; st.className="oll-st err"; }
+}
+function renderRetrieved(r){
+  const s=r.severity_summary;
+  $("#sevSummary").innerHTML=(s&&s.max!=null)?
+    `<span>peak <b>${s.max}/100</b> (${s.top_band})</span><span>mean <b>${s.mean}</b></span>`+
+    `<span>real-world matches <b style="color:var(--realized)">${s.real_world}</b></span>`:"";
+  const rr=$("#retRow"); rr.innerHTML="";
+  r.retrieved.forEach(t=>{const c=el("div","ret"); c.dataset.open=t.id;
+    c.innerHTML=`<span class="sevbadge b-${t.severity.band}" style="padding:1px 6px">${t.severity.score}</span>`+
+      `<span class="id">${t.id}</span> ${esc(t.name)}`; rr.append(c);});
+  const mb=$("#mitBox"); mb.innerHTML="";
+  if(r.mitigations.length){mb.innerHTML='<div class="rail-h">Recommended defenses (MITRE ATLAS)</div>';
+    r.mitigations.slice(0,6).forEach(x=>mb.append(el("div","mit",`<span class="id">${x.id}</span>${esc(x.name)}`)));}
+}
+async function runAnalyze(){
   const query=$("#ask").value.trim(); if(!query)return;
   const btn=$("#askBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span>Analyzing';
   $("#result").classList.add("show");
-  setTimeout(()=>{ // let the UI paint the spinner
-    const r=analyze(query,8);
-    $("#engineTag").textContent="Engine: deterministic (grounded RAG)";
+  const r=analyze(query,8);            // RAG retrieval + deterministic brief (always computed)
+  renderRetrieved(r);
+  const engine=PREFS.engine||"deterministic";
+  if(engine==="ollama"){
+    $("#engineTag").textContent="Engine: Ollama ("+(PREFS.ollamaModel||"llama3.1")+") — generating…";
+    try{
+      const text=await askOllama(query,r.retrieved);
+      $("#answer").innerHTML=linkifyRefs(text);
+      $("#engineTag").textContent="Engine: Ollama ("+(PREFS.ollamaModel||"llama3.1")+") · live RAG";
+    }catch(e){
+      $("#answer").innerHTML=linkifyRefs(r.answer)+
+        `<div class="oll-fallback">Ollama unreachable (${esc(e.message)}) — showing deterministic analysis. Click “Test” to check the connection.</div>`;
+      $("#engineTag").textContent="Engine: deterministic (Ollama fallback)";
+    }
+  }else{
     $("#answer").innerHTML=linkifyRefs(r.answer);
-    const s=r.severity_summary;
-    $("#sevSummary").innerHTML=(s&&s.max!=null)?
-      `<span>peak <b>${s.max}/100</b> (${s.top_band})</span><span>mean <b>${s.mean}</b></span>`+
-      `<span>real-world matches <b style="color:var(--realized)">${s.real_world}</b></span>`:"";
-    const rr=$("#retRow"); rr.innerHTML="";
-    r.retrieved.forEach(t=>{const c=el("div","ret"); c.dataset.open=t.id;
-      c.innerHTML=`<span class="sevbadge b-${t.severity.band}" style="padding:1px 6px">${t.severity.score}</span>`+
-        `<span class="id">${t.id}</span> ${esc(t.name)}`; rr.append(c);});
-    const mb=$("#mitBox"); mb.innerHTML="";
-    if(r.mitigations.length){mb.innerHTML='<div class="rail-h">Recommended defenses (MITRE ATLAS)</div>';
-      r.mitigations.slice(0,6).forEach(x=>mb.append(el("div","mit",`<span class="id">${x.id}</span>${esc(x.name)}`)));}
-    btn.disabled=false; btn.textContent="Analyze";
-  },30);
+    $("#engineTag").textContent="Engine: deterministic (grounded RAG)";
+  }
+  btn.disabled=false; btn.textContent="Analyze";
 }
+
+/* ---- agentic-pipeline mapping + diagram (per threat) ---- */
+function pipelineComponents(t){
+  const txt=((t.name||"")+" "+(t.description||"")+" "+(t.tactics||[]).join(" ")).toLowerCase();
+  const tac=new Set(t.tactics||[]);
+  const has=(...ws)=>ws.some(w=>txt.includes(w));
+  const hit=new Set();
+  if(has("prompt inject","indirect","input manipulation","adversarial data","adversarial example","evasion","jailbreak","drive-by","retrieval","rag","deepfake","user prompt","craft adversarial","clickbait")||tac.has("Initial Access")||tac.has("Reconnaissance"))hit.add("inputs");
+  if(has("poison","training data","backdoor","fine-tun","transfer learning","skewing","dataset","pre-trained","split-view")||tac.has("Resource Development"))hit.add("training");
+  if(has("model","jailbreak","system prompt","inversion","membership","extract","hallucinat","statistical","evade ai model","llm ")||tac.has("Defense Evasion")||tac.has("Discovery"))hit.add("core");
+  if(has("agent","plan","self-replicat","recursive","self-delegation","sub-agent","deploy ai agent","autonom"))hit.add("planning");
+  if(has("memory","context poison","thread","vector","rag database","episodic"))hit.add("memory");
+  if(has("tool","mcp","api","code exec","plugin","command","package","supply chain","reverse shell","cloud","actuator","execute"))hit.add("tools")||(tac.has("Execution")&&hit.add("tools"));
+  if(has("privile","excessive agency","escalat","valid account","credential","escape to host","permission")||tac.has("Privilege Escalation")||tac.has("Credential Access"))hit.add("action");
+  if(has("exfiltrat","output handling","data leakage","response rendering","data destruction","citation","misinformation","output integrity","harm","leak")||tac.has("Exfiltration")||tac.has("Impact"))hit.add("outputs");
+  if(has("erode","skewing","persist","rag poison","self-replicat","re-plan","feedback")||tac.has("Persistence"))hit.add("feedback");
+  if(hit.size===0)hit.add("core");
+  return hit;
+}
+function pipelineSVG(t){
+  const on=pipelineComponents(t);
+  const col=({Critical:"var(--crit)",High:"var(--high)",Medium:"var(--med)",Low:"var(--low)"})[t.severity.band]||"var(--accent)";
+  const box=(k,x,y,w,h,title,sub,ts)=>{
+    const hot=on.has(k);
+    const fill=hot?col:"var(--panel)";
+    const op=hot?0.16:1; const stroke=hot?col:"var(--line)"; const sw=hot?2:1;
+    const tcol=hot?col:"var(--muted)";
+    let s=`<g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="${fill}" fill-opacity="${hot?op:1}" stroke="${stroke}" stroke-width="${sw}"/>`;
+    s+=`<text x="${x+w/2}" y="${y+(sub?16:h/2+4)}" text-anchor="middle" font-size="${ts||10.5}" font-weight="700" fill="${tcol}">${title}</text>`;
+    if(sub)s+=`<text x="${x+w/2}" y="${y+30}" text-anchor="middle" font-size="8.5" fill="var(--dim)">${sub}</text>`;
+    return s+"</g>";
+  };
+  const arrow=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#pa)"/>`;
+  let s=`<svg viewBox="0 0 540 286" class="pipe" xmlns="http://www.w3.org/2000/svg">`;
+  s+=`<defs><marker id="pa" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--muted)"/></marker></defs>`;
+  // outer center container
+  s+=`<rect x="110" y="14" width="312" height="208" rx="9" fill="none" stroke="var(--line)" stroke-dasharray="3 3"/>`;
+  s+=`<text x="266" y="9" text-anchor="middle" font-size="9" fill="var(--dim)">AGENTIC AI SYSTEM</text>`;
+  s+=box("inputs",6,40,92,70,"INPUTS","prompt·RAG·docs");
+  s+=box("training",6,124,92,56,"TRAINING","data·fine-tune");
+  s+=box("core",120,24,292,40,"LLM CORE — reasons · plans · decides",null,10);
+  s+=box("planning",120,74,90,66,"PLANNING","sub-agents");
+  s+=box("memory",214,74,90,66,"MEMORY","short·long·RAG");
+  s+=box("tools",308,74,104,66,"TOOLS & DATA","API·code·web");
+  s+=box("action",120,150,292,30,"ACTION & EXECUTION PRIVILEGES",null,9.5);
+  s+=box("outputs",432,40,100,118,"OUTPUTS","responses·actions");
+  // arrows
+  s+=arrow(99,75,118,75); s+=arrow(414,90,431,90);
+  // feedback loop (dashed)
+  const fbHot=on.has("feedback");
+  s+=`<path d="M482,160 L482,258 L52,258 L52,182" fill="none" stroke="${fbHot?col:'#c0392b'}" stroke-width="${fbHot?2:1.3}" stroke-dasharray="5 4" marker-end="url(#pa)"/>`;
+  s+=`<text x="266" y="276" text-anchor="middle" font-size="9" fill="${fbHot?col:'#c0392b'}">Autonomous feedback loop — observe results & re-plan</text>`;
+  s+="</svg>";
+  return s;
+}
+
 
 /* ---- drawer ---- */
 const sec=(t,b)=>`<div class="dr-sec"><div class="rail-h">${t}</div>${b}</div>`;
@@ -609,7 +1593,7 @@ const tags=arr=>`<div class="tags">${arr.map(x=>`<span class="tag">${esc(x)}</sp
 function openDrawer(id){
   const t=getDetail(id); if(!t)return;
   const d=$("#drawer"); d.classList.add("show"); $("#scrim").classList.add("show");
-  let h=`<button class="x" onclick="closeDrawer()">&times;</button>`;
+  let h=`<div class="drawer-grip" id="drawerGrip" title="Drag to resize"></div><button class="x" onclick="closeDrawer()">&times;</button>`;
   h+=`<div class="dr-id">${t.id} · ${esc(t.source)} · ${t.kind.replace("-"," ")}</div>`;
   h+=`<h2>${esc(t.name)}</h2><div class="dr-badges">`+
      `<span class="sevbadge b-${t.severity.band}">${t.severity.band} · ${t.severity.score}/100</span>${realityMeter(t.maturity)}`;
@@ -617,10 +1601,24 @@ function openDrawer(id){
   if(t.actor&&t.actor!=="Unknown")h+=`<span class="tag">actor: ${esc(t.actor)}</span>`;
   if(t.attack_reference)h+=`<span class="tag">ATT&CK ${t.attack_reference}</span>`;
   h+=`</div><div class="dr-sec"><div class="dr-desc">${esc(t.description)}</div></div>`;
+  h+=`<div class="dr-sec"><div class="rail-h">Where it hits the agentic pipeline</div>${pipelineSVG(t)}`+
+     `<div class="pipe-legend">Highlighted stages are affected by this threat · Agentic AI model after CISA / ASD ACSC Fig 1</div></div>`;
+  {const im=impactModel(t); const cv=cvssOf(t);
+   h+=`<div class="dr-sec"><div class="rail-h">Threat intelligence</div><div class="intel">`+
+     `<div class="intel-row"><span class="k">Priority score</span><span class="v"><span class="sevbadge b-${t.severity.band}">${t.severity.band} · ${t.severity.score}/100</span> <span class="muted-note">(composite ranking)</span></span></div>`+
+     `<div class="intel-row"><span class="k">CVSS</span><span class="v">`+
+       (cv!=null?`<span class="cvss-badge ${cvssBand(cv)}">${cv.toFixed(1)}</span> <span class="muted-note">NVD base score</span>`
+         :`<span class="muted-note">not a CVE — CVSS not applicable</span>`)+`</span></div>`+
+     `<div class="intel-row"><span class="k">Threat actor</span><span class="v">${esc(im.actor)}</span></div>`+
+     `<div class="intel-row"><span class="k">Impacted organization</span><span class="v">${esc(im.org)}</span></div>`+
+     `<div class="intel-row"><span class="k">TTP</span><span class="v mono">${esc(im.ttp)}</span></div>`+
+     `<div class="intel-row"><span class="k">Lost operation</span><span class="v">${esc(im.operational)}</span></div>`+
+     `<div class="intel-row"><span class="k">Financial cost</span><span class="v">${esc(im.financial)} <span class="fin-tag ${im.known?'doc':'mod'}">${im.known?'documented':'modeled estimate'}</span></span></div>`+
+     `</div></div>`;}
   if(t.severity.factors&&t.severity.factors.length){h+=`<div class="dr-sec"><div class="rail-h">Why this severity</div>`;
     t.severity.factors.forEach(f=>h+=`<div class="factor">${esc(f)}</div>`); h+=`</div>`;}
   if(t.target)h+=sec("Target",`<div style="font-size:13px;color:var(--text)">${esc(t.target)}</div>`);
-  if((t.tactics||[]).length)h+=sec("ATLAS tactics",tags(t.tactics));
+  if((t.tactics||[]).length)h+=sec("Tactics",tags(t.tactics));
   if((t.platforms||[]).length)h+=sec("Platforms",tags(t.platforms));
   if((t.mitigations||[]).length){let m="";t.mitigations.forEach(x=>m+=`<div class="linkrow"><span class="id">${x.id}</span>${esc(x.name)}</div>`);h+=sec("Mitigations",m);}
   if((t.related_case_details||[]).length){let m="";t.related_case_details.forEach(c=>m+=
@@ -629,28 +1627,105 @@ function openDrawer(id){
     `<div class="linkrow" data-open="${c.id}"><span class="id">${c.id}</span>${esc(c.name)} <span class="sevbadge b-${c.severity.band}" style="margin-left:6px;padding:1px 6px">${c.severity.score}</span></div>`);h+=sec("Techniques used",m);}
   if((t.references||[]).length){let m='<div class="reflist">';t.references.forEach(r=>m+=`<a href="${r.url}" target="_blank" rel="noopener">${esc(r.title)} ↗</a>`);m+="</div>";h+=sec("Sources",m);}
   d.innerHTML=h;
+  wireDrawerGrip();
 }
 function closeDrawer(){$("#drawer").classList.remove("show");$("#scrim").classList.remove("show");}
 window.closeDrawer=closeDrawer; window.openDrawer=openDrawer;
 
+/* ---- theme & density (persisted) ---- */
+const STORE="atlaswatch.prefs";
+function loadPrefs(){try{return JSON.parse(localStorage.getItem(STORE))||{};}catch(e){return {};}}
+function savePrefs(p){try{localStorage.setItem(STORE,JSON.stringify(p));}catch(e){}}
+let PREFS=Object.assign({theme:"light",layout:"table",collapsed:["frameworks"],tkShown:false,density:"compact",
+  analystCollapsed:true,
+  engine:"deterministic",ollamaUrl:"http://localhost:11434",ollamaModel:""},loadPrefs());
+function applyTheme(v){PREFS.theme=v;document.documentElement.setAttribute("data-theme",v);savePrefs(PREFS);
+  document.querySelectorAll("#themeCtrl button").forEach(b=>b.classList.toggle("on",b.dataset.themeVal===v));}
+function applyLayout(v){PREFS.layout=v;savePrefs(PREFS);
+  document.querySelectorAll("#layoutCtrl button").forEach(b=>b.classList.toggle("on",b.dataset.layoutVal===v));
+  if(typeof STATE!=="undefined"&&STATE.threats&&STATE.threats.length)renderGrid();}
+function applyRailCollapse(){const set=new Set(PREFS.collapsed||[]);
+  document.querySelectorAll(".rail-grp").forEach(g=>g.classList.toggle("collapsed",set.has(g.dataset.grp)));}
+function toggleRailGroup(g){g.classList.toggle("collapsed");const set=new Set(PREFS.collapsed||[]);
+  if(g.classList.contains("collapsed"))set.add(g.dataset.grp);else set.delete(g.dataset.grp);
+  PREFS.collapsed=[...set];savePrefs(PREFS);}
+function applyTrackerShown(){const tk=$("#tracker");if(tk)tk.classList.toggle("shown",!!PREFS.tkShown);
+  const b=$("#trackerBtn");if(b)b.classList.toggle("on",!!PREFS.tkShown);}
+function applyDensity(){document.documentElement.setAttribute("data-density",PREFS.density||"compact");}
+function openAnalyst(){const a=$("#analystPop");if(!a)return;a.classList.add("open");
+  const ta=$("#ask");if(ta)setTimeout(()=>ta.focus(),30);}
+function closeAnalyst(){const a=$("#analystPop");if(a)a.classList.remove("open");}
+function mkResize(grip,calcW,apply,store){ if(!grip)return;
+  grip.addEventListener("mousedown",e=>{e.preventDefault();
+    const mv=ev=>apply(calcW(ev.clientX));
+    const up=()=>{document.removeEventListener("mousemove",mv);document.removeEventListener("mouseup",up);
+      document.body.style.userSelect="";store&&store();};
+    document.body.style.userSelect="none";
+    document.addEventListener("mousemove",mv);document.addEventListener("mouseup",up);});
+}
+function applyFrameSizes(){
+  if(PREFS.asideW)document.documentElement.style.setProperty("--aside-w",PREFS.asideW+"px");
+  if(PREFS.drawerW)document.documentElement.style.setProperty("--drawer-w",PREFS.drawerW+"px");
+  mkResize($("#asideGrip"),x=>Math.max(180,Math.min(520,Math.round(x))),
+    w=>{PREFS.asideW=w;document.documentElement.style.setProperty("--aside-w",w+"px");},()=>savePrefs(PREFS));
+}
+function wireDrawerGrip(){
+  mkResize($("#drawerGrip"),x=>Math.max(360,Math.min(Math.round(window.innerWidth*0.96),window.innerWidth-x)),
+    w=>{PREFS.drawerW=w;document.documentElement.style.setProperty("--drawer-w",w+"px");},()=>savePrefs(PREFS));
+}
+
 /* ---- wire up ---- */
 function init(){
+  applyTheme(PREFS.theme); applyLayout(PREFS.layout||"cards"); applyDensity();
+  applyRailCollapse(); applyTrackerShown(); applyFrameSizes();
+  document.querySelectorAll("#themeCtrl button").forEach(b=>b.onclick=()=>applyTheme(b.dataset.themeVal));
+  document.querySelectorAll("#layoutCtrl button").forEach(b=>b.onclick=()=>applyLayout(b.dataset.layoutVal));
+  document.querySelectorAll(".rail-grp .grp-tog").forEach(b=>b.onclick=()=>toggleRailGroup(b.closest(".rail-grp")));
+  // engine / ollama
+  const eng=$("#engineSel"); eng.value=PREFS.engine||"deterministic";
+  $("#ollamaUrl").value=PREFS.ollamaUrl||"http://localhost:11434";
+  $("#ollamaModel").value=PREFS.ollamaModel||"";
+  $("#ollamaCfg").style.display=(eng.value==="ollama")?"flex":"none";
+  eng.addEventListener("change",()=>{PREFS.engine=eng.value;savePrefs(PREFS);
+    $("#ollamaCfg").style.display=(eng.value==="ollama")?"flex":"none";});
+  $("#ollamaUrl").addEventListener("change",e=>{PREFS.ollamaUrl=e.target.value.trim();savePrefs(PREFS);});
+  $("#ollamaModel").addEventListener("change",e=>{PREFS.ollamaModel=e.target.value.trim();savePrefs(PREFS);});
+  $("#ollamaTest").onclick=testOllama;
+  // pop out / restore
+  $("#popOut").onclick=popOutThreats;
+  $("#dlExcel").onclick=downloadThreatsExcel;
+  $("#popBack").onclick=()=>toggleMaxGrid(false);
   loadSnapshot(SNAPSHOT);
   renderAll();
+  renderTracker();
+  $("#trackerBtn").addEventListener("click",()=>{PREFS.tkShown=!PREFS.tkShown;savePrefs(PREFS);applyTrackerShown();});
+  $("#typeSelect").addEventListener("change",e=>{
+    const v=e.target.value;
+    if(v==="real"){FILT.realtop="real";FILT.reality="";}
+    else if(v==="hyp"){FILT.realtop="";FILT.reality="Hypothetical";}
+    else if(v==="ref"){FILT.realtop="";FILT.reality="Reference";}
+    else{FILT.realtop="";FILT.reality="";}
+    refresh();
+  });
+  $("#analystOpen").addEventListener("click",openAnalyst);
+  $("#apClose").addEventListener("click",closeAnalyst);
+  $("#apScrim").addEventListener("click",closeAnalyst);
+  $("#tkFreq").addEventListener("change",e=>{TRACK.freq=e.target.value;saveTrack();renderTracker();});
+  $("#tkRun").onclick=()=>runTracker(true);
+  setTimeout(()=>runTracker(false),400);
   // example chips
   const ex=["Real-world deepfake fraud and KYC bypass","How are AI agents hijacked through MCP tools?",
     "Supply-chain attacks on AI models and packages","Indirect prompt injection via RAG and email"];
   const c=$("#exampleChips"); ex.forEach(t=>{const b=el("button","chip",t);
     b.onclick=()=>{$("#ask").value=t;runAnalyze();};c.append(b);});
-  ["f-source","f-kind","f-band","f-maturity","f-platform","sort"].forEach(id=>$("#"+id).addEventListener("change",renderGrid));
-  $("#f-real").addEventListener("change",renderGrid);
+  ["f-band","f-maturity","f-platform","sort"].forEach(id=>$("#"+id).addEventListener("change",renderGrid));
   let qt; $("#q").addEventListener("input",()=>{clearTimeout(qt);qt=setTimeout(renderGrid,200);});
-  $("#reset").onclick=()=>{["f-source","f-kind","f-band","f-maturity","f-platform"].forEach(i=>$("#"+i).value="");
-    $("#f-real").checked=false;$("#q").value="";renderGrid();};
+  $("#reset").onclick=()=>{["f-band","f-maturity","f-platform"].forEach(i=>$("#"+i).value="");
+    FILT={source:"",kind:"",reality:"",realtop:""};$("#q").value="";refresh();};
   $("#askBtn").onclick=runAnalyze;
   $("#ask").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey))runAnalyze();});
   $("#scrim").onclick=closeDrawer;
-  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer();});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAnalyst();closeDrawer();}});
   document.body.addEventListener("click",e=>{const r=e.target.closest(".ref,[data-open]");
     if(r)openDrawer(r.dataset.id||r.dataset.open);});
 }
