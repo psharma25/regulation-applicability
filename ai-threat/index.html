@@ -390,6 +390,10 @@
   .seg-ctrl button:last-child{border-right:none}
   #typeSelect{border:1px solid var(--line);border-radius:999px;background:var(--panel);
     color:inherit;padding:3px 7px;font-size:10.5px;cursor:pointer;max-width:130px}
+  #caseToggle{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--muted);cursor:pointer;white-space:nowrap}
+  #caseToggle input{cursor:pointer;margin:0}
+  .kind-toggle{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .kind-toggle input{cursor:pointer;margin:0}
   .seg-ctrl button.on{background:var(--accent);color:#fff}
   [data-theme="bw"] .seg-ctrl button.on{background:#000;color:#fff}
   .ctrl-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-right:2px}
@@ -437,6 +441,9 @@
       <option value="hyp" title="Hypothetical, demonstrated, or exercise entries">Hypothetical</option>
       <option value="ref" title="Reference entries (frameworks, taxonomies)">Reference</option>
     </select>
+    <label id="caseToggle" title="Uncheck to exclude MITRE case studies and show only realized real-world incidents"><input type="checkbox" id="caseChk" checked> Case studies</label>
+    <label class="kind-toggle" title="Uncheck to exclude ATLAS techniques (TTPs)"><input type="checkbox" id="techChk" checked> TTPs</label>
+    <label class="kind-toggle" title="Uncheck to exclude real-world incident entries"><input type="checkbox" id="incChk" checked> Real-world incidents</label>
     </span>
   </div>
   <div class="meta-pills" id="metaPills"></div>
@@ -725,6 +732,9 @@ function match(t,f){
   if(f.reality&&realityClass(t)!==f.reality)return false;
   if(f.realtop==="real"&&realityClass(t)!=="Real-world")return false;
   if(f.realtop==="others"&&realityClass(t)==="Real-world")return false;
+  if(f.noCase&&t.kind==="case-study")return false;
+  if(f.noTech&&t.kind==="technique")return false;
+  if(f.noIncident&&t.kind==="incident")return false;
   return true;
 }
 function listThreats(sort,filters){
@@ -1216,7 +1226,7 @@ function syncPills(){
   const mp=$("#metaPills"); mp.innerHTML="";
   mp.append(el("span","pill",STATE.threats.length+" threats"));
 }
-let FILT={source:"",kind:"",reality:"",realtop:"real"};
+let FILT={source:"",kind:"",reality:"",realtop:"real",noCase:false,noTech:false,noIncident:false};
 const KIND_LABELS={"technique":"Technique (TTP)","case-study":"Case study","risk":"Framework risk",
   "incident":"Real-world incident","vulnerability":"Vulnerability / CVE","risk-class":"Risk taxonomy"};
 const srcColor=s=>SRC_COLORS[s]||"#9aa2b2";
@@ -1321,6 +1331,9 @@ function currentFilters(){
   if(FILT.kind)f.kind=FILT.kind;
   if(FILT.reality)f.reality=FILT.reality;
   if(FILT.realtop)f.realtop=FILT.realtop;
+  if(FILT.noCase)f.noCase=true;
+  if(FILT.noTech)f.noTech=true;
+  if(FILT.noIncident)f.noIncident=true;
   return f;
 }
 function currentThreats(){
@@ -1707,6 +1720,9 @@ function init(){
     else{FILT.realtop="";FILT.reality="";}
     refresh();
   });
+  $("#caseChk").addEventListener("change",e=>{FILT.noCase=!e.target.checked;refresh();});
+  $("#techChk").addEventListener("change",e=>{FILT.noTech=!e.target.checked;refresh();});
+  $("#incChk").addEventListener("change",e=>{FILT.noIncident=!e.target.checked;refresh();});
   $("#analystOpen").addEventListener("click",openAnalyst);
   $("#apClose").addEventListener("click",closeAnalyst);
   $("#apScrim").addEventListener("click",closeAnalyst);
