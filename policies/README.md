@@ -1,63 +1,47 @@
 # BitSense Security Policy Studio
 
-A **single-file, fully offline** security documentation library. Pick a security pillar and one or more industries, then browse a classified set of controlled documents — **Policies, Standards, Procedures, Work Instructions and RACI matrices** — every one of them **pre-written and rendered instantly**. Edit any document in place, stamp it with your Organization name and effective date, and run a **regulation rescan** to flag what needs review. No API key, no build step.
+A single-file, offline GRC documentation studio: 132 pre-written policies, standards,
+procedures, work instructions and RACI matrices across five pillars (Enterprise, IT,
+Product, M&A and PQC Readiness), with search, a glossary, a framework-coverage heatmap,
+and a weekly compliance agent.
 
-> **126 documents + 12 RACI matrices** across **4 pillars**, tagged to their management system — **ISMS** (ISO/IEC 27001) or **QMS** (ISO 13485 / FDA) — and aligned to recognized open frameworks.
-
-## Run it
-
-- **Locally:** open `index.html` in any browser.
-- **GitHub Pages:** push this repo, enable Pages on the default branch (`/root`), and the site is live at `https://<user>.github.io/<repo>/`.
-
-## What's new in this version
-
-- **M&A Security pillar** — cyber due diligence, post-merger integration, carve-out / divestiture separation and TSA security. Full set: 6 policies, 4 standards, 4 procedures, 3 work instructions + 3 RACI matrices.
-- **In-place editing** — click **Edit** on any document to edit its Markdown; **Save** keeps it for the session, **Revert** restores the original. Edited documents are badged in the library.
-- **Organization & Effective-date placeholders** — set them in the top bar; they flow into every document header. Left blank, documents show `[Organization Name]` / `[Effective Date]` placeholders, ready to fill.
-- **Rescan regulations** — the **↻ Rescan regulations** button (in the library toolbar) checks every document against a built-in regulatory register, refreshes review dates, and flags documents whose cited frameworks have changed since the baseline. It produces a report and an in-document "Regulatory watch" banner.
-
-### How the rescan works (and how to keep it current)
-
-The register is embedded in the app and **also shipped as `regulations.json`** in this repo. On rescan, the app loads `regulations.json` (when served over http/https) and merges it over the built-in register, so you maintain regulations in one editable file:
-
-```json
-{
-  "baseline": "2026-01-31",
-  "regulations": [
-    { "id": "fda_qmsr", "name": "FDA QMSR (21 CFR 820)", "version": "...", "updated": "2026-02-02",
-      "note": "…", "match": ["21 cfr 820", "qmsr"] }
-  ]
-}
+## Files
+```
+policies.html                          the studio (open or serve this)
+regulations.json                       framework register the studio reads at runtime
+agent/refresh_regulations.py           the compliance agent (updates the register)
+.github/workflows/compliance-agent.yml GitHub Action (weekly + on demand + on push)
+README.md                              this file
 ```
 
-Any framework whose `updated` date is later than `baseline` is treated as changed; every document whose text contains one of that framework's `match` keywords is flagged for review. Update the dates/notes (or add entries) and re-run the scan.
+## Use it now (no setup)
+Open `policies.html` in a browser, or serve it. Everything works offline: browse by
+pillar, switch Cards / Compact / Table views, search, open the glossary and the coverage
+heatmap. Sections start collapsed and the library opens in Compact view.
 
-**The rescan is advisory.** It refreshes review metadata and surfaces what changed — it does **not** rewrite policy text. An accountable owner must review and update flagged documents, and you should always verify against official sources.
+> Opening via `file://` (double-click) always uses the register embedded in the HTML,
+> because browsers block local `fetch()`. The live `regulations.json` is only read when
+> the page is served over http(s) (e.g. GitHub Pages).
 
-## What's inside
+## Deploy on GitHub (agent runs by default)
+1. Create a repo and add all files at the **repo root**, keeping the folder layout above.
+2. **Settings -> Actions -> General -> Workflow permissions -> Read and write**, then Save.
+   (Required so the agent can commit an updated `regulations.json`.)
+3. Push to `main`. The workflow runs **automatically on that first push**, then **every
+   Monday**, and any time you click **Run workflow** on the **Actions** tab.
+4. (Optional) **Settings -> Pages -> Deploy from branch -> main / root** to serve
+   `policies.html`. Once served over https, the page loads the agent-maintained
+   `regulations.json` and the in-page **Run compliance agent** button re-scans every
+   document and flags any whose cited frameworks changed.
 
-| Path | Contents |
-|---|---|
-| `index.html` | The complete studio app (self-contained) |
-| `regulations.json` | The editable regulatory register used by Rescan |
-| `policies/<pillar>/` | Every document as an individual Markdown file |
-| `raci/` | All 12 RACI matrices as Markdown |
-| `bundle/<pillar>-library.md` | One combined Markdown file per pillar |
+## What the agent does
+`agent/refresh_regulations.py` maintains `regulations.json` from a canonical list
+(`CANON`). Any entry with an `updated` date after the studio baseline (2026-01-31)
+flags every document that references that framework. Extend `CANON`, or wire it to
+authoritative sources (fda.gov, csrc.nist.gov, eur-lex.europa.eu, hhs.gov).
 
-### Pillars
+## Note
+Every document is a template. Validate and have an accountable owner approve before
+adoption. The coverage-heatmap scoring is an assessment, not an attestation.
 
-- **Enterprise Security** — 36 docs + 3 RACI
-- **IT Security** — 38 docs + 3 RACI
-- **Product Security** — 35 docs + 3 RACI
-- **M&A Security** — 17 docs + 3 RACI
-
-## Important
-
-Every document is a **template** — a framework-aligned starting point, not an approved policy. Tailor it to your environment and obligations, map RACI roles to real job titles, set Organization and Effective date, and route it through document control with an accountable owner before adoption.
-
-## License
-
-MIT (see `LICENSE`). Referenced standards remain the property of their respective bodies; this project paraphrases requirements and cites clauses without reproducing standard text.
-
----
-Built for BitSense · thebitsense.com
+(c) 2026 BitSense. All rights reserved.
