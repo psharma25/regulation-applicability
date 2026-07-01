@@ -27,19 +27,19 @@
   .card{background:var(--white);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:28px 26px;display:flex;flex-direction:column;transition:transform .16s,box-shadow .16s;text-decoration:none;color:inherit;}
   .card:hover{transform:translateY(-4px);box-shadow:0 1px 2px rgba(14,53,60,.06),0 20px 44px rgba(14,53,60,.16);}
   .card .ic{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:var(--shadow-sm);margin-bottom:16px;}
-  .card.sep .ic{background:var(--teal);} .card.acq .ic{background:var(--amber);}
+  .card.acq .ic{background:var(--amber);} .card.sep .ic{background:var(--teal);}
   .card .ic svg{width:28px;height:28px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
   .card .kicker{font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
-  .card.sep .kicker{color:var(--teal);} .card.acq .kicker{color:var(--amber);}
-  .card h2{font-family:var(--serif);font-size:24px;font-weight:700;line-height:1.12;margin-bottom:8px;}
+  .card.acq .kicker{color:var(--amber);} .card.sep .kicker{color:var(--teal);}
+  .card h2{font-family:var(--serif);font-size:26px;font-weight:700;line-height:1.12;margin-bottom:8px;}
   .card .desc{font-size:14.5px;color:var(--muted);margin-bottom:16px;}
   .card ul{list-style:none;margin-bottom:20px;}
   .card li{position:relative;font-size:13.5px;padding:6px 0 6px 22px;border-top:1px solid var(--line);}
   .card li:first-child{border-top:none;}
   .card li::before{content:"";position:absolute;left:2px;top:12px;width:8px;height:8px;border-radius:2px;}
-  .card.sep li::before{background:var(--teal);} .card.acq li::before{background:var(--amber);}
+  .card.acq li::before{background:var(--amber);} .card.sep li::before{background:var(--teal);}
   .card .go{margin-top:auto;display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14.5px;}
-  .card.sep .go{color:var(--teal);} .card.acq .go{color:var(--amber);}
+  .card.acq .go{color:var(--amber);} .card.sep .go{color:var(--teal);}
   .card .go .arr{transition:transform .16s;}
   .card:hover .go .arr{transform:translateX(4px);}
   .note{margin-top:28px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-sm);padding:20px 24px;font-size:14px;color:var(--muted);}
@@ -52,36 +52,22 @@
 </head>
 <body>
 <header>
-  <div class="blob" style="width:420px;height:420px;background:var(--teal);opacity:.16;top:-150px;right:-110px;"></div>
-  <div class="blob" style="width:320px;height:320px;background:var(--amber);opacity:.12;bottom:-160px;left:-80px;"></div>
+  <div class="blob" style="width:420px;height:420px;background:var(--amber);opacity:.14;top:-150px;right:-110px;"></div>
+  <div class="blob" style="width:320px;height:320px;background:var(--teal);opacity:.16;bottom:-160px;left:-80px;"></div>
   <div class="wrap">
     <p class="eyebrow">BitSense · M&amp;A security</p>
     <h1>Medical Device M&amp;A — Program Trackers</h1>
-    <p>Two working checklists for the security, privacy and compliance work of a deal — one for carving a business unit <em>out</em> to stand alone, one for bringing a target <em>in</em>. Each covers 15 workstreams with automation ratings, tooling, failure modes, an interactive timeline, and lessons learned.</p>
+    <p>Two working checklists for the security, privacy and compliance work of a deal — one for bringing a target <em>in</em>, one for carving a business unit <em>out</em>. Each covers 15 workstreams with automation ratings, tooling, failure modes, an interactive timeline, and lessons learned.</p>
   </div>
 </header>
 
 <main><div class="wrap">
   <div class="cards">
 
-    <a class="card sep" href="spinoff-separation-tracker.html">
-      <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.4"/><path d="M12 7.4v3.1M12 10.5c0 3-6 2-6 6.5M12 10.5c0 3 6 2 6 6.5"/><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="19" r="2.4"/></svg></div>
-      <p class="kicker">Divestiture · carve-out</p>
-      <h2>Spin-Off / Separation Tracker</h2>
-      <p class="desc">Split a unit out of the parent and stand it up as a governed, standalone company — identity, PKI, cloud, DNS, email, FDA, QMS, OT and more.</p>
-      <ul>
-        <li>15 workstreams · 90 tasks with per-task automation tools</li>
-        <li>Status &amp; comments, filters, JSON/CSV export</li>
-        <li>Timeline explorer with red/green step overlays</li>
-        <li>Separation success &amp; failure stories</li>
-      </ul>
-      <span class="go">Open the separation tracker <span class="arr">&#8594;</span></span>
-    </a>
-
     <a class="card acq" href="acquisition-integration-tracker.html">
       <div class="ic"><svg viewBox="0 0 24 24"><circle cx="6" cy="5" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M6 7.4c0 4.5 6 3.5 6 6.5M18 7.4c0 4.5-6 3.5-6 6.5M12 13.9v3.1"/><circle cx="12" cy="19" r="2.4"/></svg></div>
       <p class="kicker">Acquisition · integration</p>
-      <h2>Acquisition / Integration Tracker</h2>
+      <h2>Acquisition Checklist</h2>
       <p class="desc">Bring a target securely into the acquirer — assess before you connect, consolidate identity, cloud and email, and inherit no undetected risk.</p>
       <ul>
         <li>15 workstreams · 90 tasks with per-task automation tools</li>
@@ -89,19 +75,33 @@
         <li>Timeline explorer with red/green step overlays</li>
         <li>Cyber-diligence lessons (Marriott/Starwood, Verizon/Yahoo)</li>
       </ul>
-      <span class="go">Open the acquisition tracker <span class="arr">&#8594;</span></span>
+      <span class="go">Open the Acquisition Integration Tracker <span class="arr">&#8594;</span></span>
+    </a>
+
+    <a class="card sep" href="spinoff-separation-tracker.html">
+      <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.4"/><path d="M12 7.4v3.1M12 10.5c0 3-6 2-6 6.5M12 10.5c0 3 6 2 6 6.5"/><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="19" r="2.4"/></svg></div>
+      <p class="kicker">Divestiture · carve-out</p>
+      <h2>Spin Off</h2>
+      <p class="desc">Split a unit out of the parent and stand it up as a governed, standalone company — identity, PKI, cloud, DNS, email, FDA, QMS, OT and more.</p>
+      <ul>
+        <li>15 workstreams · 90 tasks with per-task automation tools</li>
+        <li>Status &amp; comments, filters, JSON/CSV export</li>
+        <li>Timeline explorer with red/green step overlays</li>
+        <li>Separation success &amp; failure stories</li>
+      </ul>
+      <span class="go">Open the Spinoff Separation Tracker <span class="arr">&#8594;</span></span>
     </a>
 
   </div>
 
   <div class="note">
-    <b>Same tool, two sides of the deal.</b> Both trackers share the identical interface — collapsible workstream panels, an automate-first filter, an editable what-if timeline, and export. They save progress independently in your browser, so you can run a divestiture and an acquisition side by side.
+    <b>Same tool, two sides of the deal.</b> Both trackers share the identical interface — collapsible workstream panels, an automate-first filter, an editable what-if timeline, and export. They save progress independently in your browser, so you can run an acquisition and a divestiture side by side.
     <div class="row">
       <span><b>15</b> workstreams each</span><span><b>90</b> tracked tasks each</span><span><b>Automation</b> &amp; difficulty tags</span><span><b>Tech stack</b> per workstream</span><span><b>Lessons</b> learned</span>
     </div>
   </div>
 </div></main>
 
-<footer><div class="wrap">BitSense · vCISO advisory for medtech &amp; regulated industries — M&amp;A security, FDA 524B / PSIRT, QMS &amp; ISMS, OT security, privacy, and TSA / integration exit.</div></footer>
+<footer><div class="wrap">BitSense · vCISO advisory for medtech &amp; regulated industries — M&amp;A security, FDA 524B / PSIRT, QMS &amp; ISMS, OT security, privacy, and integration / TSA exit.</div></footer>
 </body>
 </html>
