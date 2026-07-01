@@ -1,1 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GitHub Enterprise Cloud — Hardening Controls (CIS v8 + CMMC L2)</title>
+<style>
+  :root{
+    --ink:#1f2328; --soft:#57606a; --faint:#7d8590; --hair:#d0d7de; --hair2:#eef0f2;
+    --page:#f4f6f8; --card:#ffffff;
+    --teal:#0f766e; --teal-wash:#e7f5f3; --teal-b:#9ad9d0;
+    --gold:#9a6700; --green:#1a7f37; --violet:#8250df; --blue:#0969da; --bdk:#bc4c00;
+    --indigo:#3730a3; --indigo-wash:#eef2ff; --indigo-b:#c7ccf5;
+    --amber-wash:#fff8ec; --amber-b:#f1d49a;
+    --blue-wash:#eaf2fb; --blue-b:#bcd6f5;
+    --violet-wash:#f3eefb; --violet-b:#d8c8f4;
+    --green-wash:#eaf4e3; --green-b:#bcdb9b;
+    --red-wash:#fdeceb; --red-b:#f3b9b6;
+    --gray-wash:#f0f2f4;
+    --lift:0 1px 2px rgba(31,35,40,.06),0 6px 16px rgba(31,35,40,.08);
+    --lift-hi:0 2px 4px rgba(31,35,40,.08),0 14px 30px rgba(31,35,40,.13);
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased;padding:38px 22px 80px}
+  .wrap{max-width:1040px;margin:0 auto}
+  .eyebrow{font:500 12px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+  h1{font-size:26px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+  h2.sec{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--soft);margin:34px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--hair);font-family:var(--mono)}
+  .toolbar{position:sticky;top:0;z-index:5;background:var(--page);padding:14px 0 12px;margin:18px 0 6px;border-bottom:1px solid var(--hair)}
+  .searchrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+  .search{flex:1;min-width:220px;position:relative}
+  .search input{width:100%;padding:10px 12px 10px 34px;font-size:14px;color:var(--ink);background:var(--card);border:1px solid var(--hair);border-radius:10px;box-shadow:var(--lift);outline:none}
+  .search input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,118,110,.12)}
+  .search::before{content:"";position:absolute;left:12px;top:50%;width:13px;height:13px;transform:translateY(-50%);border:1.6px solid var(--faint);border-radius:50%}
+  .search::after{content:"";position:absolute;left:21px;top:62%;width:6px;height:1.6px;background:var(--faint);transform:rotate(45deg)}
+  .btn{font:500 13px/1 var(--sans);color:var(--soft);background:var(--card);border:1px solid var(--hair);border-radius:8px;padding:10px 13px;cursor:pointer;box-shadow:var(--lift)}
+  .btn:hover{color:var(--ink);border-color:var(--faint)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .chips .grp{font:500 10.5px/1 var(--mono);color:var(--faint);letter-spacing:.05em;text-transform:uppercase;margin:0 2px 0 8px}
+  .chips .grp:first-child{margin-left:0}
+  .chip{font:500 12px/1 var(--sans);color:var(--soft);background:var(--card);border:1px solid var(--hair);border-radius:999px;padding:6px 11px;cursor:pointer}
+  .chip:hover{border-color:var(--faint);color:var(--ink)}
+  .chip.on{background:var(--teal);border-color:var(--teal);color:#fff}
+  .card{background:var(--card);border:1px solid var(--hair);border-radius:14px;box-shadow:var(--lift);margin-bottom:12px;overflow:hidden;transition:transform .14s ease,box-shadow .14s ease}
+  .card:hover{transform:translateY(-1px);box-shadow:var(--lift-hi)}
+  .card.hide{display:none}
+  .head{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:none;border:0;cursor:pointer;padding:15px 17px;font-family:inherit;color:inherit}
+  .num{font:600 12px/1 var(--mono);color:var(--faint);flex:none;width:20px}
+  .head-main{flex:1;min-width:0}
+  .title{font-size:15.5px;font-weight:600;display:block}
+  .title small{font-weight:400;color:var(--soft);font-size:12.5px;font-family:var(--mono)}
+  .summary{font-size:13px;color:var(--soft);display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .htags{display:flex;gap:7px;flex:none;align-items:center}
+  .chev{flex:none;width:16px;color:var(--faint);transition:transform .2s ease;font-size:13px}
+  .chev.big{font-size:15px}
+  .card.open .chev,.domain.open .chev.big{transform:rotate(90deg)}
+  .card.open{box-shadow:var(--lift-hi)}
+  .body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .24s ease}
+  .card.open .body{grid-template-rows:1fr}
+  .body-in{overflow:hidden}
+  .triad{padding:4px 17px 14px;display:grid;gap:10px}
+  .maprow{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+  .blk{border-left:2px solid var(--hair);padding:2px 0 2px 12px}
+  .blk.imp{border-color:var(--amber-b)} .blk.det{border-color:var(--blue-b)}
+  .lbl{font:600 10.5px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .blk p{margin:5px 0 0;font-size:13.4px;color:var(--ink)}
+  .blk.imp p,.blk.det p{color:var(--soft)}
+  .blk code{font:500 12px/1 var(--mono);background:var(--gray-wash);padding:1px 5px;border-radius:5px}
+  .pill{font:500 10.5px/1 var(--mono);letter-spacing:.02em;padding:4px 8px;border-radius:999px;border:1px solid var(--hair);color:var(--soft);background:var(--page)}
+  .pill.cis{color:var(--blue);border-color:var(--blue-b);background:var(--blue-wash)}
+  .pill.cmmc{color:var(--violet);border-color:var(--violet-b);background:var(--violet-wash)}
+  .pill.plat{color:var(--teal);border-color:var(--teal-b);background:var(--teal-wash)}
+  .pill.cost{color:var(--bdk);border-color:#f1c39a;background:#fff4ea}
+  .pill.warn{color:var(--bdk);border-color:#f1c39a;background:#fff4ea}
+  .ig{font:600 10.5px/1 var(--mono);padding:4px 8px;border-radius:6px;border:1px solid}
+  .ig1{color:#27500a;background:var(--green-wash);border-color:var(--green-b)}
+  .ig2{color:#854f0b;background:var(--amber-wash);border-color:var(--amber-b)}
+  .ig3{color:#791f1f;background:var(--red-wash);border-color:var(--red-b)}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .dot.low{background:var(--green)} .dot.med{background:#bf8700} .dot.high{background:#cf222e}
+  /* domains */
+  .domain{background:var(--card);border:1px solid var(--hair);border-radius:14px;box-shadow:var(--lift);margin-bottom:12px;overflow:hidden}
+  .domain.hide{display:none}
+  .domhead{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;cursor:pointer;padding:16px 18px;font-family:inherit;color:inherit}
+  .domname{font-size:16px;font-weight:600}
+  .domlabel{font-size:13px;color:var(--soft);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .domprog{font:500 11px/1 var(--mono);color:var(--teal);background:var(--teal-wash);border:1px solid var(--teal-b);border-radius:999px;padding:5px 9px;flex:none}
+  .dombody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .26s ease}
+  .domain.open .dombody{grid-template-rows:1fr}
+  .dombody-in{overflow:hidden;padding:0 12px 8px}
+  .domain .card{box-shadow:none;border-color:var(--hair2)}
+  .domain .card:hover{box-shadow:var(--lift)}
+  /* tracking row */
+  .track{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:2px 0 2px;padding:10px 12px;background:var(--gray-wash);border:1px solid var(--hair);border-radius:10px}
+  .tlab{font:600 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--faint)}
+  .tstatus{font:500 12.5px/1 var(--sans);color:var(--ink);background:#fff;border:1px solid var(--hair);border-radius:8px;padding:7px 9px;outline:none}
+  .tstatus:focus{border-color:var(--teal)}
+  .costlab{font-size:12px;color:var(--soft)} .costlab b{color:var(--ink);font-weight:600}
+  .rk{font-weight:600} .rk-low{color:var(--green)} .rk-med{color:#9a6700} .rk-high{color:#cf222e}
+  .tnotes{flex:1;min-width:160px;font-size:13px;font-family:var(--sans);color:var(--ink);background:#fff;border:1px solid var(--hair);border-radius:8px;padding:7px 10px;outline:none}
+  .tnotes:focus{border-color:var(--teal)}
+  /* glossary */
+  .glossary{columns:2;column-gap:26px}
+  .gterm{break-inside:avoid;margin:0 0 11px}
+  .gterm dt{font-size:13px;font-weight:600;color:var(--ink)}
+  .gterm dd{margin:1px 0 0;font-size:12.6px;color:var(--soft)}
+  /* priority */
+  .ladder{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:4px}
+  .rung{background:#fff;border:1px solid var(--hair);border-radius:12px;box-shadow:var(--lift);padding:14px 15px}
+  .rung h4{margin:0 0 3px;font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .rung .igin{margin-top:8px;display:flex;align-items:center;gap:7px}
+  .rung .igin label{font:500 11px/1 var(--mono);color:var(--faint)}
+  .rung .igin input{flex:1;min-width:0;padding:6px 9px;font-size:13px;font-family:var(--sans);color:var(--ink);background:var(--page);border:1px solid var(--hair);border-radius:8px;outline:none}
+  .rung .igin input:focus{border-color:var(--teal);background:#fff}
+  .rung ul{margin:9px 0 0;padding-left:16px;font-size:12.8px;color:var(--soft)}
+  .rung li{margin:2px 0}
+  .pnote{font-size:12.5px;color:var(--soft);margin:0 0 12px}
+  .arch{padding:6px 2px 2px}
+  .zone{border-radius:14px;padding:30px 14px 14px;margin:10px 0;position:relative;border:1px solid var(--hair)}
+  .zone>.zlab{position:absolute;top:-11px;left:16px;font:600 11px/1 var(--mono);letter-spacing:.03em;padding:6px 11px;border-radius:7px;box-shadow:var(--lift);color:#fff}
+  .z-id{background:var(--violet-wash);border-color:var(--violet-b)} .z-id>.zlab{background:var(--violet)}
+  .z-core{background:#fbfcfd;border-color:var(--hair)} .z-core>.zlab{background:var(--ink)}
+  .z-sec{background:var(--teal-wash);border-color:var(--teal-b)} .z-sec>.zlab{background:var(--teal)}
+  .z-ci{background:var(--amber-wash);border-color:var(--amber-b)} .z-ci>.zlab{background:var(--gold)}
+  .z-ot{background:var(--indigo-wash);border-color:var(--indigo-b)} .z-ot>.zlab{background:var(--indigo)}
+  .z-cloud{background:var(--blue-wash);border-color:var(--blue-b)} .z-cloud>.zlab{background:var(--blue)}
+  .z-gov{background:var(--gray-wash);border-color:var(--hair)} .z-gov>.zlab{background:var(--soft)}
+  .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .box{background:#fff;border:1px solid var(--hair);border-radius:10px;box-shadow:var(--lift);padding:11px 12px}
+  .box b{font-size:13px;font-weight:600;display:block}
+  .box span{font-size:11.8px;color:var(--soft);display:block;margin-top:2px}
+  .flow{text-align:center;color:var(--faint);font-size:17px;margin:3px 0}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:12px;color:var(--soft)}
+  .legend i{width:13px;height:13px;border-radius:4px;display:inline-block;margin-right:6px;vertical-align:-2px;border:1px solid var(--hair)}
+  .cmp{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+  .cmp th,.cmp td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--hair2);vertical-align:top}
+  .cmp th{font:600 11px/1.3 var(--mono);color:var(--faint);text-transform:uppercase;letter-spacing:.03em}
+  .cmp td:first-child{font-weight:600;width:22%}
+  .verdict{margin-top:10px;font-size:13px;background:var(--teal-wash);border:1px solid var(--teal-b);border-radius:10px;padding:11px 13px;color:#0b5c52}
+  .verdict b{color:#083f39}
+  .meta{margin-top:26px;font-size:12.5px;color:var(--soft);border-top:1px solid var(--hair);padding-top:16px;max-width:820px}
+  .brand{margin-top:18px;font:500 12px/1 var(--mono);color:var(--faint);letter-spacing:.05em}
+  .nores{display:none;color:var(--soft);font-size:14px;padding:18px;text-align:center}
+  /* control-coverage heatmap */
+  .hmgrid{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:6px}
+  .hmcell{border-radius:11px;padding:10px 11px 9px;border:1px solid var(--hair);min-height:96px;display:flex;flex-direction:column;gap:3px;transition:transform .12s ease,box-shadow .12s ease}
+  .hmcell:hover{transform:translateY(-1px);box-shadow:var(--lift)}
+  .hmnum{font:600 10.5px/1 var(--mono);color:var(--faint)}
+  .hmcell b{font-size:12.6px;font-weight:600;color:var(--ink);line-height:1.22}
+  .hmcap{font:600 9px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;align-self:flex-start;padding:3px 7px;border-radius:6px;margin-top:1px}
+  .hmnote{font-size:10.8px;color:var(--soft);margin-top:auto;line-height:1.3}
+  .hm-full{background:var(--green-wash);border-color:var(--green-b)}
+  .hm-part{background:var(--amber-wash);border-color:var(--amber-b)}
+  .hm-plat{background:var(--blue-wash);border-color:var(--blue-b)}
+  .hm-org{background:var(--gray-wash);border-color:var(--hair)}
+  .hm-full .hmcap{background:#d7ebc5;color:#27500a}
+  .hm-part .hmcap{background:#f6e6c4;color:#854f0b}
+  .hm-plat .hmcap{background:#d3e4f7;color:#0b4a8f}
+  .hm-org .hmcap{background:#e2e6ea;color:#57606a}
+  .hmlegend{display:flex;flex-wrap:wrap;gap:14px;margin-top:15px;font-size:12px;color:var(--soft)}
+  .hmlegend i{width:13px;height:13px;border-radius:4px;display:inline-block;margin-right:6px;vertical-align:-2px;border:1px solid var(--hair)}
+  /* controls view/download bar */
+  .ctrlbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:0 0 14px}
+  .barlabel{font:500 10.5px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .spacer{flex:1;min-width:8px}
+  .seg{display:inline-flex;background:var(--card);border:1px solid var(--hair);border-radius:9px;box-shadow:var(--lift);overflow:hidden}
+  .seg button{font:500 13px/1 var(--sans);color:var(--soft);background:none;border:0;border-right:1px solid var(--hair2);padding:9px 15px;cursor:pointer}
+  .seg button:last-child{border-right:0}
+  .seg button.on{background:var(--teal);color:#fff}
+  .seg button:not(.on):hover{color:var(--ink);background:var(--gray-wash)}
+  .dlbtn{font:500 13px/1 var(--sans);color:var(--soft);background:var(--card);border:1px solid var(--hair);border-radius:8px;padding:9px 13px;cursor:pointer;box-shadow:var(--lift)}
+  .dlbtn:hover{color:var(--ink);border-color:var(--faint)}
+  /* data tables (compact / excel views) */
+  .tblwrap{background:#fff;border:1px solid var(--hair);border-radius:14px;box-shadow:var(--lift);overflow-x:auto;margin-bottom:12px}
+  .tblwrap[hidden]{display:none}
+  .dtable{width:100%;border-collapse:collapse;font-size:13px}
+  .dtable th,.dtable td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--hair2);vertical-align:top}
+  .dtable thead th{position:sticky;top:0;background:var(--gray-wash);font:600 10.5px/1.3 var(--mono);color:var(--soft);text-transform:uppercase;letter-spacing:.03em;cursor:pointer;white-space:nowrap;user-select:none;z-index:1}
+  .dtable thead th:hover{color:var(--ink)}
+  .dtable thead th .sar{color:var(--teal);font-size:10px;margin-left:3px}
+  .dtable tbody tr:hover{background:var(--teal-wash)}
+  .dtable .cnum{font:600 12px/1 var(--mono);color:var(--faint)}
+  .dtable .ctl{font-weight:600}
+  .dtable .ctl small{display:block;font-weight:400;color:var(--soft);font-size:11.5px;margin-top:1px;font-family:var(--mono)}
+  .dtable .mono{font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+  .dtable .pgroup{display:flex;flex-wrap:wrap;gap:4px}
+  .dtable .ntext{white-space:normal;max-width:220px;display:inline-block}
+  .dstatus{font:500 12px/1 var(--sans);color:var(--ink);background:#fff;border:1px solid var(--hair);border-radius:7px;padding:5px 7px;outline:none}
+  .dstatus:focus{border-color:var(--teal)}
+  @media (max-width:620px){.glossary{columns:1}.summary,.domlabel{display:none}}
+  @media print{body{background:#fff;padding:0}.toolbar{display:none}#ctrlbar{display:none}#compactview,#excelview{display:none!important}#list{display:block!important}.card,.rung,.zone,.box,.domain{box-shadow:none}.body,.dombody{grid-template-rows:1fr!important}.chev{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">GitHub Enterprise Cloud · hardening reference</div>
+  <h1>GHEC hardening controls &mdash; CIS v8 &amp; CMMC L2</h1>
+  <div class="toolbar">
+    <div class="searchrow">
+      <label class="search"><input id="q" type="text" placeholder="Filter — try 'SCIM', 'runner', 'CodeQL', 'detection', 'CUI'…" aria-label="Filter"></label>
+      <button class="btn" id="expand">Expand all</button>
+      <button class="btn" id="collapse">Collapse all</button>
+    </div>
+    <div class="chips" id="chipbar">
+      <span class="grp">Impl. group</span>
+      <button class="chip" data-tag="IG1">IG1</button><button class="chip" data-tag="IG2">IG2</button><button class="chip" data-tag="IG3">IG3</button>
+      <span class="grp">800-171</span>
+      <button class="chip" data-tag="AC">AC</button><button class="chip" data-tag="IA">IA</button><button class="chip" data-tag="AU">AU</button><button class="chip" data-tag="CM">CM</button><button class="chip" data-tag="SC">SC</button><button class="chip" data-tag="SI">SI</button><button class="chip" data-tag="RA">RA</button><button class="chip" data-tag="CA">CA</button>
+      <span class="grp">Theme</span>
+      <button class="chip" data-tag="AI">AI</button>
+    </div>
+  </div>
 
+  <h2 class="sec">Terminology &amp; how to use this</h2>
+  <section class="card" id="glosscard"><button class="head" aria-expanded="false"><span class="num">&#9432;</span><span class="head-main"><span class="title">Glossary &mdash; acronyms &amp; terms</span><span class="summary">Dependabot, SCIM, CodeQL, GHAS, IG, CUI and more</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div style="padding:8px 17px 16px">
+    <p class="pnote">Each control below is collapsible by domain, tagged to CIS Controls v8 and CMMC L2, classified IG1&ndash;IG3, and carries a status tracker, a notes field, and a cost/dependency-risk indicator (green/amber/red dot). Status and notes are saved in this browser. Reference terms:</p>
+    <dl class="glossary"><div class="gterm"><dt>GHEC / GHES</dt><dd>GitHub Enterprise Cloud (GitHub-hosted SaaS, what the organization runs) vs Server (self-hosted appliance).</dd></div><div class="gterm"><dt>SSO</dt><dd>Single sign-on — log in once via the corporate identity provider instead of a separate password.</dd></div><div class="gterm"><dt>SAML / OIDC</dt><dd>The two federation protocols that carry a trusted login from the identity provider to GitHub.</dd></div><div class="gterm"><dt>Entra ID</dt><dd>Microsoft Entra ID (formerly Azure AD) — the organization's identity provider for SSO, MFA, SCIM, and Conditional Access.</dd></div><div class="gterm"><dt>SCIM</dt><dd>System for Cross-domain Identity Management — standard that auto-creates and removes accounts from the directory.</dd></div><div class="gterm"><dt>MFA / 2FA</dt><dd>Multi-factor / two-factor authentication — a second login factor beyond the password.</dd></div><div class="gterm"><dt>Conditional Access</dt><dd>Entra policy engine that enforces MFA and device posture before granting access.</dd></div><div class="gterm"><dt>PAT</dt><dd>Personal access token — an API/CLI credential; fine-grained PATs are scoped and expiring.</dd></div><div class="gterm"><dt>EMU</dt><dd>Enterprise Managed Users — GitHub identities fully owned and provisioned by the IdP; no personal accounts.</dd></div><div class="gterm"><dt>ZTNA</dt><dd>Zero-trust network access — identity-aware remote access replacing a flat VPN.</dd></div><div class="gterm"><dt>Dependabot</dt><dd>GitHub's built-in tool that alerts on vulnerable open-source dependencies and opens automated update PRs.</dd></div><div class="gterm"><dt>SCA</dt><dd>Software composition analysis — finding known vulnerabilities and licenses in third-party/open-source components.</dd></div><div class="gterm"><dt>SAST</dt><dd>Static application security testing — analyzing your own source code for vulnerabilities without running it.</dd></div><div class="gterm"><dt>CodeQL</dt><dd>GitHub's SAST engine that queries code as data to find security flaws.</dd></div><div class="gterm"><dt>GHAS</dt><dd>GitHub Advanced Security — now sold as two products: Secret Protection and Code Security (paid add-ons).</dd></div><div class="gterm"><dt>Push protection</dt><dd>Blocks a commit/push that contains a detected secret before it reaches the repository.</dd></div><div class="gterm"><dt>SBOM</dt><dd>Software bill of materials — a machine-readable inventory of every component in a build (SPDX/CycloneDX).</dd></div><div class="gterm"><dt>Attestation / SLSA</dt><dd>Signed build provenance proving where and how an artifact was produced (SLSA = Supply-chain Levels for Software Artifacts).</dd></div><div class="gterm"><dt>OIDC</dt><dd>OpenID Connect — here, lets a workflow get a short-lived cloud token instead of storing long-lived keys.</dd></div><div class="gterm"><dt>Runner</dt><dd>The machine that executes a GitHub Actions job. Self-hosted runners are your own hardware.</dd></div><div class="gterm"><dt>HIL</dt><dd>Hardware-in-the-loop — tests that drive physical equipment (industrial controllers, drives, robotic cells).</dd></div><div class="gterm"><dt>OT / IEC 62443</dt><dd>Operational technology and the industrial-control security standard governing its segmentation (Purdue model).</dd></div><div class="gterm"><dt>SIEM / Sentinel</dt><dd>Security information and event management; Microsoft Sentinel is the organization's SIEM for log retention and alerting.</dd></div><div class="gterm"><dt>CUI / DFARS</dt><dd>Controlled Unclassified Information; DFARS 252.204-7012 is the clause requiring its protection.</dd></div><div class="gterm"><dt>FedRAMP</dt><dd>US government cloud authorization program; Moderate is the level generally required for CUI.</dd></div><div class="gterm"><dt>CMMC L2</dt><dd>Cybersecurity Maturity Model Certification Level 2 — maps to NIST SP 800-171's 110 practices.</dd></div><div class="gterm"><dt>CIS Controls v8</dt><dd>Center for Internet Security's 18 prioritized safeguards, grouped into Implementation Groups IG1–IG3.</dd></div><div class="gterm"><dt>IG1 / IG2 / IG3</dt><dd>CIS Implementation Groups — a maturity ramp from essential hygiene (IG1) to advanced hardening (IG3).</dd></div><div class="gterm"><dt>PSIRT / CVD</dt><dd>Product Security Incident Response Team / Coordinated Vulnerability Disclosure — handling reported product flaws.</dd></div><div class="gterm"><dt>MISRA / CERT</dt><dd>Safety- and security-focused C/C++ coding standards Coverity enforces for embedded firmware.</dd></div><div class="gterm"><dt>800-171 families</dt><dd>Control groups: AC access control, IA identification/auth, AU audit, CM configuration, SC system/comms protection, SI system integrity, RA risk assessment, CA assessment, IR incident response.</dd></div></dl>
+  </div></div></div></section>
+
+  <h2 class="sec">Priority order</h2>
+  <section class="card" id="priority"><button class="head" aria-expanded="false"><span class="num">&#9776;</span><span class="head-main"><span class="title">Rollout priority by Implementation Group</span><span class="summary">Define your IG1 / IG2 / IG3 periods</span></span><span class="htags"><span class="ig ig1">IG1</span><span class="ig ig2">IG2</span><span class="ig ig3">IG3</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div style="padding:6px 17px 16px">
+    <p class="pnote">Set the time window for each Implementation Group. Entries are saved in this browser. IG1 is essential cyber hygiene, IG2 adds defense for sensitive data, IG3 hardens against advanced threats &mdash; sequence the control catalog accordingly.</p>
+    <div class="ladder">
+      <div class="rung"><h4><span class="ig ig1">IG1</span> Essential hygiene</h4><div class="igin"><label>Period</label><input id="ig1p" type="text" placeholder="e.g. 0&ndash;3 months"></div><ul><li>SSO + SCIM (Entra ID), enforced MFA</li><li>Repository rulesets, signed commits</li><li>Dependabot + dependency graph</li><li>Secret Protection + push protection</li><li>Audit log streaming to Sentinel</li></ul></div>
+      <div class="rung"><h4><span class="ig ig2">IG2</span> Sensitive-data defense</h4><div class="igin"><label>Period</label><input id="ig2p" type="text" placeholder="e.g. 3&ndash;9 months"></div><ul><li>Code Security / CodeQL + Autofix</li><li>Self-hosted HIL runner hardening, OIDC</li><li>Allowed-actions, environments, attestations</li><li>IP allow-list, custom roles &amp; properties</li><li>Delegated bypass, Security Overview</li></ul></div>
+      <div class="rung"><h4><span class="ig ig3">IG3</span> Advanced hardening</h4><div class="igin"><label>Period</label><input id="ig3p" type="text" placeholder="e.g. 9&ndash;18 months"></div><ul><li>Security campaigns at scale</li><li>Continuous-detection automation on the API</li><li>AI governance: content exclusions, FedRAMP models</li><li>EMU for CUI isolation</li><li>CMMC evidence / SSP continuous assurance</li></ul></div>
+    </div>
+  </div></div></div></section>
+
+  <h2 class="sec">Hardening controls</h2>
+  <div id="ctrlbar" class="ctrlbar">
+    <span class="barlabel">View</span>
+    <span class="seg" id="viewseg">
+      <button type="button" data-view="card" class="on">Card</button>
+      <button type="button" data-view="compact">Compact</button>
+      <button type="button" data-view="excel">Excel</button>
+    </span>
+    <span class="spacer"></span>
+    <span class="barlabel">Download</span>
+    <button type="button" class="dlbtn" id="dlxls">&#8595; Excel</button>
+    <button type="button" class="dlbtn" id="dlpdf">&#8595; PDF</button>
+  </div>
+  <div id="list">
+<section class="domain" data-domain="identity"><button class="domhead" aria-expanded="false"><span class="domname">Identity &amp; access management</span><span class="domlabel">Who gets in, and as whom</span><span class="domprog" data-domain="identity" data-total="6">0/6 implemented</span><span class="chev big">&#9656;</span></button><div class="dombody"><div class="dombody-in"><section class="card ctrl" data-domain="identity" data-tags="IG1 AC IA" data-id="c01"><button class="head" aria-expanded="false"><span class="num">01</span><span class="head-main"><span class="title">Single sign-on <small>SAML / OIDC</small></span><span class="summary">Authenticate through Entra ID, not GitHub passwords</span></span><span class="htags"><span class="ig ig1">IG1</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Federates GitHub login to Microsoft Entra ID so access is governed by one authoritative directory. The foundation every other identity control builds on.</p></div><div class="maprow"><span class="pill cis">CIS 6.7</span><span class="pill cis">CIS 5.6</span><span class="pill cmmc">IA.L2-3.5.1/.2</span><span class="pill cmmc">AC.L2-3.1.1</span><span class="ig ig1">IG1</span><span class="pill cost">Base + Entra</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Enable SAML/OIDC SSO at the enterprise account against Entra ID, enforce it for all orgs, require SSO authorization on PATs/SSH keys, and keep one break-glass admin outside SSO.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Stream auth events to Microsoft Sentinel; alert on any non-SSO/local-account login and on SSO config changes. Reconcile members against Entra weekly via the API.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c01"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base + Entra</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c01" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="identity" data-tags="IG1 AC IA" data-id="c02"><button class="head" aria-expanded="false"><span class="num">02</span><span class="head-main"><span class="title">Automated provisioning <small>SCIM</small></span><span class="summary">Entra creates and, critically, removes accounts automatically</span></span><span class="htags"><span class="ig ig1">IG1</span><span class="dot med" title="cost/dependency risk: med"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>SCIM lets Entra ID push joiner/mover/leaver changes into GitHub. On Cloud this is native, so a terminated global user is deprovisioned within minutes.</p></div><div class="maprow"><span class="pill cis">CIS 5.1</span><span class="pill cis">CIS 5.3</span><span class="pill cis">CIS 6.2</span><span class="pill cmmc">AC.L2-3.1.1</span><span class="pill cmmc">IA.L2-3.5.5</span><span class="ig ig1">IG1</span><span class="pill cost">Base + Entra P1</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Enable Entra ID SCIM provisioning to the enterprise (strongest under Enterprise Managed Users). Map Entra groups to GitHub teams so access follows role automatically.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Nightly API reconciliation comparing GitHub members to Entra; alert on any GitHub account with no matching active Entra identity (orphan) or stale last-active.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c02"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base + Entra P1</b> · risk <span class="rk rk-med">Med</span></span><input class="tnotes" data-id="c02" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="identity" data-tags="IG1 IA" data-id="c03"><button class="head" aria-expanded="false"><span class="num">03</span><span class="head-main"><span class="title">Enforced MFA <small>MFA</small></span><span class="summary">A second, phishing-resistant factor for everyone</span></span><span class="htags"><span class="ig ig1">IG1</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Requires a second factor beyond the password, enforced enterprise-wide. The highest-leverage control against credential theft for a remote workforce with no perimeter.</p></div><div class="maprow"><span class="pill cis">CIS 6.3</span><span class="pill cis">CIS 6.4</span><span class="pill cis">CIS 6.5</span><span class="pill cmmc">IA.L2-3.5.3</span><span class="ig ig1">IG1</span><span class="pill cost">Base + Entra</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Enforce MFA in Entra Conditional Access (before the SAML assertion) and enable GitHub's enterprise 2FA requirement as defense in depth. Mandate passkeys/WebAuthn for admins and CUI maintainers.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Run the org 2FA-compliance report (API) on a schedule; alert on any member without 2FA. In Sentinel, flag weaker factors used by privileged accounts.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c03"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base + Entra</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c03" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="identity" data-tags="IG2 AC SC" data-id="c04"><button class="head" aria-expanded="false"><span class="num">04</span><span class="head-main"><span class="title">Network access restrictions <small>IP allow lists</small></span><span class="summary">Only known networks can reach the org</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Restricts access to approved source ranges — corporate egress, ZTNA, registered runner subnets. On Cloud this is an org/enterprise allow-list, not an appliance firewall.</p></div><div class="maprow"><span class="pill cis">CIS 12.2</span><span class="pill cis">CIS 13.4</span><span class="pill cmmc">SC.L2-3.13.1/.5</span><span class="pill cmmc">AC.L2-3.1.3</span><span class="ig ig2">IG2</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Configure enterprise IP allow lists (including for installed GitHub Apps), and route remote/global users through Entra-fronted ZTNA so traffic originates from approved ranges.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Alert on allow-list edits in the audit log; periodically test that a non-listed IP is denied; monitor app-token traffic outside expected ranges.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c04"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c04" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="identity" data-tags="IG2 AC IA" data-id="c05"><button class="head" aria-expanded="false"><span class="num">05</span><span class="head-main"><span class="title">Fine-grained tokens &amp;amp; Apps <small>PATs</small></span><span class="summary">Scoped, expiring credentials instead of standing tokens</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>A PAT is an API/CLI credential. Fine-grained PATs scope to specific repos/permissions with mandatory expiry; GitHub Apps with OIDC remove standing tokens from automation entirely.</p></div><div class="maprow"><span class="pill cis">CIS 5.4</span><span class="pill cis">CIS 6.8</span><span class="pill cis">CIS 16.9</span><span class="pill cmmc">AC.L2-3.1.5</span><span class="pill cmmc">IA.L2-3.5.2</span><span class="ig ig2">IG2</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Set an enterprise policy to restrict/approve PATs and cap lifetime; migrate CI/automation to GitHub Apps + OIDC; require SSO authorization on all tokens.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Inventory active PATs via the API; alert on long-lived or broadly-scoped tokens and on creation outside policy. Watch audit-log token use for anomalous repos.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c05"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c05" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="identity" data-tags="IG3 AC SC" data-id="c06"><button class="head" aria-expanded="false"><span class="num">06</span><span class="head-main"><span class="title">Enterprise Managed Users <small>EMU</small></span><span class="summary">Identities fully owned by Entra; no personal accounts</span></span><span class="htags"><span class="ig ig3">IG3</span><span class="dot high" title="cost/dependency risk: high"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Every GitHub identity is provisioned and controlled by Entra ID and can only touch company resources — members cannot fork CUI repos to personal namespaces. Well-suited to CUI containment.</p></div><div class="maprow"><span class="pill cis">CIS 5.1</span><span class="pill cis">CIS 6.1</span><span class="pill cis">CIS 3.3</span><span class="pill cmmc">AC.L2-3.1.1/.3</span><span class="pill cmmc">SC.L2-3.13.x</span><span class="ig ig3">IG3</span><span class="pill cost">EMU / Gov $$</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Adopt EMU on the enterprise (ideally alongside GHEC-for-Government for CUI); disable personal-account collaboration; enforce fork and visibility restrictions.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Alert on any external-collaborator invite or fork of a CUI-tagged repo; reconcile that all members are managed identities; monitor outbound repo transfers.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c06"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>EMU / Gov $$</b> · risk <span class="rk rk-high">High</span></span><input class="tnotes" data-id="c06" type="text" placeholder="Notes…"></div></div></div></div></section></div></div></section>
+<section class="domain" data-domain="repo"><button class="domhead" aria-expanded="false"><span class="domname">Repository &amp; change governance</span><span class="domlabel">Controlling what changes, and how</span><span class="domprog" data-domain="repo" data-total="3">0/3 implemented</span><span class="chev big">&#9656;</span></button><div class="dombody"><div class="dombody-in"><section class="card ctrl" data-domain="repo" data-tags="IG1 AC CM" data-id="c07"><button class="head" aria-expanded="false"><span class="num">07</span><span class="head-main"><span class="title">Repository rulesets <small>branch protection</small></span><span class="summary">Enforced review, checks, and history rules across repos</span></span><span class="htags"><span class="ig ig1">IG1</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Layerable enterprise policies: require PR review, passing security checks, linear history, signed commits, and block force-push to protected branches. The backbone of a defensible SDLC.</p></div><div class="maprow"><span class="pill cis">CIS 4.1</span><span class="pill cis">CIS 16.1</span><span class="pill cmmc">CM.L2-3.4.1/.2</span><span class="pill cmmc">AC.L2-3.1.2</span><span class="ig ig1">IG1</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Define enterprise-level rulesets so new repos inherit protection: ≥1 review, required CodeQL/secret/SCA checks, signed commits, dismiss-stale-approvals, restricted bypass actors.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Daily API sweep verifying every repo (especially CUI-tagged) carries the required ruleset with checks enabled; alert on rule edits, disabled checks, or bypass-actor additions.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c07"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c07" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="repo" data-tags="IG2 AC CM" data-id="c08"><button class="head" aria-expanded="false"><span class="num">08</span><span class="head-main"><span class="title">Code owners <small>CODEOWNERS</small></span><span class="summary">Right experts required as reviewers by file path</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Maps code paths to owning teams so the correct experts must review changes — firmware leads on device code, cloud team on AWS services.</p></div><div class="maprow"><span class="pill cis">CIS 16.1</span><span class="pill cis">CIS 6.8</span><span class="pill cmmc">CM.L2-3.4.x</span><span class="pill cmmc">AC.L2-3.1.4</span><span class="ig ig2">IG2</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Add CODEOWNERS per repo and require Code Owner review in the ruleset; reserve safety-critical firmware paths to a small named team.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Audit that critical repos have a valid CODEOWNERS and owner review is enforced; alert on merges that bypassed code-owner approval.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c08"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c08" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="repo" data-tags="IG2 CM SI" data-id="c09"><button class="head" aria-expanded="false"><span class="num">09</span><span class="head-main"><span class="title">Commit signing <small>verification</small></span><span class="summary">Cryptographic proof of authorship; tamper resistance</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Commits are signed and marked Verified, so history can't be forged under another identity — a supply-chain integrity and non-repudiation control.</p></div><div class="maprow"><span class="pill cis">CIS 16.4</span><span class="pill cmmc">SI.L2-3.14.x</span><span class="pill cmmc">CM.L2-3.4.x</span><span class="ig ig2">IG2</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Issue signing keys, require signed commits in rulesets on protected branches, and reject unsigned commits in CI.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Report unverified commits on protected branches via the API; alert on any merged unsigned commit or signing-requirement change.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c09"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c09" type="text" placeholder="Notes…"></div></div></div></div></section></div></div></section>
+<section class="domain" data-domain="appsec"><button class="domhead" aria-expanded="false"><span class="domname">Application security</span><span class="domlabel">Finding and fixing vulnerabilities</span><span class="domprog" data-domain="appsec" data-total="8">0/8 implemented</span><span class="chev big">&#9656;</span></button><div class="dombody"><div class="dombody-in"><section class="card ctrl" data-domain="appsec" data-tags="IG1 RA SI" data-id="c10"><button class="head" aria-expanded="false"><span class="num">10</span><span class="head-main"><span class="title">Dependency graph &amp;amp; Dependabot <small>SCA</small></span><span class="summary">Inventory of OSS components + alerts and fix PRs</span></span><span class="htags"><span class="ig ig1">IG1</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>GitHub's built-in software composition analysis: inventories open-source dependencies, alerts on known CVEs, and opens automated update PRs. Included in the base tier.</p></div><div class="maprow"><span class="pill cis">CIS 7.1-7.7</span><span class="pill cis">CIS 2.1</span><span class="pill cmmc">RA.L2-3.11.2</span><span class="pill cmmc">SI.L2-3.14.1</span><span class="ig ig1">IG1</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Enable Dependabot alerts + security updates org-wide and gate merges on dependency review. Strong for package ecosystems; weak for vendored C/C++ and firmware binaries — pair with Black Duck there.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Dashboard open-alert age vs SLA via the API; alert on any critical/high open beyond threshold or repos with Dependabot disabled.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c10"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c10" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="appsec" data-tags="IG1 IA SI" data-id="c11"><button class="head" aria-expanded="false"><span class="num">11</span><span class="head-main"><span class="title">Secret Protection <small>scanning + push protection</small></span><span class="summary">Detects and blocks committed credentials</span></span><span class="htags"><span class="ig ig1">IG1</span><span class="dot med" title="cost/dependency risk: med"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Scans repos/history for leaked secrets and blocks a push containing one before it reaches the repo. AI detection catches unstructured secrets; custom patterns catch org-specific tokens.</p></div><div class="maprow"><span class="pill cis">CIS 3.11</span><span class="pill cis">CIS 16.9</span><span class="pill cmmc">IA.L2-3.5.x</span><span class="pill cmmc">SI.L2-3.14.x</span><span class="ig ig1">IG1</span><span class="pill cost">GHAS $19/committer</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>License Secret Protection, enable org-wide with push protection on, add custom patterns, route findings to Sentinel, and require delegated approval to bypass.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Sentinel alerts on every push-protection bypass and new secret-scanning alert; weekly coverage report confirming all repos (esp. CUI) have scanning + push protection.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c11"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>GHAS $19/committer</b> · risk <span class="rk rk-med">Med</span></span><input class="tnotes" data-id="c11" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="appsec" data-tags="IG2 RA SI" data-id="c12"><button class="head" aria-expanded="false"><span class="num">12</span><span class="head-main"><span class="title">Code Security <small>CodeQL · SAST</small></span><span class="summary">Static analysis that finds vulnerabilities in your code</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot high" title="cost/dependency risk: high"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>CodeQL queries source as data to find injection, memory, and logic flaws as code-scanning alerts in pull requests — shifting discovery left.</p></div><div class="maprow"><span class="pill cis">CIS 16.1</span><span class="pill cis">CIS 16.12</span><span class="pill cmmc">SI.L2-3.14.1</span><span class="pill cmmc">RA.L2-3.11.2</span><span class="ig ig2">IG2</span><span class="pill cost">GHAS $30/committer</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>License Code Security; run CodeQL via Actions and make it a required check. Excellent for cloud/AWS languages; for safety-critical embedded C/C++ keep Coverity primary (MISRA/CERT depth).</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Coverage report: every in-scope repo runs code scanning as a required check; alert on repos missing it and on new critical alerts.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c12"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>GHAS $30/committer</b> · risk <span class="rk rk-high">High</span></span><input class="tnotes" data-id="c12" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="appsec" data-tags="IG2 SI" data-id="c13"><button class="head" aria-expanded="false"><span class="num">13</span><span class="head-main"><span class="title">Copilot Autofix <small>AI</small></span><span class="summary">AI-drafted fixes for code-scanning and secret alerts</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot med" title="cost/dependency risk: med"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Proposes a concrete code change for an alert, reviewable in the PR — turning findings into remediations and shrinking mean-time-to-fix.</p></div><div class="maprow"><span class="pill cis">CIS 7.x</span><span class="pill cis">CIS 16.x</span><span class="pill cmmc">SI.L2-3.14.1</span><span class="ig ig2">IG2</span><span class="pill cost">Copilot + GHAS</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Enable with Code Security + Copilot. Never auto-merge an AI fix on safety-critical firmware or HIL-tested device code — code-owner approval mandatory.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Track fix acceptance and remediation-time trend in Security Overview; alert if AI fixes are merged to firmware paths without sign-off.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c13"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Copilot + GHAS</b> · risk <span class="rk rk-med">Med</span></span><input class="tnotes" data-id="c13" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="appsec" data-tags="IG3 CA SI" data-id="c14"><button class="head" aria-expanded="false"><span class="num">14</span><span class="head-main"><span class="title">Security campaigns</span><span class="summary">Org-wide burn-down of a class of findings</span></span><span class="htags"><span class="ig ig3">IG3</span><span class="dot med" title="cost/dependency risk: med"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Coordinated remediation of a specific alert type across many repos with central tracking — moves the program from reactive to managed.</p></div><div class="maprow"><span class="pill cis">CIS 7.x</span><span class="pill cis">CIS 16.x</span><span class="pill cmmc">CA.L2-3.12.x</span><span class="pill cmmc">SI.L2-3.14.x</span><span class="ig ig3">IG3</span><span class="pill cost">GHAS</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Scope a campaign in Security Overview, assign owners, pair with Autofix to accelerate closure.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Burn-down dashboard with target dates; alert on stalled campaigns and on regression (new instances of a closed class).</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c14"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>GHAS</b> · risk <span class="rk rk-med">Med</span></span><input class="tnotes" data-id="c14" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="appsec" data-tags="IG2 AC SI" data-id="c15"><button class="head" aria-expanded="false"><span class="num">15</span><span class="head-main"><span class="title">Delegated bypass &amp;amp; dismissal</span><span class="summary">Approval workflow over security-gate overrides</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Bypassing push protection or dismissing an alert requires approval from a security reviewer rather than self-service — separation of duties over exceptions.</p></div><div class="maprow"><span class="pill cis">CIS 6.8</span><span class="pill cmmc">AC.L2-3.1.4</span><span class="pill cmmc">SI.L2-3.14.x</span><span class="ig ig2">IG2</span><span class="pill cost">GHAS</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Enable delegated bypass and dismissal, assign a small reviewer group, and stream approvals to Sentinel.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Alert on every bypass/dismissal event; weekly review of override frequency by user and repo to spot abuse.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c15"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>GHAS</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c15" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="appsec" data-tags="IG2 IR SI" data-id="c16"><button class="head" aria-expanded="false"><span class="num">16</span><span class="head-main"><span class="title">Private vulnerability reporting</span><span class="summary">Confidential intake for inbound vulnerability reports</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Researchers report vulnerabilities privately on a repo instead of public disclosure — the intake side of a PSIRT/CVD process for the organization's connected industrial products.</p></div><div class="maprow"><span class="pill cis">CIS 17.x</span><span class="pill cis">CIS 16.x</span><span class="pill cmmc">SI.L2-3.14.x</span><span class="pill cmmc">IR.L2-3.6.x</span><span class="ig ig2">IG2</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Enable on customer-facing product repos, define triage owner + SLA, connect to advisory publishing.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Alert on new private reports; track time-to-acknowledge and time-to-fix against your disclosure SLA.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c16"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c16" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="appsec" data-tags="IG2 CA RA" data-id="c17"><button class="head" aria-expanded="false"><span class="num">17</span><span class="head-main"><span class="title">Security Overview</span><span class="summary">Enterprise-wide risk posture and coverage</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>One dashboard for alert volume, scanner coverage, and trends across secret, code, and dependency scanning — the reporting layer for leadership and assessors.</p></div><div class="maprow"><span class="pill cis">CIS 7.x</span><span class="pill cis">CIS 8.x</span><span class="pill cmmc">CA.L2-3.12.3</span><span class="pill cmmc">RA.L2-3.11.x</span><span class="ig ig2">IG2</span><span class="pill cost">Base / GHAS</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Confirm scanner-enablement coverage, drive campaigns, and export metrics into board reporting / BitSense evidence tooling.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Pull coverage and trend metrics via the API on a schedule; alert when coverage drops below target across the estate.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c17"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base / GHAS</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c17" type="text" placeholder="Notes…"></div></div></div></div></section></div></div></section>
+<section class="domain" data-domain="supply"><button class="domhead" aria-expanded="false"><span class="domname">Supply chain</span><span class="domlabel">Provenance and component integrity</span><span class="domprog" data-domain="supply" data-total="2">0/2 implemented</span><span class="chev big">&#9656;</span></button><div class="dombody"><div class="dombody-in"><section class="card ctrl" data-domain="supply" data-tags="IG2 CM SI" data-id="c18"><button class="head" aria-expanded="false"><span class="num">18</span><span class="head-main"><span class="title">Artifact attestations <small>provenance / SLSA</small></span><span class="summary">Cryptographic proof of where a build came from</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Signs build outputs (firmware images, containers) with a verifiable record of source, workflow, and runner — so a device firmware image can be proven untampered.</p></div><div class="maprow"><span class="pill cis">CIS 2.x</span><span class="pill cis">CIS 16.11</span><span class="pill cmmc">SI.L2-3.14.x</span><span class="pill cmmc">CM.L2-3.4.x</span><span class="ig ig2">IG2</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Add the attestation step to release workflows; verify attestations as a gate before deploying to devices or AWS.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Deploy gate fails on missing/invalid attestation; alert on any artifact shipped to a device or prod environment without verified provenance.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c18"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c18" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="supply" data-tags="IG2 RA SI" data-id="c19"><button class="head" aria-expanded="false"><span class="num">19</span><span class="head-main"><span class="title">SBOM export <small>software bill of materials</small></span><span class="summary">Machine-readable inventory of a build</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Generates an SPDX/CycloneDX component inventory — enabling rapid blast-radius analysis when a new CVE drops and meeting customer/regulator requirements.</p></div><div class="maprow"><span class="pill cis">CIS 2.1</span><span class="pill cis">CIS 16.x</span><span class="pill cmmc">RA.L2-3.11.x</span><span class="pill cmmc">SI.L2-3.14.x</span><span class="ig ig2">IG2</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Export SBOMs in release pipelines; for firmware/binaries where the dependency graph is thin, generate from Black Duck instead.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Confirm each release produced an SBOM; cross-check SBOM components against new advisories on a schedule and alert on matches.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c19"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c19" type="text" placeholder="Notes…"></div></div></div></div></section></div></div></section>
+<section class="domain" data-domain="cicd"><button class="domhead" aria-expanded="false"><span class="domname">CI/CD &amp; automation</span><span class="domlabel">Hardening the pipeline and runners</span><span class="domprog" data-domain="cicd" data-total="4">0/4 implemented</span><span class="chev big">&#9656;</span></button><div class="dombody"><div class="dombody-in"><section class="card ctrl" data-domain="cicd" data-tags="IG1 CM" data-id="c20"><button class="head" aria-expanded="false"><span class="num">20</span><span class="head-main"><span class="title">GitHub Actions <small>required workflows</small></span><span class="summary">The engine where every security gate runs</span></span><span class="htags"><span class="ig ig1">IG1</span><span class="dot med" title="cost/dependency risk: med"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Workflow automation that builds, scans, runs HIL tests, and deploys. Required workflows let security steps be mandated centrally so they can't be removed per-repo.</p></div><div class="maprow"><span class="pill cis">CIS 4.x</span><span class="pill cis">CIS 16.x</span><span class="pill cmmc">CM.L2-3.4.x</span><span class="ig ig1">IG1</span><span class="pill cost">Base + minutes</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Define org-level required workflows for SAST/SCA/secret/attestation steps; pin third-party actions to full commit SHAs.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Detect repos whose workflows skip required security jobs or use unpinned actions; alert on workflow edits that remove gates.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c20"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base + minutes</b> · risk <span class="rk rk-med">Med</span></span><input class="tnotes" data-id="c20" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="cicd" data-tags="IG2 CM SC" data-id="c21"><button class="head" aria-expanded="false"><span class="num">21</span><span class="head-main"><span class="title">Self-hosted runners <small>incl. HIL</small></span><span class="summary">Your own machines that run jobs — required for HIL</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot high" title="cost/dependency risk: high"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>A runner is the machine that executes a workflow job. Self-hosted runners are the organization's own hardware — essential for hardware-in-the-loop, since a job must physically drive a controller, drive, or robotic cell. Even on Cloud, HIL requires self-hosted runners registered to the org.</p></div><div class="maprow"><span class="pill cis">CIS 4.x</span><span class="pill cis">CIS 12.x</span><span class="pill cis">CIS 13.x</span><span class="pill cmmc">CM.L2-3.4.x</span><span class="pill cmmc">SC.L2-3.13.x</span><span class="ig ig2">IG2</span><span class="pill cost">Infra / OT $$</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Make runners ephemeral, OIDC-authenticated, and repo-scoped. Place HIL runners in a segmented OT/lab VLAN (IEC 62443), outbound-only, OT-labeled so only firmware jobs route there. Never run an externally-triggered public workflow on an OT-attached runner.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Alert on every runner registration and on any non-ephemeral or unlabeled runner; monitor OT-runner egress for traffic outside GitHub; flag fork/public-event jobs targeting OT labels.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c21"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Infra / OT $$</b> · risk <span class="rk rk-high">High</span></span><input class="tnotes" data-id="c21" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="cicd" data-tags="IG3 AC SC" data-id="c22"><button class="head" aria-expanded="false"><span class="num">22</span><span class="head-main"><span class="title">Actions governance <small>allowed actions + OIDC</small></span><span class="summary">Control which automation runs and how it authenticates</span></span><span class="htags"><span class="ig ig3">IG3</span><span class="dot med" title="cost/dependency risk: med"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>An allowed-actions policy restricts which third-party actions can run; OIDC exchanges a short-lived token for cloud access instead of storing long-lived AWS keys.</p></div><div class="maprow"><span class="pill cis">CIS 2.x</span><span class="pill cis">CIS 6.8</span><span class="pill cis">CIS 16.x</span><span class="pill cmmc">AC.L2-3.1.5</span><span class="pill cmmc">SC.L2-3.13.x</span><span class="ig ig3">IG3</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Allow-list verified/internal actions, require SHA pinning, and configure GitHub→AWS OIDC so deploys assume scoped IAM roles — no static keys.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Scan repos for disallowed or unpinned actions; log OIDC role assumptions and alert on unexpected roles or accounts.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c22"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-med">Med</span></span><input class="tnotes" data-id="c22" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="cicd" data-tags="IG2 AC CM" data-id="c23"><button class="head" aria-expanded="false"><span class="num">23</span><span class="head-main"><span class="title">Environments &amp;amp; protection</span><span class="summary">Authorization gates between build and production</span></span><span class="htags"><span class="ig ig2">IG2</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>Named deploy targets (prod-aws, device-release) with required reviewers, wait timers, and branch restrictions — separation of duties between writing and shipping code.</p></div><div class="maprow"><span class="pill cis">CIS 6.8</span><span class="pill cis">CIS 4.x</span><span class="pill cmmc">AC.L2-3.1.2</span><span class="pill cmmc">CM.L2-3.4.x</span><span class="ig ig2">IG2</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Require security/release approval on production and firmware-release environments, scope environment secrets narrowly, restrict deploy branches.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Alert on deployments that skipped required approval and on environment-protection rule changes.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c23"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c23" type="text" placeholder="Notes…"></div></div></div></div></section></div></div></section>
+<section class="domain" data-domain="logging"><button class="domhead" aria-expanded="false"><span class="domname">Logging, monitoring &amp; governance</span><span class="domlabel">Evidence and continuous oversight</span><span class="domprog" data-domain="logging" data-total="2">0/2 implemented</span><span class="chev big">&#9656;</span></button><div class="dombody"><div class="dombody-in"><section class="card ctrl" data-domain="logging" data-tags="IG1 AU" data-id="c24"><button class="head" aria-expanded="false"><span class="num">24</span><span class="head-main"><span class="title">Audit log + SIEM streaming</span><span class="summary">Complete activity record streamed for retention &amp;amp; alerting</span></span><span class="htags"><span class="ig ig1">IG1</span><span class="dot med" title="cost/dependency risk: med"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>A record of admin, access, repo, and security events streamed continuously to Microsoft Sentinel — the evidence trail for CMMC and the feed for detection.</p></div><div class="maprow"><span class="pill cis">CIS 8.1-8.11</span><span class="pill cis">CIS 13.x</span><span class="pill cmmc">AU.L2-3.3.1/.2</span><span class="ig ig1">IG1</span><span class="pill cost">Base + SIEM</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Enable audit log streaming to Sentinel with immutable retention meeting your CMMC requirement; build detection rules for bypasses, runner registration, and admin changes.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>This is the detection substrate — Sentinel correlation rules on the stream drive most alerts above; monitor stream health and alert if it stops.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c24"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base + SIEM</b> · risk <span class="rk rk-med">Med</span></span><input class="tnotes" data-id="c24" type="text" placeholder="Notes…"></div></div></div></div></section>
+<section class="card ctrl" data-domain="logging" data-tags="IG3 AU CM" data-id="c25"><button class="head" aria-expanded="false"><span class="num">25</span><span class="head-main"><span class="title">Audit log API + custom roles/properties</span><span class="summary">Programmatic governance and repo classification</span></span><span class="htags"><span class="ig ig3">IG3</span><span class="dot low" title="cost/dependency risk: low"></span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Description</span><p>The audit log API exposes events to automation; custom roles tailor permissions; custom properties tag repos (cui=true, tier=safety-critical) so policy and detection can target the right repos.</p></div><div class="maprow"><span class="pill cis">CIS 8.x</span><span class="pill cis">CIS 5.x</span><span class="pill cis">CIS 3.7</span><span class="pill cmmc">AU.L2-3.3.x</span><span class="pill cmmc">CM.L2-3.4.x</span><span class="ig ig3">IG3</span><span class="pill cost">Base</span></div><div class="blk imp"><span class="lbl">Implement (GHEC)</span><p>Classify repos with custom properties, write rulesets that key off them, and drive BitSense agentic evidence tooling off the API.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Automated jobs query the API to verify CUI repos carry the right properties, roles, and rulesets; alert on misclassification or drift.</p></div><div class="track"><label class="tlab">Status</label><select class="tstatus" data-id="c25"><option value="">—</option><option>Not started</option><option>In progress</option><option>Implemented</option><option>N/A</option></select><span class="costlab">Cost/dependency <b>Base</b> · risk <span class="rk rk-low">Low</span></span><input class="tnotes" data-id="c25" type="text" placeholder="Notes…"></div></div></div></div></section></div></div></section>
+  </div>
+  <div id="compactview" class="tblwrap" hidden></div>
+  <div id="excelview" class="tblwrap" hidden></div>
+  <div class="nores" id="nores">No controls match those filters.</div>
+
+  <h2 class="sec">How CMMC L2, hardware-in-the-loop &amp; a global workforce shape hardening</h2>
+  <div id="impacts">
+    <section class="card" data-tags="IG2 SC CA"><button class="head" aria-expanded="false"><span class="num">A</span><span class="head-main"><span class="title">CMMC Level 2 / CUI</span><span class="summary">On Cloud, the edition choice defines the boundary</span></span><span class="htags"><span class="pill cmmc">SC</span><span class="pill cmmc">CA</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Architecture impact</span><p>CMMC L2 maps to NIST SP 800-171. Commercial GHEC carries only FedRAMP LI-SaaS (Low) &mdash; not sufficient for CUI under DFARS 252.204-7012. For CUI, the organization needs <b>GitHub Enterprise Cloud for Government</b> (FedRAMP Moderate) or GHEC with US data residency on the Moderate path. As SaaS, GitHub is an External Service Provider in scope &mdash; cite its ATO and document the shared-responsibility split.</p></div><div class="blk imp"><span class="lbl">What it hardens</span><p>CUI repos isolated and tagged via custom properties; EMU to prevent personal-account forks; restrict-to-FedRAMP-models + content exclusions for Copilot; stricter rulesets, delegated bypass, and Sentinel retention on CUI repos; non-CUI work in a separate org to limit assessment scope.</p></div><div class="blk det"><span class="lbl">Watch-outs</span><p>Some CUI categories require FedRAMP <b>High</b> &mdash; confirm categorization first. Keep evidence of GitHub's authorization status current and map its FedRAMP controls to your 800-171 practices in the SSP.</p></div></div></div></div></section>
+    <section class="card" data-tags="IG2 SC CM"><button class="head" aria-expanded="false"><span class="num">B</span><span class="head-main"><span class="title">Hardware-in-the-loop testing</span><span class="summary">Forces a segmented, OT-isolated self-hosted runner fleet</span></span><span class="htags"><span class="pill cmmc">SC</span><span class="pill cmmc">CM</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Architecture impact</span><p>HIL jobs physically drive controllers, drives, and robotic cells, so they must run on self-hosted runners in the OT/lab network &mdash; even though the control plane is Cloud. That collides with IT/CMMC segmentation.</p></div><div class="blk imp"><span class="lbl">What it hardens</span><p>An isolated OT zone (IEC 62443 / Purdue) holds the HIL fleet and benches; runners are ephemeral, hardened, OIDC-authenticated, OT-labeled, and reach GitHub outbound-only with no inbound IT&rarr;OT path. AI Autofix/agent never auto-acts on device code.</p></div><div class="blk det"><span class="lbl">Watch-outs</span><p>Runner labels must guarantee firmware jobs route only to the OT fleet. A poisoned action on an OT runner can reach a live machine &mdash; pin SHAs, allow-list actions, and segment the cell.</p></div></div></div></div></section>
+    <section class="card" data-tags="IG1 AC SC"><button class="head" aria-expanded="false"><span class="num">C</span><span class="head-main"><span class="title">Remote, globally distributed users</span><span class="summary">Identity, residency, and export control become primary</span></span><span class="htags"><span class="pill cmmc">AC</span><span class="pill cmmc">SC</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">Architecture impact</span><p>With no network perimeter, a global workforce reaching the Cloud makes identity and data location the primary controls. Cloud helps: US/EU data residency is available natively, and Entra ID Conditional Access governs the front door.</p></div><div class="blk imp"><span class="lbl">What it hardens</span><p>Entra-enforced SSO + phishing-resistant MFA everywhere; SCIM offboarding so a leaver in any region loses access in minutes; IP allow-list + ZTNA at the edge; US data residency to keep code and Copilot inference in-region.</p></div><div class="blk det"><span class="lbl">Watch-outs</span><p>Export control (ITAR/EAR) on defense-related industrial tech may restrict which foreign-national engineers can access which repos &mdash; enforce via EMU, repo isolation, and access reviews, not just network rules.</p></div></div></div></div></section>
+  </div>
+
+  <h2 class="sec">GitHub AI capabilities &amp; organizational benefit</h2>
+  <div id="ai">
+    <section class="card" data-tags="IG2 AI SI"><button class="head" aria-expanded="false"><span class="num">i</span><span class="head-main"><span class="title">Copilot code completion &amp; chat</span><span class="summary">Inline suggestions and in-context Q&amp;A</span></span><span class="htags"><span class="pill plat">AI</span><span class="ig ig2">IG2</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">What it does &amp; benefit</span><p>Suggests code and answers questions in the editor and on github.com. Biggest payoff on the organization's AWS/digital products, where a distributed team ships faster with consistent patterns.</p></div><div class="blk imp"><span class="lbl">Hardening under constraints</span><p><span class="pill warn">CUI</span> Restrict to FedRAMP models + US data residency; exclude CUI repos. <span class="pill warn">HIL</span> Treat firmware completions as drafts requiring code-owner review. <span class="pill warn">Remote</span> License per-seat via Entra; capture usage metrics.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Monitor Copilot usage/audit metrics; alert if Copilot is enabled on a CUI-tagged repo or if content exclusions are removed.</p></div></div></div></div></section>
+    <section class="card" data-tags="IG2 AI SI"><button class="head" aria-expanded="false"><span class="num">ii</span><span class="head-main"><span class="title">Copilot Autofix</span><span class="summary">AI-drafted remediations in the PR</span></span><span class="htags"><span class="pill plat">AI</span><span class="ig ig2">IG2</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">What it does &amp; benefit</span><p>Proposes concrete fixes for CodeQL and secret-scanning alerts. Cuts mean-time-to-remediate across the AWS estate and shrinks security debt without adding headcount.</p></div><div class="blk imp"><span class="lbl">Hardening under constraints</span><p><span class="pill warn">HIL</span> Never auto-merge an AI fix on safety-critical firmware or HIL-tested device code. <span class="pill warn">CUI</span> Runs on FedRAMP-model infrastructure for in-boundary repos.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Track fix-acceptance and remediation-time trend; alert on AI fixes merged to firmware paths without sign-off.</p></div></div></div></div></section>
+    <section class="card" data-tags="IG1 AI IA"><button class="head" aria-expanded="false"><span class="num">iii</span><span class="head-main"><span class="title">AI-powered secret detection</span><span class="summary">Finds unstructured secrets regex misses</span></span><span class="htags"><span class="pill plat">AI</span><span class="ig ig1">IG1</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">What it does &amp; benefit</span><p>Uses AI to catch passwords and unstructured credentials pattern-based scanning misses. Strengthens the highest-ROI control across all repos.</p></div><div class="blk imp"><span class="lbl">Hardening under constraints</span><p><span class="pill warn">Remote</span> Valuable with many distributed contributors. <span class="pill warn">CUI</span> Pairs with push protection + delegated bypass so leaks are blocked, not just flagged.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Sentinel alert on every AI-detected secret and bypass; trend detections by team to target training.</p></div></div></div></div></section>
+    <section class="card" data-tags="IG2 AI SI"><button class="head" aria-expanded="false"><span class="num">iv</span><span class="head-main"><span class="title">Copilot code review</span><span class="summary">An AI reviewer on pull requests</span></span><span class="htags"><span class="pill plat">AI</span><span class="ig ig2">IG2</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">What it does &amp; benefit</span><p>Adds AI-generated review comments to PRs. Raises baseline review quality across time zones, catching issues before a human reviewer.</p></div><div class="blk imp"><span class="lbl">Hardening under constraints</span><p><span class="pill warn">HIL</span> Augments but never replaces the required human code-owner review on firmware. <span class="pill warn">CUI</span> Same model/residency/exclusion policies apply.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Confirm human review is still enforced on protected branches; AI review is additive, not a substitute gate.</p></div></div></div></div></section>
+    <section class="card" data-tags="IG3 AI AC SI"><button class="head" aria-expanded="false"><span class="num">v</span><span class="head-main"><span class="title">Copilot coding agent</span><span class="summary">Autonomous, task-driven pull requests</span></span><span class="htags"><span class="pill plat">AI</span><span class="ig ig3">IG3</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">What it does &amp; benefit</span><p>Takes an issue and drafts a full PR autonomously. High leverage for routine work on AWS/digital products &mdash; dependency bumps, refactors, boilerplate.</p></div><div class="blk imp"><span class="lbl">Hardening under constraints</span><p><span class="pill warn">HIL</span> Highest-caution capability &mdash; exclude firmware/OT repos; agent PRs still pass every gate and human approval; never target OT-labeled runners. <span class="pill warn">CUI</span> Disable on CUI repos entirely.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Alert on agent-initiated PRs touching firmware/CUI repos; require the same attestations and reviews as human PRs.</p></div></div></div></div></section>
+    <section class="card" data-tags="IG2 AI"><button class="head" aria-expanded="false"><span class="num">vi</span><span class="head-main"><span class="title">Copilot Enterprise</span><span class="summary">Knowledge bases &amp; PR summaries</span></span><span class="htags"><span class="pill plat">AI</span><span class="ig ig2">IG2</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">What it does &amp; benefit</span><p>Org-grounded chat over curated knowledge bases plus automatic PR summaries. Helps a global team navigate the organization's standards and large codebases consistently.</p></div><div class="blk imp"><span class="lbl">Hardening under constraints</span><p><span class="pill warn">CUI</span> Curate knowledge bases to exclude controlled content; same residency/model policies. <span class="pill warn">Remote</span> Reduces tribal-knowledge gaps across regions.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Review knowledge-base sources periodically; alert if a CUI/firmware repo is added as a source.</p></div></div></div></div></section>
+    <section class="card" data-tags="IG2 AI RA"><button class="head" aria-expanded="false"><span class="num">vii</span><span class="head-main"><span class="title">Dependabot AI auto-triage</span><span class="summary">Custom rules to manage alert noise at scale</span></span><span class="htags"><span class="pill plat">AI</span><span class="ig ig2">IG2</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">What it does &amp; benefit</span><p>Auto-triage rules decide which dependency alerts to action, snooze, or dismiss. Keeps the global team focused on real risk instead of alert fatigue.</p></div><div class="blk imp"><span class="lbl">Hardening under constraints</span><p><span class="pill warn">CUI</span> Keep auto-dismiss conservative on safety-critical and CUI repos &mdash; human confirmation for anything dismissed there.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Audit auto-dismissed alerts on critical repos; alert if a high-severity alert was auto-dismissed on a firmware/CUI repo.</p></div></div></div></div></section>
+    <section class="card" data-tags="IG2 AI SC SI"><button class="head" aria-expanded="false"><span class="num">viii</span><span class="head-main"><span class="title">AI governance layer</span><span class="summary">Residency · FedRAMP models · content exclusions</span></span><span class="htags"><span class="pill plat">AI</span><span class="ig ig2">IG2</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="triad"><div class="blk"><span class="lbl">What it does &amp; benefit</span><p>The policy stack that brings Copilot inside the compliance boundary: US data residency, restrict-to-FedRAMP-models, and content exclusions. This is what lets the organization use AI at all under CMMC.</p></div><div class="blk imp"><span class="lbl">Hardening under constraints</span><p>Combine all three before broad rollout: residency keeps inference in-region, the model policy keeps it on Moderate infrastructure, exclusions wall off firmware and CUI. FedRAMP/residency requests carry a ~10% model-multiplier cost.</p></div><div class="blk det"><span class="lbl">Continuous detection</span><p>Alert on any change to residency, model-policy, or exclusion settings; verify CUI/firmware repos remain excluded as new repos are created.</p></div></div></div></div></section>
+  </div>
+
+  <h2 class="sec">Reference architecture</h2>
+  <section class="card" id="archcard"><button class="head" aria-expanded="false"><span class="num">&#9783;</span><span class="head-main"><span class="title">GHEC reference architecture &mdash; shaded zones, raised components</span><span class="summary">Cloud control plane, segmented OT/HIL zone, AWS digital products</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div class="arch">
+    <div class="zone z-id"><span class="zlab">Identity &amp; access edge</span><div class="grid"><div class="box"><b>Global engineers</b><span>US + international, remote</span></div><div class="box"><b>ZTNA + IP allow-list</b><span>approved ranges only</span></div><div class="box"><b>Entra ID — SSO + MFA + SCIM</b><span>Conditional Access, lifecycle</span></div><div class="box"><b>Export-control gating</b><span>EMU + repo isolation</span></div></div></div>
+    <div class="flow">&#8595;</div>
+    <div class="zone z-core"><span class="zlab">GHEC control plane — Cloud, CMMC boundary (ESP)</span><div class="grid"><div class="box"><b>GHEC for Government</b><span>FedRAMP Moderate · data residency</span></div><div class="box"><b>Orgs, repos &amp; rulesets</b><span>required reviews/checks, signing</span></div><div class="box"><b>Custom properties</b><span>cui=true / safety-critical</span></div><div class="box"><b>Audit log streaming</b><span>AU evidence to Sentinel</span></div></div></div>
+    <div class="flow">&#8595;</div>
+    <div class="zone z-sec"><span class="zlab">AppSec toolchain — required checks</span><div class="grid"><div class="box"><b>Secret Protection</b><span>scanning + push protection</span></div><div class="box"><b>CodeQL</b><span>SAST for cloud languages</span></div><div class="box"><b>Coverity</b><span>embedded C/C++ · MISRA</span></div><div class="box"><b>Black Duck SCA</b><span>OSS + binary + license</span></div><div class="box"><b>Dependabot</b><span>package-ecosystem SCA</span></div><div class="box"><b>Copilot Autofix</b><span>AI remediation, reviewed</span></div></div></div>
+    <div class="flow">&#8595;</div>
+    <div class="zone z-ci"><span class="zlab">CI/CD execution — GitHub Actions</span><div class="grid"><div class="box"><b>GitHub-hosted runners</b><span>IT / non-CUI builds</span></div><div class="box"><b>Allowed-actions + SHA pinning</b><span>supply-chain control</span></div><div class="box"><b>Artifact attestations</b><span>signed firmware / containers</span></div></div>
+      <div class="zone z-ot" style="margin-top:12px"><span class="zlab">OT / HIL zone — IEC 62443, outbound-only</span><div class="grid"><div class="box"><b>HIL runner fleet</b><span>self-hosted, ephemeral, OT-labeled</span></div><div class="box"><b>Controller / drive benches</b><span>device-under-test</span></div><div class="box"><b>Robotic cells / PLC rigs</b><span>automation under test</span></div></div></div>
+    </div>
+    <div class="flow">&#8595;</div>
+    <div class="zone z-cloud"><span class="zlab">Digital products — AWS-deployed</span><div class="grid"><div class="box"><b>GitHub &rarr; AWS via OIDC</b><span>scoped IAM roles, no static keys</span></div><div class="box"><b>Deploy environments</b><span>required reviewers, prod gates</span></div><div class="box"><b>Containers / IaC scanning</b><span>CodeQL + Black Duck</span></div></div></div>
+    <div class="flow">&#8595;</div>
+    <div class="zone z-gov"><span class="zlab">Governance &amp; evidence</span><div class="grid"><div class="box"><b>Audit log &rarr; Sentinel</b><span>immutable retention</span></div><div class="box"><b>Security Overview</b><span>posture + campaigns</span></div><div class="box"><b>CMMC SSP / evidence</b><span>BitSense agentic tooling on API</span></div></div></div>
+    <div class="legend"><span><i style="background:#f3eefb"></i>Identity edge</span><span><i style="background:#fbfcfd"></i>GHEC core (CMMC boundary)</span><span><i style="background:#e7f5f3"></i>AppSec toolchain</span><span><i style="background:#fff8ec"></i>CI/CD execution</span><span><i style="background:#eef2ff"></i>OT / HIL zone</span><span><i style="background:#eaf2fb"></i>AWS digital</span><span><i style="background:#f0f2f4"></i>Governance</span></div>
+  </div></div></div></section>
+
+  <h2 class="sec">GitHub vs Coverity &amp; Black Duck — by product archetype</h2>
+  <div id="tradeoff">
+    <section class="card" data-tags="SI"><button class="head" aria-expanded="false"><span class="num">I</span><span class="head-main"><span class="title">Hardware / embedded firmware</span><span class="summary">Embedded controllers, drives — C/C++, RTOS, safety-critical</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div style="padding:4px 17px 16px"><table class="cmp"><tr><th>Dimension</th><th>GitHub-native</th><th>Coverity / Black Duck</th></tr><tr><td>Deep C/C++ static analysis</td><td>CodeQL covers C/C++ but shallower; no safety-defect focus</td><td>Coverity: deep interprocedural, low FP, reliability + security defects</td></tr><tr><td>Coding-standard compliance</td><td>No MISRA / CERT packs</td><td>Coverity ships MISRA, CERT, OWASP, CWE — needed for safety sign-off</td></tr><tr><td>OSS / binary composition</td><td>Dependabot weak for vendored C / binaries</td><td>Black Duck SCA: binary + firmware composition + license</td></tr><tr><td>Secrets, provenance, gating, HIL</td><td>Secret Protection, attestations, rulesets, runners — strong</td><td>Not their role</td></tr></table><div class="verdict"><b>Verdict:</b> Keep Coverity primary for embedded C/C++ + MISRA/CERT; keep Black Duck for firmware/binary SCA and license. GitHub is the platform — run both as required checks. CodeQL is a complementary security lens, not a Coverity replacement here.</div></div></div></div></section>
+    <section class="card" data-tags="SC"><button class="head" aria-expanded="false"><span class="num">II</span><span class="head-main"><span class="title">Industrial automation / robotic &amp; PLC</span><span class="summary">Industrial controls, OT protocols, mixed firmware + logic</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div style="padding:4px 17px 16px"><table class="cmp"><tr><th>Dimension</th><th>GitHub-native</th><th>Coverity / Black Duck</th></tr><tr><td>PLC / IEC 61131 (ladder, ST)</td><td>Not supported by CodeQL</td><td>Limited — not most PLC dialects</td></tr><tr><td>C/C++ controller firmware</td><td>CodeQL: security queries</td><td>Coverity: depth + safety standards</td></tr><tr><td>Embedded Linux / OSS stack</td><td>Dependabot partial</td><td>Black Duck: full binary/OSS + license</td></tr><tr><td>OT segmentation &amp; HIL</td><td>Self-hosted runners, OIDC, labels — strong</td><td>Not their role</td></tr></table><div class="verdict"><b>Verdict:</b> Both suites have gaps on PLC/controls languages — lean on process, design review, and protocol fuzzing (Black Duck Defensics) plus Coverity for the C portions. GitHub's value here is OT-segmented HIL orchestration, provenance, and access control.</div></div></div></div></section>
+    <section class="card" data-tags="SI"><button class="head" aria-expanded="false"><span class="num">III</span><span class="head-main"><span class="title">Digital, automated, AWS-deployed</span><span class="summary">Cloud SaaS — Java/Python/JS/Go, containers, IaC</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div style="padding:4px 17px 16px"><table class="cmp"><tr><th>Dimension</th><th>GitHub-native</th><th>Coverity / Black Duck</th></tr><tr><td>SAST for web/cloud languages</td><td>CodeQL best-in-class — its sweet spot</td><td>Coverity capable but overlaps; marginal</td></tr><tr><td>Dependency vulns (npm, PyPI, Maven, Go)</td><td>Dependabot strong, in-PR, base tier</td><td>Black Duck adds license + container depth</td></tr><tr><td>Secrets &amp; cloud credentials</td><td>Secret Protection — strong</td><td>Not their focus</td></tr><tr><td>License + container/binary SCA</td><td>Limited</td><td>Black Duck clearly stronger</td></tr></table><div class="verdict"><b>Verdict:</b> Lead with GitHub-native (CodeQL + Dependabot + Secret Protection). Keep Black Duck for OSS license + container depth. Coverity is the most reconsiderable spend here — CodeQL substantially overlaps it for these languages.</div></div></div></div></section>
+  </div>
+
+  <h2 class="sec">Control coverage &mdash; CIS Controls v8 heatmap</h2>
+  <section class="card" id="coveragecard"><button class="head" aria-expanded="false"><span class="num">&#9638;</span><span class="head-main"><span class="title">GitHub coverage across the 18 CIS Controls</span><span class="summary">Pastel heatmap &mdash; full / partial / platform-managed / out-of-scope</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div style="padding:8px 17px 16px">
+    <p class="pnote">At-a-glance coverage of GHEC-native capability against the 18 CIS Controls v8 safeguards. Shading reflects how much of each control GitHub itself can satisfy &mdash; the remainder is carried at the endpoint, network, or program layer. Use it to see where the platform does the work and where you still owe compensating controls in the SSP.</p>
+    <div class="hmgrid">
+      <div class="hmcell hm-full"><span class="hmnum">CIS 1</span><b>Enterprise asset inventory</b><span class="hmcap">Full</span><span class="hmnote">Org / repo &amp; runner inventory via API</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 2</span><b>Software asset inventory</b><span class="hmcap">Full</span><span class="hmnote">Dependency graph, SBOM export</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 3</span><b>Data protection</b><span class="hmcap">Full</span><span class="hmnote">Secret Protection, exclusions, EMU</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 4</span><b>Secure configuration</b><span class="hmcap">Full</span><span class="hmnote">Rulesets, org policies, req. workflows</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 5</span><b>Account management</b><span class="hmcap">Full</span><span class="hmnote">SSO, SCIM, EMU (Entra ID)</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 6</span><b>Access control management</b><span class="hmcap">Full</span><span class="hmnote">MFA, least-privilege, custom roles</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 7</span><b>Continuous vulnerability mgmt</b><span class="hmcap">Full</span><span class="hmnote">Dependabot, CodeQL, campaigns</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 8</span><b>Audit log management</b><span class="hmcap">Full</span><span class="hmnote">Audit log streaming + API</span></div>
+      <div class="hmcell hm-org"><span class="hmnum">CIS 9</span><b>Email &amp; web browser</b><span class="hmcap">Out of scope</span><span class="hmnote">Endpoint / email layer, not GitHub</span></div>
+      <div class="hmcell hm-part"><span class="hmnum">CIS 10</span><b>Malware defenses</b><span class="hmcap">Partial</span><span class="hmnote">Push protection &mdash; not endpoint AV</span></div>
+      <div class="hmcell hm-plat"><span class="hmnum">CIS 11</span><b>Data recovery</b><span class="hmcap">Platform</span><span class="hmnote">GHEC-managed resilience &amp; backups</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 12</span><b>Network infrastructure mgmt</b><span class="hmcap">Full</span><span class="hmnote">IP allow lists, private networking</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 13</span><b>Network monitoring &amp; defense</b><span class="hmcap">Full</span><span class="hmnote">Audit stream + SIEM correlation</span></div>
+      <div class="hmcell hm-org"><span class="hmnum">CIS 14</span><b>Security awareness training</b><span class="hmcap">Org program</span><span class="hmnote">Program &mdash; not a GitHub feature</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 15</span><b>Service provider management</b><span class="hmcap">Full</span><span class="hmnote">GitHub as ESP; SSP responsibility split</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 16</span><b>Application software security</b><span class="hmcap">Full</span><span class="hmnote">GHAS core: SAST / SCA / secrets / signing</span></div>
+      <div class="hmcell hm-full"><span class="hmnum">CIS 17</span><b>Incident response mgmt</b><span class="hmcap">Full</span><span class="hmnote">Private vuln reporting, advisories</span></div>
+      <div class="hmcell hm-part"><span class="hmnum">CIS 18</span><b>Penetration testing</b><span class="hmcap">Partial</span><span class="hmnote">External; code scanning + intake</span></div>
+    </div>
+    <div class="hmlegend"><span><i style="background:var(--green-wash);border-color:var(--green-b)"></i>Full &mdash; GHEC-native</span><span><i style="background:var(--amber-wash);border-color:var(--amber-b)"></i>Partial &mdash; needs a compensating layer</span><span><i style="background:var(--blue-wash);border-color:var(--blue-b)"></i>Platform-managed by GHEC</span><span><i style="background:var(--gray-wash);border-color:var(--hair)"></i>Out of scope / org program</span></div>
+  </div></div></div></section>
+
+  <h2 class="sec">CIS Controls v8 &harr; CMMC L2 — where they overlap</h2>
+  <section class="card" id="overlapcard"><button class="head" aria-expanded="false"><span class="num">&#8646;</span><span class="head-main"><span class="title">Where the two frameworks overlap</span><span class="summary">CIS v8 control &harr; CMMC L2 family &harr; GitHub capability</span></span><span class="chev">&#9656;</span></button><div class="body"><div class="body-in"><div style="padding:2px 16px 14px;overflow-x:auto">
+    <table class="cmp">
+      <tr><th>CIS v8 control</th><th>CMMC L2 family</th><th>GitHub capability (covers both)</th></tr>
+      <tr><td>1 · Enterprise asset inventory</td><td>CM · PM</td><td>Org/repo &amp; runner inventory via API</td></tr>
+      <tr><td>2 · Software asset inventory</td><td>CM (3.4.1/.2)</td><td>Dependency graph, SBOM export</td></tr>
+      <tr><td>3 · Data protection</td><td>MP · SC · AC (3.1.3)</td><td>Secret Protection, content exclusions, repo visibility, EMU</td></tr>
+      <tr><td>4 · Secure configuration</td><td>CM (3.4.1/.2)</td><td>Rulesets, org policies, required workflows</td></tr>
+      <tr><td>5 · Account management</td><td>AC (3.1.1) · IA (3.5.1)</td><td>SSO, SCIM, EMU (Entra ID)</td></tr>
+      <tr><td>6 · Access control management</td><td>AC (3.1.x) · IA (3.5.3)</td><td>MFA, least-privilege, custom roles, delegated bypass</td></tr>
+      <tr><td>7 · Continuous vulnerability mgmt</td><td>RA (3.11.2) · SI (3.14.1)</td><td>Dependabot, CodeQL, Security Overview, campaigns</td></tr>
+      <tr><td>8 · Audit log management</td><td>AU (3.3.x)</td><td>Audit log streaming + API</td></tr>
+      <tr><td>9 · Email &amp; web browser</td><td>SC · SI</td><td>Out of GitHub scope (endpoint/email layer)</td></tr>
+      <tr><td>10 · Malware defenses</td><td>SI (3.14.2)</td><td>Partial — push protection / scanning, not endpoint AV</td></tr>
+      <tr><td>11 · Data recovery</td><td>CP · MP</td><td>GHEC-managed resilience &amp; backups</td></tr>
+      <tr><td>12 · Network infrastructure mgmt</td><td>SC (3.13.x)</td><td>IP allow lists, private networking</td></tr>
+      <tr><td>13 · Network monitoring &amp; defense</td><td>SC · SI · AU</td><td>Audit stream + Sentinel correlation</td></tr>
+      <tr><td>14 · Security awareness training</td><td>AT (3.2.x)</td><td>Org program — not a GitHub feature</td></tr>
+      <tr><td>15 · Service provider management</td><td>SA · CA</td><td>GitHub as ESP; SSP shared-responsibility mapping</td></tr>
+      <tr><td>16 · Application software security</td><td>SI (3.14.x) · SA</td><td>GHAS core: SAST/SCA/secrets/provenance, CODEOWNERS, signing</td></tr>
+      <tr><td>17 · Incident response mgmt</td><td>IR (3.6.x)</td><td>Private vuln reporting, advisories, audit feed</td></tr>
+      <tr><td>18 · Penetration testing</td><td>CA (3.12.x) · RA</td><td>External; code scanning + intake support</td></tr>
+    </table>
+    <div class="verdict"><b>The overlap, in short:</b> Both frameworks center on the same five pillars &mdash; identity &amp; access, continuous vulnerability management, audit logging, secure configuration, and application software security &mdash; exactly where GitHub is strongest (CIS 5, 6, 7, 8, 16). The CIS Implementation Groups give a maturity ramp that aligns to a CMMC journey: IG1 covers baseline access, audit, and config practices many 800-171 controls require; IG2/IG3 add the depth and continuous detection assessors expect. GitHub does not address CIS 9 and 14 (browser/awareness) and only partially 10 and 11 (handled at the GHEC platform and endpoint layers). Use CIS v8 to drive engineering and CMMC L2 to frame the assessment.</div>
+  </div></div></div></section>
+
+  <p class="meta">Mappings to CIS Controls v8 and CMMC Level 2 / NIST SP 800-171 are illustrative engineering guidance &mdash; not a substitute for a C3PAO scoping determination. Whether GitHub falls inside the CUI boundary depends on the GHEC edition (commercial vs Government / data residency) and your contract's CUI categorization. Verify current GitHub feature availability, licensing, and FedRAMP status before committing architecture or spend.</p>
+  <div class="brand">BitSense · GHEC hardening reference<br>&copy; 2026 BitSense. All rights reserved.</div>
+</div>
+
+<script>
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+  var domains = Array.prototype.slice.call(document.querySelectorAll('.domain'));
+  var active = {};
+  function setOpen(el,on){ el.classList.toggle('open',on); var h=el.querySelector('.head,.domhead'); if(h) h.setAttribute('aria-expanded',on?'true':'false'); }
+  function apply(){
+    var term=(document.getElementById('q').value||'').trim().toLowerCase();
+    var tags=Object.keys(active).filter(function(k){return active[k];});
+    var filtering=!!term||tags.length>0; var anyVisible=false;
+    cards.forEach(function(c){
+      var hay=c.textContent.toLowerCase(); var dt=(c.getAttribute('data-tags')||'');
+      var okText=!term||hay.indexOf(term)!==-1;
+      var okTag=tags.length===0||tags.some(function(t){return (' '+dt+' ').indexOf(' '+t+' ')!==-1;});
+      var show=okText&&okTag; c.classList.toggle('hide',!show);
+      if(show){ anyVisible=true; if(filtering) setOpen(c,true); }
+    });
+    domains.forEach(function(d){
+      var vis=d.querySelectorAll('.ctrl:not(.hide)').length;
+      d.classList.toggle('hide',vis===0);
+      if(filtering&&vis>0) setOpen(d,true);
+    });
+    var nr=document.getElementById('nores'); if(nr) nr.style.display=anyVisible?'none':'block';
+  }
+  cards.forEach(function(c){ var h=c.querySelector('.head'); if(h) h.addEventListener('click',function(){ setOpen(c,!c.classList.contains('open')); }); });
+  domains.forEach(function(d){ var h=d.querySelector('.domhead'); if(h) h.addEventListener('click',function(){ setOpen(d,!d.classList.contains('open')); }); });
+  document.getElementById('q').addEventListener('input',function(){ if(!this.value){ cards.forEach(function(c){setOpen(c,false);}); domains.forEach(function(d){setOpen(d,false);}); } apply(); });
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(chip){ chip.addEventListener('click',function(){ var t=chip.getAttribute('data-tag'); active[t]=!active[t]; chip.classList.toggle('on',active[t]); apply(); }); });
+  document.getElementById('expand').addEventListener('click',function(){ domains.forEach(function(d){ if(!d.classList.contains('hide')) setOpen(d,true); }); cards.forEach(function(c){ if(!c.classList.contains('hide')) setOpen(c,true); }); });
+  document.getElementById('collapse').addEventListener('click',function(){ cards.forEach(function(c){setOpen(c,false);}); domains.forEach(function(d){setOpen(d,false);}); });
+  // IG period persistence
+  ['ig1p','ig2p','ig3p'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; try{var v=localStorage.getItem('bs_'+id); if(v!==null) el.value=v;}catch(e){} el.addEventListener('input',function(){ try{localStorage.setItem('bs_'+id,el.value);}catch(e){} }); });
+  // per-control status + notes persistence and domain progress
+  function progress(){ domains.forEach(function(d){ var dn=d.getAttribute('data-domain'); var sels=d.querySelectorAll('.tstatus'); var done=0; sels.forEach(function(s){ if(s.value==='Implemented') done++; }); var p=d.querySelector('.domprog'); if(p) p.textContent=done+'/'+p.getAttribute('data-total')+' implemented'; }); }
+  Array.prototype.forEach.call(document.querySelectorAll('.tstatus'),function(s){ var id=s.getAttribute('data-id'); try{var v=localStorage.getItem('bs_status_'+id); if(v) s.value=v;}catch(e){} s.addEventListener('change',function(){ try{localStorage.setItem('bs_status_'+id,s.value);}catch(e){} progress(); }); });
+  Array.prototype.forEach.call(document.querySelectorAll('.tnotes'),function(n){ var id=n.getAttribute('data-id'); try{var v=localStorage.getItem('bs_notes_'+id); if(v!==null) n.value=v;}catch(e){} n.addEventListener('input',function(){ try{localStorage.setItem('bs_notes_'+id,n.value);}catch(e){} }); });
+  progress();
+</script>
+<script>
+(function(){
+  var listEl=document.getElementById('list');
+  var compactEl=document.getElementById('compactview');
+  var excelEl=document.getElementById('excelview');
+  var noresEl=document.getElementById('nores');
+  var qEl=document.getElementById('q');
+  var chips=Array.prototype.slice.call(document.querySelectorAll('.chip'));
+
+  function txt(el){return el?el.textContent.trim().replace(/&amp;/g,'&'):'';}
+  var IGMAP={IG1:1,IG2:2,IG3:3};
+  var RISKORD={low:1,med:2,high:3}, RISKLBL={low:'Low',med:'Med',high:'High'};
+  var STATUS_OPTS=['','Not started','In progress','Implemented','N/A'];
+  var STATUSORD={'':0,'Not started':1,'In progress':2,'Implemented':3,'N/A':4};
+
+  // build model from the card-view DOM (single source of truth)
+  var model=Array.prototype.map.call(listEl.querySelectorAll('.ctrl'),function(c){
+    var dom=c.closest('.domain');
+    var titleEl=c.querySelector('.title');
+    var small=titleEl?titleEl.querySelector('small'):null;
+    var subtitle=small?txt(small):'';
+    var title=titleEl?txt(titleEl):'';
+    if(subtitle) title=title.replace(subtitle,'').trim();
+    var igEl=c.querySelector('.htags .ig');
+    var ig=igEl?((igEl.className.match(/ig1|ig2|ig3/)||[''])[0]).toUpperCase():'';
+    var dotEl=c.querySelector('.htags .dot');
+    var risk=dotEl?(dotEl.className.match(/low|med|high/)||[''])[0]:'';
+    var desc='',impl='',det='';
+    Array.prototype.forEach.call(c.querySelectorAll('.triad .blk'),function(b){
+      var p=txt(b.querySelector('p'));
+      if(b.classList.contains('imp'))impl=p;
+      else if(b.classList.contains('det'))det=p;
+      else if(!desc)desc=p;
+    });
+    return {
+      id:c.getAttribute('data-id'),
+      tags:c.getAttribute('data-tags')||'',
+      num:txt(c.querySelector('.num')),
+      numOrd:parseInt(txt(c.querySelector('.num')),10)||0,
+      domLabel:dom?txt(dom.querySelector('.domname')):'',
+      title:title, subtitle:subtitle,
+      summary:txt(c.querySelector('.summary')),
+      ig:ig, igOrd:IGMAP[ig]||0,
+      risk:risk, riskLbl:RISKLBL[risk]||'', riskOrd:RISKORD[risk]||0,
+      cost:txt(c.querySelector('.costlab b')),
+      cis:Array.prototype.map.call(c.querySelectorAll('.maprow .pill.cis'),txt),
+      cmmc:Array.prototype.map.call(c.querySelectorAll('.maprow .pill.cmmc'),txt),
+      desc:desc, impl:impl, det:det
+    };
+  });
+
+  function getStatus(id){try{return localStorage.getItem('bs_status_'+id)||'';}catch(e){return '';}}
+  function getNotes(id){try{return localStorage.getItem('bs_notes_'+id)||'';}catch(e){return '';}}
+  function setStatus(id,v){
+    try{localStorage.setItem('bs_status_'+id,v);}catch(e){}
+    var sel=document.querySelector('.tstatus[data-id="'+id+'"]');
+    if(sel) sel.value=v;
+    if(typeof progress==='function') progress();
+  }
+
+  function currentFilter(){
+    return {
+      term:(qEl.value||'').trim().toLowerCase(),
+      tags:chips.filter(function(c){return c.classList.contains('on');}).map(function(c){return c.getAttribute('data-tag');})
+    };
+  }
+  function rowMatch(m,f){
+    if(f.tags.length){
+      var dt=' '+m.tags+' ';
+      if(!f.tags.some(function(t){return dt.indexOf(' '+t+' ')!==-1;})) return false;
+    }
+    if(f.term){
+      var hay=(m.num+' '+m.title+' '+m.subtitle+' '+m.summary+' '+m.domLabel+' '+m.ig+' '+m.cis.join(' ')+' '+m.cmmc.join(' ')+' '+m.cost+' '+m.riskLbl+' '+m.desc+' '+m.impl+' '+m.det+' '+getStatus(m.id)+' '+getNotes(m.id)).toLowerCase();
+      if(hay.indexOf(f.term)===-1) return false;
+    }
+    return true;
+  }
+
+  var sortState={compact:{key:'num',dir:1}, excel:{key:'num',dir:1}};
+  function sortVal(m,key){
+    switch(key){
+      case 'title':return m.title.toLowerCase();
+      case 'domain':return m.domLabel.toLowerCase();
+      case 'ig':return m.igOrd;
+      case 'cis':return m.cis.join(',').toLowerCase();
+      case 'cmmc':return m.cmmc.join(',').toLowerCase();
+      case 'cost':return m.cost.toLowerCase();
+      case 'risk':return m.riskOrd;
+      case 'status':return STATUSORD[getStatus(m.id)]||0;
+      case 'notes':return getNotes(m.id).toLowerCase();
+      default:return m.numOrd;
+    }
+  }
+  function sortRows(rows,st){
+    return rows.slice().sort(function(a,b){
+      var va=sortVal(a,st.key), vb=sortVal(b,st.key);
+      if(va<vb)return -st.dir; if(va>vb)return st.dir; return a.numOrd-b.numOrd;
+    });
+  }
+
+  function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function pills(arr,cls){return arr.map(function(x){return '<span class="pill '+cls+'">'+esc(x)+'</span>';}).join(' ');}
+  function statusSelect(id){
+    var v=getStatus(id);
+    var o=STATUS_OPTS.map(function(s){return '<option value="'+esc(s)+'"'+(s===v?' selected':'')+'>'+(s===''?'\u2014':s)+'</option>';}).join('');
+    return '<select class="dstatus" data-id="'+id+'">'+o+'</select>';
+  }
+  function arrow(st,key){return st.key===key?'<span class="sar">'+(st.dir>0?'\u25B2':'\u25BC')+'</span>':'';}
+  function igCell(m){return m.ig?'<span class="ig '+m.ig.toLowerCase()+'">'+m.ig+'</span>':'';}
+  function riskCell(m){return m.risk?'<span class="rk rk-'+m.risk+'">'+m.riskLbl+'</span>':'';}
+  function ctlCell(m){return '<span class="ctl">'+esc(m.title)+(m.subtitle?' <small>'+esc(m.subtitle)+'</small>':'')+'</span>';}
+
+  var COMPACT_COLS=[['num','#'],['title','Control'],['domain','Domain'],['ig','IG'],['risk','Risk'],['status','Status']];
+  var EXCEL_COLS=[['num','#'],['title','Control'],['domain','Domain'],['ig','IG'],['cis','CIS v8'],['cmmc','CMMC L2'],['cost','Cost / dep.'],['risk','Risk'],['status','Status'],['notes','Notes']];
+
+  function render(view){
+    var f=currentFilter();
+    var rows=sortRows(model.filter(function(m){return rowMatch(m,f);}), sortState[view]);
+    var cols=(view==='excel')?EXCEL_COLS:COMPACT_COLS;
+    var el=(view==='excel')?excelEl:compactEl;
+    var st=sortState[view];
+    if(!rows.length){el.innerHTML='<div class="nores" style="display:block">No controls match those filters.</div>';return;}
+    var thead='<thead><tr>'+cols.map(function(c){return '<th data-key="'+c[0]+'">'+c[1]+arrow(st,c[0])+'</th>';}).join('')+'</tr></thead>';
+    var tbody='<tbody>'+rows.map(function(m){
+      return '<tr>'+cols.map(function(c){
+        var k=c[0],v='';
+        if(k==='num')v='<span class="cnum">'+esc(m.num)+'</span>';
+        else if(k==='title')v=ctlCell(m);
+        else if(k==='domain')v=esc(m.domLabel);
+        else if(k==='ig')v=igCell(m);
+        else if(k==='cis')v='<span class="pgroup">'+pills(m.cis,'cis')+'</span>';
+        else if(k==='cmmc')v='<span class="pgroup">'+pills(m.cmmc,'cmmc')+'</span>';
+        else if(k==='cost')v='<span class="mono">'+esc(m.cost)+'</span>';
+        else if(k==='risk')v=riskCell(m);
+        else if(k==='status')v=statusSelect(m.id);
+        else if(k==='notes')v='<span class="mono ntext">'+esc(getNotes(m.id))+'</span>';
+        return '<td>'+v+'</td>';
+      }).join('')+'</tr>';
+    }).join('')+'</tbody>';
+    el.innerHTML='<table class="dtable">'+thead+tbody+'</table>';
+    Array.prototype.forEach.call(el.querySelectorAll('thead th'),function(th){
+      th.addEventListener('click',function(){
+        var k=th.getAttribute('data-key');
+        if(st.key===k)st.dir*=-1; else{st.key=k;st.dir=1;}
+        render(view);
+      });
+    });
+    Array.prototype.forEach.call(el.querySelectorAll('.dstatus'),function(sel){
+      sel.addEventListener('change',function(){setStatus(sel.getAttribute('data-id'),sel.value);});
+    });
+  }
+
+  var view='card';
+  function setView(v){
+    view=v;
+    try{localStorage.setItem('bs_view',v);}catch(e){}
+    listEl.hidden=(v!=='card');
+    compactEl.hidden=(v!=='compact');
+    excelEl.hidden=(v!=='excel');
+    if(v!=='card') noresEl.style.display='none';
+    Array.prototype.forEach.call(document.querySelectorAll('#viewseg button'),function(b){b.classList.toggle('on',b.getAttribute('data-view')===v);});
+    if(v==='compact')render('compact');
+    else if(v==='excel')render('excel');
+    else if(typeof apply==='function')apply();
+  }
+
+  qEl.addEventListener('input',function(){if(view!=='card')render(view);});
+  chips.forEach(function(c){c.addEventListener('click',function(){if(view!=='card')render(view);});});
+  Array.prototype.forEach.call(document.querySelectorAll('#viewseg button'),function(b){
+    b.addEventListener('click',function(){setView(b.getAttribute('data-view'));});
+  });
+
+  // Excel export (.xls via HTML table — opens natively in Excel, no dependency)
+  document.getElementById('dlxls').addEventListener('click',function(){
+    var f=currentFilter();
+    var rows=sortRows(model.filter(function(m){return rowMatch(m,f);}), sortState.excel);
+    if(!rows.length)rows=model.slice();
+    var head=['#','Control','Subtitle','Domain','IG','CIS Controls v8','CMMC L2 / 800-171','Cost / dependency','Risk','Status','Notes','Description','Implement (GHEC)','Continuous detection'];
+    var thh='<tr>'+head.map(function(h){return '<th style="background:#0f766e;color:#fff;text-align:left">'+esc(h)+'</th>';}).join('')+'</tr>';
+    var trs=rows.map(function(m){
+      return '<tr>'+[m.num,m.title,m.subtitle,m.domLabel,m.ig,m.cis.join('; '),m.cmmc.join('; '),m.cost,m.riskLbl,getStatus(m.id),getNotes(m.id),m.desc,m.impl,m.det]
+        .map(function(c){return '<td style="vertical-align:top">'+esc(c)+'</td>';}).join('')+'</tr>';
+    }).join('');
+    var html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">'+
+      '<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Hardening Controls</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>'+
+      '<body><table border="1" cellspacing="0">'+thh+trs+'</table></body></html>';
+    var blob=new Blob(['\ufeff'+html],{type:'application/vnd.ms-excel'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='BitSense-GHEC-hardening-controls.xls';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},400);
+  });
+
+  // PDF export — switch to full card view, expand everything, invoke print (Save as PDF)
+  document.getElementById('dlpdf').addEventListener('click',function(){
+    setView('card');
+    Array.prototype.forEach.call(document.querySelectorAll('.domain'),function(d){d.classList.add('open');var h=d.querySelector('.domhead');if(h)h.setAttribute('aria-expanded','true');});
+    Array.prototype.forEach.call(document.querySelectorAll('.card'),function(c){if(!c.classList.contains('hide')){c.classList.add('open');var h=c.querySelector('.head');if(h)h.setAttribute('aria-expanded','true');}});
+    setTimeout(function(){window.print();},90);
+  });
+
+  // restore saved view
+  try{var sv=localStorage.getItem('bs_view');if(sv&&sv!=='card')setView(sv);}catch(e){}
+})();
+</script>
+</body>
+</html>
