@@ -9,10 +9,11 @@ Flow:
 Self-approval mode: the same person simply opens the Review tab.
 """
 import os
+import re
 import uuid
 import threading
 import requests as http
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -145,6 +146,50 @@ def review(item_id: str, req: ReviewRequest):
 def reingest():
     n = rag.build_index()
     return {"ok": True, "chunks": n}
+
+
+class UrlRequest(BaseModel):
+    url: str
+
+
+@app.get("/api/docs")
+def list_docs():
+    files = [
+        f for f in sorted(os.listdir(rag.DOCS_DIR))
+        if f.lower().endswith((".md", ".txt", ".pdf"))
+    ]
+    return {"files": files}
+
+
+@app.post("/api/upload")
+async def upload(file: UploadFile = File(...)):
+    name = os.path.basename(file.filename or "upload.txt")
+    if not name.lower().endswith((".md", ".txt", ".pdf")):
+        return {"ok": False, "error": "Only .md, .txt, and .pdf files are supported."}
+    data = await file.read()
+    with open(os.path.join(rag.DOCS_DIR, name), "wb") as f:
+        f.write(data)
+    n = rag.build_index()
+    return {"ok": True, "file": name, "chunks": n}
+
+
+@app.post("/api/add_url")
+def add_url(req: UrlRequest):
+    try:
+        r = http.get(req.url, timeout=30, headers={"User-Agent": "Mozilla/5.0"})
+        r.raise_for_status()
+    except Exception as e:
+        return {"ok": False, "error": f"Could not fetch that link: {e}"}
+    text = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", " ", r.text)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    if len(text) < 100:
+        return {"ok": False, "error": "That page had almost no readable text."}
+    fname = re.sub(r"[^a-z0-9]+", "-", req.url.lower())[:60].strip("-") + ".txt"
+    with open(os.path.join(rag.DOCS_DIR, fname), "w", encoding="utf-8") as f:
+        f.write(text)
+    n = rag.build_index()
+    return {"ok": True, "file": fname, "chunks": n}
 
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

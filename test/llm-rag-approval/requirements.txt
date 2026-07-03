@@ -5,3 +5,4 @@ numpy
 requests
 pypdf
 jupyterlab
+python-multipart
