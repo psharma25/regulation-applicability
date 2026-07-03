@@ -20,14 +20,15 @@ Everything runs inside one GitHub Codespace (free tier works).
 1. On your repo page click the green **Code** button → **Codespaces** tab → **Create codespace on main**.
 2. Wait ~3–5 minutes. The `.devcontainer` config automatically installs Python dependencies and Ollama. Watch the terminal at the bottom; it finishes with "Setup complete."
 
-### 3. Start the app
-In the Codespaces terminal:
+### 3. The app starts by itself
+Nothing to run. After the Codespace finishes building (first time ~5–8 minutes:
+it installs dependencies, Ollama, and pre-downloads the models), the app
+launches automatically in the background and your browser opens the port 8000
+page. On later launches it's up within ~30 seconds.
 
-```bash
-./start.sh
-```
-
-First run pulls the model (~1.3 GB, a couple of minutes). When you see `Uvicorn running on 0.0.0.0:8000`, a preview pane opens automatically — or click the **Ports** tab, find port 8000, and click the globe icon to open it in a browser tab.
+If the page shows "Backend not reachable", the app is still warming up — wait
+half a minute and reload. To watch it start: `tail -f /tmp/app.log` in the
+terminal. Manual fallback: `bash start.sh`.
 
 ### 4. Use it
 1. **Ask tab** — type a question about the sample docs, e.g. *"What does the security policy say about MFA?"* You'll see: generating → waiting for human approval.
