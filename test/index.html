@@ -54,8 +54,15 @@
 </section>
 
 <script>
-let BASE = localStorage.getItem('ragBase') || '';
-if (BASE) { document.addEventListener('DOMContentLoaded', () => { document.getElementById('base').value = BASE; connect(); }); }
+// Set this to your backend's address (e.g. 'https://api.regmap.ai' or your
+// Codespace URL) to skip the URL field — the config box hides automatically.
+const DEFAULT_BASE = '';
+
+let BASE = DEFAULT_BASE || localStorage.getItem('ragBase') || '';
+document.addEventListener('DOMContentLoaded', () => {
+  if (DEFAULT_BASE) document.getElementById('cfg').style.display = 'none';
+  if (BASE) { document.getElementById('base').value = BASE; connect(); }
+});
 
 function api(path) { return BASE.replace(/\/+$/, '') + path; }
 
