@@ -4,3 +4,4 @@ sentence-transformers==3.*
 numpy
 requests
 pypdf
+jupyterlab

@@ -13,6 +13,7 @@ import uuid
 import threading
 import requests as http
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -22,6 +23,15 @@ OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2:1b")
 
 app = FastAPI(title="RAG with human approval")
+
+# Allow the standalone HTML page (opened from disk or another origin)
+# to call this API. Fine for an experiment; tighten for production.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # In-memory store; fine for an experiment.
 ANSWERS: dict[str, dict] = {}
