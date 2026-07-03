@@ -1,3 +1,16 @@
+#How to run
+pip install -r requirements.txt
+curl -fsSL https://ollama.com/install.sh | sh
+
+bash start.sh
+
+curl -s http://localhost:8000/api/pending
+#See what is forwarded
+gh codespace ports -c $CODESPACE_NAME
+
+#Make port public 
+gh codespace ports visibility 8000:public -c $CODESPACE_NAME
+
 # LLM + RAG with human approval — self-contained in GitHub Codespaces
 
 A minimal, fully self-contained experiment:
