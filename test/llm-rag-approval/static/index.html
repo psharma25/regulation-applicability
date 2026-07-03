@@ -22,6 +22,7 @@
 </head>
 <body>
 <h1>RAG with human approval</h1>
+<div id="banner" style="display:none; background:#fdecea; border:1px solid #e0a9a3; border-radius:8px; padding:12px 16px; margin:12px 0; font-size:14px;"></div>
 <nav>
   <button id="tab-ask" class="active" onclick="show('ask')">Ask</button>
   <button id="tab-review" onclick="show('review')">Review queue</button>
@@ -42,6 +43,26 @@
 </section>
 
 <script>
+(async function healthCheck() {
+  const banner = document.getElementById('banner');
+  if (location.protocol === 'file:') {
+    banner.style.display = '';
+    banner.innerHTML = '<strong>This page must be served by the app.</strong> ' +
+      'Opening the file directly won’t work — the buttons need the backend. ' +
+      'In your Codespace terminal run <code>bash start.sh</code>, then open the ' +
+      'port 8000 URL from the Ports tab.';
+    return;
+  }
+  try {
+    const r = await fetch('/api/pending');
+    if (!r.ok) throw new Error();
+  } catch {
+    banner.style.display = '';
+    banner.innerHTML = '<strong>Backend not reachable.</strong> ' +
+      'Start it with <code>bash start.sh</code> in the terminal, then reload this page.';
+  }
+})();
+
 function show(tab) {
   for (const t of ['ask', 'review']) {
     document.getElementById(t).style.display = t === tab ? '' : 'none';

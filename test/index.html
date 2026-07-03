@@ -1,1 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RAG with human approval</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+  h1 { font-size: 1.4rem; }
+  nav button { margin-right: 8px; padding: 8px 16px; border: 1px solid #bbb; background: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  nav button.active { background: #222; color: #fff; }
+  textarea, input[type=text] { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #bbb; border-radius: 8px; font-size: 15px; font-family: inherit; }
+  .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px 16px; margin: 12px 0; }
+  .status { font-size: 13px; color: #777; }
+  .src { font-size: 12px; color: #557; }
+  .primary { background: #1d6ef0; color: #fff; border: none; }
+  .danger { background: #c0392b; color: #fff; border: none; }
+  button.action { padding: 8px 14px; border-radius: 8px; cursor: pointer; margin-right: 6px; margin-top: 8px; border: 1px solid #bbb; background: #fff; }
+  .answer { background: #f4f8f4; border-left: 3px solid #2c8a4b; padding: 10px 14px; white-space: pre-wrap; }
+  .muted { color: #999; }
+</style>
+</head>
+<body>
+<h1>RAG with human approval</h1>
+<div id="banner" style="display:none; background:#fdecea; border:1px solid #e0a9a3; border-radius:8px; padding:12px 16px; margin:12px 0; font-size:14px;"></div>
+<nav>
+  <button id="tab-ask" class="active" onclick="show('ask')">Ask</button>
+  <button id="tab-review" onclick="show('review')">Review queue</button>
+</nav>
 
+<section id="ask">
+  <p>Ask a question about the documents in <code>docs/</code>. Your answer appears only after a human reviewer approves it.</p>
+  <input type="text" id="q" placeholder="What does the security policy say about MFA?" />
+  <button class="action primary" onclick="ask()">Ask</button>
+  <div id="ask-out"></div>
+</section>
+
+<section id="review" style="display:none">
+  <p>Draft answers waiting for approval. Edit if needed, then approve or reject.</p>
+  <button class="action" onclick="loadPending()">Refresh</button>
+  <button class="action" onclick="reingest()">Rebuild RAG index</button>
+  <div id="queue"></div>
+</section>
+
+<script>
+(async function healthCheck() {
+  const banner = document.getElementById('banner');
+  if (location.protocol === 'file:') {
+    banner.style.display = '';
+    banner.innerHTML = '<strong>This page must be served by the app.</strong> ' +
+      'Opening the file directly won’t work — the buttons need the backend. ' +
+      'In your Codespace terminal run <code>bash start.sh</code>, then open the ' +
+      'port 8000 URL from the Ports tab.';
+    return;
+  }
+  try {
+    const r = await fetch('/api/pending');
+    if (!r.ok) throw new Error();
+  } catch {
+    banner.style.display = '';
+    banner.innerHTML = '<strong>Backend not reachable.</strong> ' +
+      'Start it with <code>bash start.sh</code> in the terminal, then reload this page.';
+  }
+})();
+
+function show(tab) {
+  for (const t of ['ask', 'review']) {
+    document.getElementById(t).style.display = t === tab ? '' : 'none';
+    document.getElementById('tab-' + t).className = t === tab ? 'active' : '';
+  }
+  if (tab === 'review') loadPending();
+}
+
+let pollTimer = null;
+
+async function ask() {
+  const q = document.getElementById('q').value.trim();
+  if (!q) return;
+  const out = document.getElementById('ask-out');
+  out.innerHTML = '<div class="card status">Generating draft answer…</div>';
+  const r = await fetch('/api/ask', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: q })
+  });
+  const { id } = await r.json();
+  clearInterval(pollTimer);
+  pollTimer = setInterval(() => poll(id), 2000);
+}
+
+async function poll(id) {
+  const r = await fetch('/api/status/' + id);
+  const s = await r.json();
+  const out = document.getElementById('ask-out');
+  if (s.status === 'generating') {
+    out.innerHTML = '<div class="card status">The model is drafting an answer…</div>';
+  } else if (s.status === 'pending_review') {
+    out.innerHTML = '<div class="card status">Draft ready — waiting for human approval. (Open the Review queue tab to approve it.)</div>';
+  } else if (s.status === 'approved') {
+    clearInterval(pollTimer);
+    out.innerHTML = '<div class="card"><div class="answer">' + esc(s.answer) + '</div>' +
+      (s.sources && s.sources.length ? '<p class="src">Sources: ' + s.sources.map(esc).join(', ') + '</p>' : '') +
+      '<p class="status">Approved by a human reviewer.</p></div>';
+  } else if (s.status === 'rejected') {
+    clearInterval(pollTimer);
+    out.innerHTML = '<div class="card status">Rejected: ' + esc(s.note || '') + '</div>';
+  } else if (s.status === 'error') {
+    clearInterval(pollTimer);
+    out.innerHTML = '<div class="card status">Error: ' + esc(s.error || 'unknown') + '</div>';
+  }
+}
+
+async function loadPending() {
+  const r = await fetch('/api/pending');
+  const items = await r.json();
+  const q = document.getElementById('queue');
+  if (!items.length) { q.innerHTML = '<p class="muted">Nothing waiting for review.</p>'; return; }
+  q.innerHTML = items.map(it =>
+    '<div class="card" id="card-' + it.id + '">' +
+    '<p><strong>Q:</strong> ' + esc(it.question) + '</p>' +
+    '<textarea rows="6" id="draft-' + it.id + '">' + esc(it.draft) + '</textarea>' +
+    (it.sources && it.sources.length
+      ? '<p class="src">Retrieved: ' + it.sources.map(s => esc(s.source) + ' (' + s.score + ')').join(', ') + '</p>'
+      : '<p class="src muted">No documents matched — draft is unguarded model output.</p>') +
+    '<button class="action primary" onclick="decide(\'' + it.id + '\',\'approve\')">Approve</button>' +
+    '<button class="action danger" onclick="decide(\'' + it.id + '\',\'reject\')">Reject</button>' +
+    '</div>'
+  ).join('');
+}
+
+async function decide(id, action) {
+  const edited = document.getElementById('draft-' + id).value;
+  await fetch('/api/review/' + id, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, edited_answer: edited })
+  });
+  document.getElementById('card-' + id).remove();
+  loadPending();
+}
+
+async function reingest() {
+  const r = await fetch('/api/reingest', { method: 'POST' });
+  const s = await r.json();
+  alert('RAG index rebuilt: ' + s.chunks + ' chunks');
+}
+
+function esc(t) {
+  return String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
