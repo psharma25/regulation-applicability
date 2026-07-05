@@ -1,1 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GradeFlow AI — Worksheet Grading Console (Alpha)</title>
+<style>
+:root{
+  --ink:#182430;          /* console chrome */
+  --ink-2:#243544;
+  --bg:#E8ECEF;           /* workbench */
+  --panel:#FFFFFF;
+  --paper:#FBFAF4;        /* worksheet stock */
+  --line:#D3DAE0;
+  --accent:#0E7C9C;       /* scanner cyan */
+  --accent-soft:#E2F2F7;
+  --red:#C9403A;          /* grading pencil */
+  --red-soft:#FBEBEA;
+  --green:#2F7D4F;
+  --green-soft:#E7F3EC;
+  --amber:#B57A18;
+  --amber-soft:#FBF1DE;
+  --txt:#1D2A35;
+  --muted:#5D6B77;
+  --mono:ui-monospace,'SF Mono','Cascadia Mono',Consolas,Menlo,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ── dark theme (toggle top right; worksheet paper stays paper) ── */
+body.dark{
+  --bg:#131A21;--panel:#1B242D;--line:#2C3944;--txt:#DDE6EC;--muted:#93A4B1;
+  --accent-soft:#123540;--red-soft:#3A2120;--green-soft:#1B2F24;--amber-soft:#332A17;
+}
+body.dark .drop{background:#161F27}
+body.dark .btn{background:#222D37;color:var(--txt)}
+body.dark .btn.pri{background:var(--accent);color:#fff}
+body.dark .btn.red{background:var(--red);color:#fff}
+body.dark input,body.dark select,body.dark .fld select,body.dark .fld input,body.dark .olrow input[type=text]{background:#222D37;color:var(--txt);border-color:var(--line)}
+body.dark .sitem{background:#222D37}
+body.dark .sitem.sel{background:var(--accent-soft)}
+body.dark .chip.q{background:#2A3641;color:#A5B4C0}
+body.dark tr.stu{background:#202B35}
+body.dark td{border-bottom-color:#26313B}
+body.dark tr.det td{background:var(--panel)}
+body.dark details.jsonbox{background:var(--panel)}
+body.dark details.jsonbox pre{background:#141C23;color:#C6D3DC}
+body.dark .preview{background:#0E141A}
+body.dark .thumb{background:#242C34}
+body.dark .errcard{border-color:#6B3430}
+body.dark .stage .ic{background:#222D37}
+body.dark .rel .bar{background:#26313B}
+html,body{height:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--txt);font-size:14px;line-height:1.45}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit;font-size:13px}
 
+/* ── header ─────────────────────────── */
+header{background:var(--ink);color:#E8EEF3;padding:14px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{display:flex;align-items:baseline;gap:10px}
+.logo .gf{font-size:20px;font-weight:800;letter-spacing:.3px}
+.logo .gf b{color:#57C4E5}
+.logo .sub{font-size:11px;color:#9FB2C0;letter-spacing:.4px}
+.badges{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.badge{font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:4px 9px;border-radius:20px;border:1px solid rgba(255,255,255,.25);color:#CFE0EA;font-family:var(--mono)}
+.badge.alpha{background:#57C4E5;color:#0B1B26;border-color:transparent}
+.badge.priv{border-color:#3E5A6E}
+
+/* ── tabs ───────────────────────────── */
+nav{background:var(--ink-2);display:flex;padding:0 22px;gap:2px;overflow-x:auto}
+nav button{background:transparent;border:none;color:#9FB2C0;padding:11px 18px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+nav button:hover{color:#E8EEF3}
+nav button.on{color:#fff;border-bottom-color:#57C4E5}
+nav button:focus-visible{outline:2px solid #57C4E5;outline-offset:-2px}
+nav .count{font-family:var(--mono);font-size:10.5px;background:rgba(255,255,255,.12);padding:1px 6px;border-radius:9px;margin-left:6px}
+nav .count.has{background:var(--green);color:#fff}
+nav{align-items:center}
+.stepn{width:20px;height:20px;border-radius:50%;border:1.5px solid #55707F;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);margin-right:8px;flex-shrink:0}
+nav button{display:inline-flex;align-items:center}
+nav button.on .stepn{background:#57C4E5;border-color:#57C4E5;color:#0B1B26;font-weight:800}
+.navsep{color:#43596A;font-size:15px;padding:0 3px;user-select:none}
+nav button.aux{color:#8FA5B5}
+nav button.aux.on{color:#fff;border-bottom-color:#8FA5B5}
+/* pipeline summary bar */
+.sumbar{display:flex;gap:22px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 18px;margin-bottom:14px}
+.sum{display:flex;flex-direction:column}
+.sum .n{font-family:var(--mono);font-size:22px;font-weight:800;line-height:1}
+.sum .l{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.sumdiv{width:1px;height:32px;background:var(--line)}
+.stuchips{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;align-items:center}
+.stuchips .l{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.stuchip{font-family:var(--mono);font-size:11px;background:var(--accent-soft);color:var(--accent);border-radius:12px;padding:4px 10px;font-weight:700}
+.framehead{font-size:14px;margin:22px 0 4px}
+
+main{max-width:1240px;margin:0 auto;padding:20px 22px 60px}
+.tab{display:none}
+.tab.on{display:block}
+h2{font-size:16px;margin-bottom:4px}
+.hint{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--txt)}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.pri:hover{background:#0B677F;color:#fff}
+.btn.red{background:var(--red);border-color:var(--red);color:#fff}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── intake ─────────────────────────── */
+.drop{border:2px dashed var(--line);border-radius:var(--r);padding:34px 20px;text-align:center;background:#FDFDFC;transition:border-color .15s,background .15s}
+.drop.hot{border-color:var(--accent);background:var(--accent-soft)}
+.drop .big{font-size:15px;font-weight:700;margin-bottom:4px}
+.drop .fmt{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px}
+.queue{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.thumb{background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;height:150px;overflow:hidden}
+.thumb img{max-height:100%;max-width:100%}
+.card .meta{padding:9px 11px;font-size:12px;display:flex;flex-direction:column;gap:3px}
+.card .meta .id{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.chip{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.4px;padding:2px 7px;border-radius:10px}
+.chip.q{background:#EDF1F4;color:#54626E}
+.chip.g{background:var(--green-soft);color:var(--green)}
+.chip.r{background:var(--amber-soft);color:var(--amber)}
+.chip.score{font-family:var(--mono)}
+.errcard{border:1px solid #E5B7B4;background:var(--red-soft);border-radius:8px;padding:10px 12px;margin-top:10px;display:flex;gap:10px;align-items:flex-start}
+.errcard .ic{color:var(--red);font-weight:800;font-size:15px;line-height:1.2}
+.errcard .bd{flex:1;font-size:12.5px}
+.errcard .bd b{display:block;font-family:var(--mono);font-size:11.5px;margin-bottom:2px}
+.errcard .fix{color:var(--muted);font-size:11.5px;margin-top:2px}
+.errcard button{border:none;background:transparent;color:var(--red);font-weight:700;font-size:13px}
+.maint{margin-top:18px}
+.maint .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.btn.warn{border-color:#E0B98A;color:var(--amber)}
+.btn.warn:hover{border-color:var(--amber)}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin-bottom:14px}
+.ckall{display:flex;gap:6px;align-items:center;font-size:12.5px;font-weight:600}
+.selinfo{font-family:var(--mono);font-size:11.5px;color:var(--muted);min-width:86px}
+.card{position:relative}
+.card .ck{position:absolute;top:8px;left:8px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 6px;display:flex;z-index:2;cursor:pointer}
+.card .ck input{cursor:pointer}
+.card.sel{outline:2px solid var(--accent);outline-offset:-1px}
+.card .open{margin-top:5px;align-self:flex-start;border:1px solid var(--line);background:transparent;color:var(--accent);border-radius:6px;padding:3px 10px;font-size:11.5px;font-weight:700}
+.card .open:hover{border-color:var(--accent)}
+.queue .empty{grid-column:1/-1}
+/* segmented Cards/Compact toggle */
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:none;background:transparent;padding:7px 13px;font-size:12px;font-weight:700;color:var(--muted)}
+.seg button.on{background:var(--accent);color:#fff}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+/* compact table view */
+.compact-wrap{grid-column:1/-1;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow-x:auto}
+.compact-wrap td{white-space:nowrap}
+tr.rowsel td{background:var(--accent-soft)}
+/* grading-complete toast + banner */
+.toast{position:fixed;right:20px;bottom:44px;background:var(--ink);color:#E8EEF3;border-left:4px solid #6FD39A;border-radius:10px;padding:13px 16px;box-shadow:0 8px 28px rgba(10,20,30,.4);display:flex;gap:12px;align-items:center;z-index:50;animation:toastIn .28s ease;max-width:min(420px,90vw)}
+.toast .tk{width:30px;height:30px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;flex-shrink:0}
+.toast .btn{background:transparent;color:#8FE0B2;border-color:#3E5A6E}
+.toast .btn:hover{color:#fff;border-color:#8FE0B2}
+@keyframes toastIn{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.done{border:1px solid #BFE3CD;background:var(--green-soft);color:var(--green);border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-weight:600;font-size:13px}
+.done .tk{width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0}
+body.dark .done{border-color:#2E5B41}
+/* report tally cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px}
+.stat .n{font-family:var(--mono);font-size:26px;font-weight:800;line-height:1.1}
+.stat .n small{font-size:13px;color:var(--muted);font-weight:600}
+.stat .l{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.stat.hgram{grid-column:span 2;min-width:200px}
+.stat .hist{display:flex;gap:4px;align-items:flex-end;height:38px;margin-top:4px}
+.stat .hist i{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-height:2px}
+.stat .hist i.red{background:var(--red)}
+.stat .hl{display:flex;gap:4px;font-size:8.5px;color:var(--muted);font-family:var(--mono);margin-top:3px}
+.stat .hl b{flex:1;text-align:center;font-weight:400}
+.guide{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;margin-bottom:14px}
+.gstep{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}
+.gstep .gdot{width:23px;height:23px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;background:#fff;transition:all .2s;flex-shrink:0}
+.gstep.run{color:var(--accent)} .gstep.run .gdot{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(14,124,156,.14)}
+.gstep.ok{color:var(--green)} .gstep.ok .gdot{border-color:var(--green);background:var(--green-soft)}
+.gstep.err{color:var(--red)} .gstep.err .gdot{border-color:var(--red);background:var(--red-soft)}
+.glink{width:16px;height:2px;background:var(--line);flex-shrink:0}
+.gtext{flex-basis:100%;font-size:12.5px;display:flex;gap:8px;align-items:center;margin-top:4px;border-top:1px dashed var(--line);padding-top:8px}
+.gtext .live{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:blink 1.15s infinite;flex-shrink:0}
+@keyframes blink{50%{opacity:.2}}
+body.dark .gstep .gdot{background:#222D37}
+.modal{position:fixed;inset:0;background:rgba(12,20,28,.55);display:flex;align-items:center;justify-content:center;z-index:60}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:480px;width:92%;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.mbox h3{font-size:15px;margin-bottom:8px}
+.mbox .mb{font-size:13px;line-height:1.55}
+.mbox .mrow{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+@keyframes pulseCt{0%{box-shadow:0 0 0 0 rgba(111,211,154,.75)}100%{box-shadow:0 0 0 10px rgba(111,211,154,0)}}
+.count.pulse{animation:pulseCt 1s ease 3;background:var(--green);color:#fff}
+
+/* ── agent ──────────────────────────── */
+.pathway{display:flex;align-items:center;gap:0;margin:14px 0 18px;flex-wrap:wrap}
+.stage{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:96px;padding:10px 6px;border-radius:8px}
+.stage .ic{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:15px;background:#fff;transition:all .2s}
+.stage .lb{font-size:10.5px;font-weight:700;letter-spacing:.4px;color:var(--muted)}
+.stage.run .ic{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 4px rgba(14,124,156,.15)}
+.stage.run .lb{color:var(--accent)}
+.stage.ok .ic{border-color:var(--green);background:var(--green-soft)}
+.link{flex:1;height:2px;background:var(--line);min-width:14px}
+.log{background:#0F1922;color:#B9CBD8;font-family:var(--mono);font-size:11.5px;border-radius:8px;padding:12px;height:260px;overflow-y:auto;line-height:1.7}
+.log .t{color:#5B7386}
+.log .ok{color:#6FD39A}.log .er{color:#F08A85}.log .wr{color:#E7B564}.log .js{color:#82C7E0}
+.agentbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.rel{margin-top:14px}
+.rel .bar{height:9px;background:#E3E9ED;border-radius:6px;overflow:hidden;margin-top:5px}
+.rel .fill{height:100%;background:var(--green);border-radius:6px;transition:width .3s}
+.rel .met{color:var(--green);font-weight:800}
+details.jsonbox{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+details.jsonbox summary{padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted)}
+details.jsonbox pre{font-family:var(--mono);font-size:11px;padding:10px 12px;border-top:1px solid var(--line);overflow-x:auto;max-height:240px;overflow-y:auto;background:#FAFBFC}
+.olrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px}
+.olrow input[type=text]{border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-family:var(--mono);font-size:12px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:#B6C2CC}
+.dot.on{background:var(--green)}.dot.off{background:var(--red)}
+
+/* ── output ─────────────────────────── */
+.outwrap{display:grid;grid-template-columns:300px 1fr;gap:16px}
+@media(max-width:900px){.outwrap{grid-template-columns:1fr}}
+.sheetlist{max-height:640px;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.sitem{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:#fff;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sitem:hover{border-color:var(--accent)}
+.sitem.sel{border-color:var(--accent);background:var(--accent-soft)}
+.sitem .l{font-size:12px}
+.sitem .l .st{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.stamp{font-family:var(--mono);font-weight:800;font-size:15px;color:var(--red);border:2px solid var(--red);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;transform:rotate(-7deg);flex-shrink:0}
+.preview{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;background:#DCE2E7;border-radius:var(--r);padding:18px;border:1px solid var(--line)}
+.preview img{width:300px;max-width:100%;box-shadow:0 3px 14px rgba(20,35,48,.25);background:var(--paper)}
+.outctl{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:10.5px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}
+.fld select,.fld input{border:1px solid var(--line);border-radius:7px;padding:7px 10px;background:#fff;min-width:150px}
+.joblog{margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;max-height:110px;overflow-y:auto}
+.scoreline{display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+.scoreline .big{font-size:13px;color:var(--muted)}
+.empty{color:var(--muted);text-align:center;padding:40px 10px;font-size:13px}
+
+/* ── reports ────────────────────────── */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:2px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid #EDF0F3;vertical-align:middle}
+tr.stu{background:#F7F9FA;cursor:pointer}
+tr.stu:hover{background:var(--accent-soft)}
+tr.stu td:first-child{font-weight:700;font-family:var(--mono)}
+tr.det td{font-size:12.5px;background:#fff}
+.spark{display:inline-flex;gap:2px;align-items:flex-end;height:22px}
+.spark i{width:7px;background:var(--accent);border-radius:1px;display:inline-block;min-height:2px}
+.spark i.low{background:var(--red)}
+.mini{font-family:var(--mono);font-size:11.5px}
+.tblbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+
+footer{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#9FB2C0;font-family:var(--mono);font-size:10.5px;padding:6px 22px;display:flex;gap:18px;flex-wrap:wrap}
+footer b{color:#CFE0EA}
+
+/* ── print ──────────────────────────── */
+#printArea{display:none}
+@media print{
+  body>*{display:none !important}
+  #printArea{display:block !important}
+  #printArea img{width:100%;page-break-after:always;display:block}
+  @page{size:5.5in 8.5in;margin:0}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="gf">Grade<b>Flow</b> AI</div>
+    <div class="sub">Worksheet grading console · Kumon Ottawa Centrepointe pilot · a BitSense build</div>
+  </div>
+  <div class="badges">
+    <span class="badge alpha">ALPHA · M2</span>
+    <span class="badge">TARGET 2026-06-30</span>
+    <span class="badge priv">IDs ONLY — NO STUDENT NAMES STORED</span>
+    <button id="themeBtn" title="Toggle dark background" aria-label="Switch to dark background" style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:transparent;color:#CFE0EA;font-size:14px;line-height:1;padding:0">☾</button>
+  </div>
+</header>
+
+<nav aria-label="Workflow steps">
+  <button class="on" data-tab="intake"><span class="stepn">1</span>Intake &amp; Queue<span class="count" id="cQ">0</span></button><span class="navsep">›</span>
+  <button data-tab="agent"><span class="stepn">2</span>Grade</button><span class="navsep">›</span>
+  <button data-tab="graded"><span class="stepn">3</span>Graded<span class="count" id="cG">0</span></button><span class="navsep">›</span>
+  <button data-tab="output"><span class="stepn">4</span>Output &amp; Print</button><span class="navsep">›</span>
+  <button data-tab="reports"><span class="stepn">5</span>Reports</button>
+  <button data-tab="archive" class="aux" style="margin-left:auto">🗄 Archive<span class="count" id="cA">0</span></button>
+</nav>
+
+<main>
+
+<!-- ════════ INTAKE & QUEUE ════════ -->
+<section class="tab on" id="tab-intake">
+  <h2>Intake &amp; queue</h2>
+  <p class="hint">Step 1 of the loop: bring worksheets in, then send them to the grading agent (step 2). Upload a single PDF, a ZIP of scans, or multiple files — or load the synthetic sample batch. Half-letter (5.5″ × 8.5″), duplex: side A + side B per sheet.</p>
+
+  <div class="guide" id="guideIntake" aria-live="polite">
+    <div class="gstep" data-g="upload"><span class="gdot">⇪</span>Upload</div><span class="glink"></span>
+    <div class="gstep" data-g="validate"><span class="gdot">◈</span>Validate</div><span class="glink"></span>
+    <div class="gstep" data-g="queue"><span class="gdot">▤</span>Queue</div><span class="glink"></span>
+    <div class="gstep" data-g="ready"><span class="gdot">▶</span>Ready to grade</div>
+    <div class="gtext"><span class="live" id="guideIntakeLive" hidden></span><span id="guideIntakeTxt">Waiting for worksheets — drop files below, choose files, or load the sample batch.</span></div>
+  </div>
+
+  <div class="sumbar" id="pipeSummary" aria-label="Pipeline summary"></div>
+
+  <div class="drop" id="drop">
+    <div class="big">Drop scans here or choose files</div>
+    <div>Single PDF · ZIP archive · multiple PDFs / PNG / JPG</div>
+    <div style="margin-top:12px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn pri" id="btnPick">Choose files</button>
+      <button class="btn" id="btnSynth">Load synthetic sample batch</button>
+    </div>
+    <div class="fmt">accepts .pdf · .zip · .png · .jpg — scanner-class image PDFs supported (embedded JPEG extraction)</div>
+    <input type="file" id="filePick" accept=".pdf,.zip,image/png,image/jpeg" multiple hidden>
+  </div>
+
+  <div id="intakeErrors" aria-live="polite"></div>
+
+  <h2 class="framehead">Queued sheets</h2>
+  <p class="hint"><strong>Queued</strong> = ready to grade · <strong>Needs review</strong> = an uploaded scan the deterministic engine won't guess at (enable the local model in step 2, or handle by hand). Tick sheets to download or remove them.</p>
+  <div class="toolbar">
+    <div class="seg" id="segQ" role="group" aria-label="Queued view mode"><button data-v="cards" class="on">▦ Cards</button><button data-v="compact">☰ Compact</button></div>
+    <label class="ckall"><input type="checkbox" id="ckAllQ"> Select all</label>
+    <span class="selinfo" id="selInfoQ">0 selected</span>
+    <button class="btn" id="btnDlQ">↓ Download selected (original PDF)</button>
+    <button class="btn" id="btnArSelQ">🗄 Archive selected</button>
+    <button class="btn" id="btnArAllQ">🗄 Archive all queued</button>
+    <button class="btn warn" id="btnRmSelQ">Remove selected</button>
+    <button class="btn red" id="btnRmAllQ" title="Removes every sheet in every tab — queued, graded and archived">Remove all</button>
+    <button class="btn pri" id="btnGoAgent" style="margin-left:auto">▶ Run grading agent</button>
+  </div>
+  <div class="queue" id="queue"></div>
+</section>
+
+<!-- ════════ GRADED ════════ -->
+<section class="tab" id="tab-graded">
+  <h2>Graded sheets</h2>
+  <p class="hint">Every sheet the agent has finished, with its red-mark overlay and score stamp. Tick sheets to download one combined PDF, or open a sheet in step 4 to print, save or email it individually.</p>
+  <div class="toolbar">
+    <div class="seg" id="segG" role="group" aria-label="Graded view mode"><button data-v="cards" class="on">▦ Cards</button><button data-v="compact">☰ Compact</button></div>
+    <label class="ckall"><input type="checkbox" id="ckAllG"> Select all</label>
+    <span class="selinfo" id="selInfoG">0 selected</span>
+    <button class="btn" id="btnDlG">↓ Download selected (graded PDF)</button>
+    <button class="btn" id="btnArSelG">🗄 Archive selected</button>
+    <button class="btn" id="btnArAllG">🗄 Archive all graded</button>
+    <button class="btn warn" id="btnRmSelG">Remove selected</button>
+    <button class="btn red" id="btnRmAllG" title="Removes every sheet in every tab — queued, graded and archived">Remove all</button>
+  </div>
+  <div class="queue" id="graded"></div>
+</section>
+
+<!-- ════════ AGENT ════════ -->
+<section class="tab" id="tab-agent">
+  <h2>Grading agent</h2>
+  <p class="hint">Mirrors the physical paper path of the alpha rig: feed → duplex scan → OCR → grade → print marks → return. The grading engine is deterministic (reproducible scores, dates and gates); a local model, when connected, writes narrative only.</p>
+
+  <div id="runDone"></div>
+  <div class="panel">
+    <div class="pathway" id="pathway">
+      <div class="stage" data-st="feed"><div class="ic">⇥</div><div class="lb">FEED</div></div><div class="link"></div>
+      <div class="stage" data-st="scanA"><div class="ic">▤</div><div class="lb">SCAN A</div></div><div class="link"></div>
+      <div class="stage" data-st="scanB"><div class="ic">▥</div><div class="lb">SCAN B</div></div><div class="link"></div>
+      <div class="stage" data-st="ocr"><div class="ic">◉</div><div class="lb">OCR</div></div><div class="link"></div>
+      <div class="stage" data-st="grade"><div class="ic">✓</div><div class="lb">GRADE</div></div><div class="link"></div>
+      <div class="stage" data-st="print"><div class="ic">⎙</div><div class="lb">MARK</div></div><div class="link"></div>
+      <div class="stage" data-st="return"><div class="ic">⇤</div><div class="lb">RETURN</div></div>
+    </div>
+
+    <div class="gtext" style="margin:-4px 0 14px"><span class="live" id="agentLive" hidden></span><span id="agentGuideTxt">Idle — queue sheets in step 1 · Intake &amp; Queue, then press Run.</span></div>
+
+    <div class="agentbar">
+      <button class="btn pri" id="btnRun">Run agent on queued sheets</button>
+      <button class="btn" id="btnJam">Simulate paper jam</button>
+      <span id="agentStatus" class="hint" style="margin:0">Idle.</span>
+    </div>
+
+    <div class="olrow panel" style="padding:10px 12px;margin-bottom:12px">
+      <span class="dot" id="olDot"></span>
+      <strong style="font-size:12px">Local model (Ollama)</strong>
+      <input type="text" id="olUrl" value="http://localhost:11434" size="24" aria-label="Ollama endpoint">
+      <input type="text" id="olModel" value="qwen2.5vl:7b" size="14" aria-label="Ollama model">
+      <button class="btn" id="olTest">Test connection</button>
+      <label style="display:flex;gap:5px;align-items:center"><input type="checkbox" id="olUse"> use for OCR of uploaded scans</label>
+      <span class="hint" style="margin:0">best quality for handwriting — optional</span>
+    </div>
+
+    <div class="olrow panel" style="padding:10px 12px;margin-bottom:12px">
+      <span class="dot" id="bocrDot"></span>
+      <strong style="font-size:12px">In-browser OCR (zero install)</strong>
+      <label style="display:flex;gap:5px;align-items:center"><input type="checkbox" id="bocrUse" checked> use for uploaded scans when no local model is available</label>
+      <span class="hint" style="margin:0" id="bocrHint">runs entirely in this browser (~8 MB engine loads on first use, then cached) · nothing leaves the machine · clear print/pen works best, faint pencil may route to review</span>
+    </div>
+
+    <div class="log" id="log" aria-live="polite"></div>
+
+    <div class="rel">
+      <strong style="font-size:12.5px">Alpha acceptance — 20-sheet consecutive reliability run</strong>
+      <span class="mini" id="relTxt" style="margin-left:8px">0 / 20</span>
+      <div class="bar"><div class="fill" id="relFill" style="width:0%"></div></div>
+    </div>
+
+    <div id="jsonOut"></div>
+  </div>
+</section>
+
+<!-- ════════ OUTPUT ════════ -->
+<section class="tab" id="tab-output">
+  <h2>Graded output</h2>
+  <p class="hint">Select a sheet to see the grading report overlaid on the original worksheet. Print routes to the selected queue (final routing is confirmed in the system print dialog on the alpha rig); Save exports a duplex half-letter PDF.</p>
+
+  <div class="outwrap">
+    <div>
+      <div class="panel" style="padding:10px">
+        <div class="fld" style="margin-bottom:8px">
+          <label for="fStu">Student</label>
+          <select id="fStu"><option value="">All students</option></select>
+        </div>
+        <div class="sheetlist" id="sheetList"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="outctl">
+        <div class="fld"><label for="oDate">Exam date</label><input type="date" id="oDate"></div>
+        <div class="fld"><label for="oPrinter">Printer queue</label>
+          <select id="oPrinter">
+            <option value="system">System dialog (default)</option>
+            <option value="Brother_HL-L2350DW">Brother_HL-L2350DW · alpha rig</option>
+            <option value="HP_LaserJet_M110w">HP_LaserJet_M110w</option>
+            <option value="CUPS-PDF">CUPS-PDF (virtual)</option>
+          </select>
+        </div>
+        <button class="btn pri" id="btnPrint">⎙ Print marks</button>
+        <button class="btn" id="btnSave">↓ Save graded PDF</button>
+        <button class="btn" id="btnEmail">✉ Email report</button>
+      </div>
+      <div class="scoreline" id="scoreLine"></div>
+      <div class="preview" id="preview"><div class="empty">No graded sheets yet — run the grading agent in step 2.</div></div>
+      <div class="joblog" id="jobLog"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ REPORTS ════════ -->
+<section class="tab" id="tab-reports">
+  <h2>Student reports</h2>
+  <p class="hint">One row per student ID (names are never captured or stored). Click a row to expand per-sheet detail.</p>
+  <div class="stats" id="repStats" aria-label="Batch tally"></div>
+  <div class="panel">
+    <div class="tblbar">
+      <span class="hint" style="margin:0" id="repSummary"></span>
+      <span style="display:flex;gap:8px"><button class="btn" id="btnEmailAll">✉ Email all reports</button>
+      <button class="btn" id="btnCsv">Export CSV</button></span>
+    </div>
+    <table id="repTable">
+      <thead><tr>
+        <th>Student ID</th><th>Sheets graded</th><th>Avg score</th><th>100s (first attempt)</th>
+        <th>Score trend</th><th>Last exam date</th><th></th>
+      </tr></thead>
+      <tbody id="repBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════ ARCHIVE ════════ -->
+<section class="tab" id="tab-archive">
+  <h2>Archive</h2>
+  <p class="hint">Archived sheets leave the active pipeline — queue, graded frame, and output &amp; print — but stay in Reports as history, marked 🗄. Restore them to keep working, download them as a PDF, or remove them permanently.</p>
+  <div class="toolbar">
+    <label class="ckall"><input type="checkbox" id="ckAllA"> Select all</label>
+    <span class="selinfo" id="selInfoA">0 selected</span>
+    <button class="btn" id="btnDlA">↓ Download selected (PDF)</button>
+    <button class="btn" id="btnReSelA">⤴ Restore selected</button>
+    <button class="btn" id="btnReAllA">⤴ Restore all</button>
+    <button class="btn warn" id="btnRmSelA">Remove selected</button>
+    <button class="btn red" id="btnRmAllA" title="Removes every sheet in every tab — queued, graded and archived">Remove all</button>
+  </div>
+  <div class="queue" id="archive"></div>
+</section>
+
+</main>
+
+<footer>
+  <span><b>GradeFlow AI</b> v0.3-alpha</span>
+  <span>engine <b>deterministic-v0.3</b></span>
+  <span>rig <b>ESP32 · SANE · CUPS · Ubuntu 24.04</b></span>
+  <span>throughput target <b>20–50 pg/day</b></span>
+  <span id="ftPersist">local only — no cloud</span>
+</footer>
+
+<div id="printArea" aria-hidden="true"></div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════
+   GradeFlow AI · single-file alpha console · BitSense pattern:
+   vanilla JS, no CDN, localStorage persistence, deterministic
+   grading engine (all numbers reproducible as evidence), local
+   LLM optional for narrative/OCR of real scans.
+   ═══════════════════════════════════════════════════════════════ */
+
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const FAST = typeof window!=='undefined' && window.__FAST===1;
+const wait=ms=>new Promise(r=>setTimeout(r,FAST?0:ms));
+const HAS_CANVAS = (()=>{try{return !!document.createElement('canvas').getContext('2d');}catch(e){return false;}})();
+
+/* seeded RNG — reproducibility is a QMS requirement, not a nicety */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+
+const state={
+  sheets:[],          // worksheet records
+  jobLog:[],          // print/save evidence trail
+  rel:0,              // consecutive reliability counter
+  selected:null,
+  nextId:1
+};
+
+/* ── persistence (metadata only; pixels regenerate from seed) ── */
+function saveState(){
+  try{
+    const slim=state.sheets.filter(s=>s.source==='synthetic').map(s=>({
+      id:s.id,studentId:s.studentId,setCode:s.setCode,level:s.level,seed:s.seed,archived:!!s.archived,
+      examDate:s.examDate,status:s.status,score:s.score,wrong:s.wrong,gradedAt:s.gradedAt
+    }));
+    localStorage.setItem('gfalpha',JSON.stringify({slim,rel:state.rel,jobLog:state.jobLog.slice(-40),nextId:state.nextId,
+      view:state.view,printer:$('#oPrinter')?$('#oPrinter').value:'system'}));
+  }catch(e){/* storage full/blocked — session continues in memory */}
+}
+function loadState(){
+  try{
+    const raw=localStorage.getItem('gfalpha'); if(!raw) return false;
+    const d=JSON.parse(raw);
+    state.rel=d.rel||0; state.jobLog=d.jobLog||[]; state.nextId=d.nextId||1;
+    if(d.view) state.view=d.view;
+    if(d.printer&&$('#oPrinter'))$('#oPrinter').value=d.printer;
+    (d.slim||[]).forEach(m=>{
+      const sh=buildSyntheticSheet(m.studentId,m.level,m.setCode,m.seed,m.examDate);
+      Object.assign(sh,{id:m.id,status:m.status,score:m.score,wrong:m.wrong,gradedAt:m.gradedAt,archived:!!m.archived});
+      state.sheets.push(sh);
+    });
+    return state.sheets.length>0;
+  }catch(e){return false;}
+}
+
+/* ══════════════ synthetic worksheet generation ══════════════ */
+const LEVELS={
+  B:{name:'Addition',make(r){const a=10+Math.floor(r()*80),b=10+Math.floor(r()*80);return{q:a+' + '+b+' =',ans:a+b};}},
+  C:{name:'Multiplication',make(r){const a=12+Math.floor(r()*80),b=2+Math.floor(r()*8);return{q:a+' × '+b+' =',ans:a*b};}},
+  D:{name:'Division',make(r){const b=2+Math.floor(r()*8),q=11+Math.floor(r()*80);return{q:(b*q)+' ÷ '+b+' =',ans:q};}}
+};
+
+function wrongify(correct,r){
+  const modes=[c=>c+1,c=>c-1,c=>c+10,c=>c-10,c=>{const s=String(c);return s.length>1?+((s[1]+s[0])+s.slice(2)):c+2;}];
+  let w=correct;
+  while(w===correct){w=modes[Math.floor(r()*modes.length)](correct);}
+  return w;
+}
+
+function buildSyntheticSheet(studentId,level,setCode,seed,examDate){
+  const r=mulberry32(seed);
+  const skill=0.80+r()*0.17; // per-sheet accuracy prior
+  const sides=[0,1].map(si=>{
+    const problems=[];
+    for(let i=0;i<10;i++){
+      const p=LEVELS[level].make(r);
+      const isWrong=r()>skill;
+      const written=isWrong?wrongify(p.ans,r):p.ans;
+      problems.push({n:si*10+i+1,q:p.q,expected:p.ans,written,ocr:null,conf:null,correct:null});
+    }
+    return{problems};
+  });
+  return{id:'WS-'+String(state.nextId++).padStart(4,'0'),studentId,level,setCode,seed,examDate,
+    source:'synthetic',sides,status:'queued',score:null,wrong:null,gradedAt:null};
+}
+
+async function loadSyntheticBatch(){
+  if(state.sheets.some(s=>s.source==='synthetic') && !(await appConfirm('Add another sample batch?','A sample batch is already loaded. Add 6 more sample sheets?','Add 6 more'))) return;
+  const today=new Date();
+  const students=['STU-001','STU-002','STU-003'];
+  const plans=[['B','B 141 a'],['B','B 142 a'],['C','C 87 a'],['C','C 88 a'],['D','D 21 a'],['D','D 22 a']];
+  let k=0;
+  students.forEach((stu,si)=>{
+    for(let j=0;j<2;j++){
+      const d=new Date(today); d.setDate(d.getDate()-(12-(k*2)));
+      const [lvl,code]=plans[si*2+j];
+      state.sheets.push(buildSyntheticSheet(stu,lvl,code,90210+si*97+j*13,d.toISOString().slice(0,10)));
+      k++;
+    }
+  });
+  state.__ingesting=true;
+  setIntakeGuide('queue','run','Generating 6 sample worksheets (levels B/C/D, duplex)…',true);
+  renderQueue(); saveState();
+  state.__ingesting=false;
+  setIntakeGuide('ready','ok','6 sample sheets queued — ready for step 2 · Grade.',false);
+  log('Loaded synthetic batch: 6 sheets · 3 student IDs · levels B/C/D · duplex (A+B sides).','ok');
+  showToast('Sample batch loaded — 6 sheets are queued below, ready for step 2 · Grade.');
+  pulseCount('#cQ');
+}
+
+/* ══════════════ canvas rendering (half-letter, 200dpi eq) ══════════════ */
+const W=1100,H=1700; // 5.5in × 8.5in @200dpi
+function renderSide(sheet,si,overlay){
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d'); if(!x)return c;
+  const r=mulberry32(sheet.seed+si*7+3);
+  // paper
+  x.fillStyle='#FBFAF4'; x.fillRect(0,0,W,H);
+  x.strokeStyle='#E4E0D2'; x.lineWidth=2; x.strokeRect(1,1,W-2,H-2);
+
+  // header
+  x.fillStyle='#1D2A35';
+  x.font='800 92px Georgia,serif';
+  x.fillText(sheet.setCode+(si?' · B':' · A'),70,140);
+  x.font='600 30px system-ui,sans-serif'; x.fillStyle='#5D6B77';
+  x.fillText(LEVELS[sheet.level].name+' — GradeFlow synthetic set (not Kumon material)',70,190);
+
+  // ID / date boxes
+  x.strokeStyle='#B9C2CA'; x.lineWidth=2;
+  x.strokeRect(70,230,420,70); x.strokeRect(520,230,300,70);
+  x.font='600 22px system-ui,sans-serif'; x.fillStyle='#8A97A2';
+  x.fillText('STUDENT ID',82,256); x.fillText('DATE',532,256);
+  x.font='34px "Comic Sans MS",cursive'; x.fillStyle='#3A4664';
+  x.save(); x.translate(200,288); x.rotate((r()-.5)*.04); x.fillText(sheet.studentId,0,0); x.restore();
+  x.save(); x.translate(600,288); x.rotate((r()-.5)*.04); x.fillText(sheet.examDate,0,0); x.restore();
+
+  // score circle
+  x.beginPath(); x.arc(960,180,86,0,7); x.strokeStyle='#CBD3DA'; x.lineWidth=3; x.stroke();
+  x.font='600 20px system-ui,sans-serif'; x.fillStyle='#AEB9C2'; x.fillText('SCORE',930,110);
+
+  // problems: 2 cols × 5 rows
+  const colX=[85,590], startY=440, rowH=232;
+  sheet.sides[si].problems.forEach((p,i)=>{
+    const cx=colX[Math.floor(i/5)], cy=startY+(i%5)*rowH;
+    x.fillStyle='#1D2A35'; x.font='46px Georgia,serif';
+    x.fillText((p.n)+')  '+p.q, cx, cy);
+    // answer underline
+    const qw=x.measureText((p.n)+')  '+p.q).width;
+    const ax=cx+qw+18;
+    x.strokeStyle='#C6CDD4'; x.lineWidth=2;
+    x.beginPath(); x.moveTo(ax,cy+8); x.lineTo(ax+150,cy+8); x.stroke();
+    // handwritten answer
+    x.save(); x.translate(ax+18,cy-2); x.rotate((r()-.5)*.09);
+    x.font='58px "Comic Sans MS",cursive'; x.fillStyle='#39415C';
+    x.fillText(String(p.written),0,0); x.restore();
+    p._ax=ax; p._ay=cy; // remember for overlay
+    // overlay marks
+    if(overlay && p.correct!==null){
+      x.strokeStyle='#C9403A'; x.fillStyle='#C9403A'; x.lineWidth=7; x.lineCap='round';
+      if(p.correct){
+        x.beginPath(); x.moveTo(ax+165,cy-8); x.lineTo(ax+185,cy+14); x.lineTo(ax+225,cy-44); x.stroke();
+      }else{
+        x.beginPath(); x.ellipse(ax+70,cy-16,95,44,(r()-.5)*.1,0,7); x.stroke();
+        x.font='700 34px system-ui,sans-serif';
+        x.fillText('→ '+p.expected, ax+8, cy+52);
+      }
+    }
+  });
+
+  // overlay stamp + evidence line
+  if(overlay && sheet.score!==null){
+    x.save(); x.translate(960,180); x.rotate(-0.12);
+    x.strokeStyle='#C9403A'; x.lineWidth=8;
+    x.beginPath(); x.arc(0,0,86,0,7); x.stroke();
+    x.fillStyle='#C9403A'; x.font='800 76px Georgia,serif'; x.textAlign='center';
+    x.fillText(String(sheet.score),0,26); x.textAlign='left'; x.restore();
+    x.fillStyle='#C9403A'; x.font='600 24px ui-monospace,monospace';
+    x.fillText('GF-ALPHA · graded '+(sheet.gradedAt||'').slice(0,10)+' · engine deterministic-v0.3 · side '+(si?'B':'A'),70,H-52);
+  }
+  return c;
+}
+function sideDataUrl(sheet,si,overlay,q){
+  if(!HAS_CANVAS)return '';
+  try{return renderSide(sheet,si,overlay).toDataURL('image/jpeg',q||0.85);}catch(e){return '';}
+}
+
+/* ══════════════ intake / uploads ══════════════ */
+state.sel=new Set(); // ticked sheet ids (session only)
+state.view={q:'cards',g:'cards'}; // Cards vs Compact per tab
+
+function appConfirm(title,html,yesLabel){
+  return new Promise(res=>{
+    if(window.__AUTOCONFIRM){res(true);return;}
+    const ov=document.createElement('div'); ov.className='modal';
+    ov.innerHTML=`<div class="mbox" role="dialog" aria-modal="true" aria-label="${title}"><h3>${title}</h3><div class="mb">${html}</div>
+      <div class="mrow"><button class="btn" id="appConfirmNo">Cancel</button><button class="btn red" id="appConfirmYes">${yesLabel||'Confirm'}</button></div></div>`;
+    document.body.appendChild(ov);
+    const onk=e=>{ if(e.key==='Escape') fin(false); };
+    const fin=v=>{ ov.remove(); document.removeEventListener('keydown',onk); res(v); };
+    ov.querySelector('#appConfirmNo').onclick=()=>fin(false);
+    ov.querySelector('#appConfirmYes').onclick=()=>fin(true);
+    ov.onclick=e=>{ if(e.target===ov) fin(false); };
+    document.addEventListener('keydown',onk);
+    setTimeout(()=>{ const y=ov.querySelector('#appConfirmYes'); if(y)y.focus(); },0);
+  });
+}
+const GSTAGES=['upload','validate','queue','ready'];
+function setIntakeGuide(stage,cls,text,busy){
+  const idx=GSTAGES.indexOf(stage);
+  $$('#guideIntake .gstep').forEach(el=>{
+    el.classList.remove('run','ok','err');
+    const i=GSTAGES.indexOf(el.dataset.g);
+    if(i<idx) el.classList.add('ok');
+    if(i===idx) el.classList.add(cls||'run');
+  });
+  $('#guideIntakeTxt').textContent=text;
+  $('#guideIntakeLive').hidden=!busy;
+}
+function agentGuide(text,busy){ $('#agentGuideTxt').textContent=text; $('#agentLive').hidden=!busy; }
+function showToast(msg,actionLabel,actionTab){
+  const old=$('.toast'); if(old)old.remove();
+  const t=document.createElement('div'); t.className='toast'; t.setAttribute('role','status');
+  t.innerHTML=`<span class="tk">✓</span><span>${msg}</span>`+
+    (actionLabel?`<button class="btn">${actionLabel}</button>`:'')+
+    `<button class="btn" aria-label="Dismiss" style="padding:6px 10px">×</button>`;
+  const btns=t.querySelectorAll('button');
+  if(actionLabel){ btns[0].onclick=()=>{switchTab(actionTab);t.remove();}; }
+  btns[btns.length-1].onclick=()=>t.remove();
+  document.body.appendChild(t);
+  setTimeout(()=>{ if(t.parentNode)t.remove(); },8000);
+}
+function pulseCount(id){ const el=$(id); if(!el)return; el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); setTimeout(()=>el.classList.remove('pulse'),3400); }
+
+function statusChips(s){
+  const ar=s.archived?' <span class="chip q" title="Archived — restore from the Archive tab to keep working with this sheet">🗄 ARCHIVED</span>':'';
+  if(s.status==='graded') return `<span class="chip g">GRADED</span> <span class="chip g score">${s.score} / 100</span>`+ar;
+  if(s.status==='review') return `<span class="chip r" title="OCR was not available for this uploaded scan — enable the local model in step 2 and re-run, or grade by hand">NEEDS REVIEW</span>`+ar;
+  return `<span class="chip q" title="Waiting for the grading agent (step 2)">QUEUED</span>`+ar;
+}
+function sheetSummary(s){
+  if(s.source==='synthetic'){
+    const n=s.sides.reduce((a,sd)=>a+sd.problems.length,0);
+    return LEVELS[s.level].name+' · '+s.sides.length+' sides · '+n+' problems';
+  }
+  return 'uploaded scan · '+s.sides.length+' side'+(s.sides.length>1?'s':'');
+}
+function cardHtml(s){
+  const th=s.source==='synthetic'
+    ?`<img alt="worksheet ${s.id}" src="${sideDataUrl(s,0,s.status==='graded',0.55)}">`
+    :(s.thumb?`<img alt="uploaded scan ${s.id}" src="${s.thumb}">`:'<span style="color:#8A97A2;font-size:12px">uploaded scan</span>');
+  const open=(s.status==='graded'&&!s.archived)?`<button class="open" onclick="openSheet('${s.id}')">Open · print / save / email</button>`:'';
+  return `<div class="card ${state.sel.has(s.id)?'sel':''}" data-id="${s.id}">
+    <label class="ck" title="Select this sheet"><input type="checkbox" ${state.sel.has(s.id)?'checked':''} aria-label="Select ${s.id}" onchange="toggleSel('${s.id}',this.checked)"></label>
+    <div class="thumb">${th}</div>
+    <div class="meta"><strong>${s.setCode||s.fileName||'Uploaded sheet'}</strong>
+    <span class="id">${s.id} · ${s.studentId||'unassigned'} · ${s.examDate||'—'}</span>
+    <span class="id">${sheetSummary(s)}</span>
+    <span>${statusChips(s)}</span>${open}</div></div>`;
+}
+window.toggleSel=function(id,on){ if(on)state.sel.add(id); else state.sel.delete(id); renderQueue(); };
+
+function compactRow(s){
+  const open=(s.status==='graded'&&!s.archived)?`<button class="open" style="margin:0" onclick="openSheet('${s.id}')">Open</button>`:'';
+  return `<tr class="${state.sel.has(s.id)?'rowsel':''}">
+    <td><input type="checkbox" ${state.sel.has(s.id)?'checked':''} aria-label="Select ${s.id}" onchange="toggleSel('${s.id}',this.checked)"></td>
+    <td class="mini">${s.id}</td>
+    <td><strong>${s.setCode||s.fileName||'Uploaded sheet'}</strong></td>
+    <td class="mini">${s.studentId||'—'}</td>
+    <td class="mini">${s.examDate||'—'}</td>
+    <td class="mini">${sheetSummary(s)}</td>
+    <td>${statusChips(s)}</td>
+    <td>${open}</td></tr>`;
+}
+function compactTable(rows){
+  return `<div class="compact-wrap"><table>
+    <thead><tr><th></th><th>ID</th><th>Set / file</th><th>Student</th><th>Exam date</th><th>Contents</th><th>Status · score</th><th></th></tr></thead>
+    <tbody>${rows.map(compactRow).join('')}</tbody></table></div>`;
+}
+
+function renderQueue(){
+  // prune stale selections
+  const live=new Set(state.sheets.map(s=>s.id));
+  [...state.sel].forEach(id=>{ if(!live.has(id)) state.sel.delete(id); });
+  const queued=state.sheets.filter(s=>s.status!=='graded'&&!s.archived);
+  const graded=state.sheets.filter(s=>s.status==='graded'&&!s.archived);
+  const archived=state.sheets.filter(s=>s.archived);
+  const qG=$('#queue'), gG=$('#graded'), aG=$('#archive');
+  qG.innerHTML=queued.length?(state.view.q==='compact'?compactTable(queued):queued.map(cardHtml).join(''))
+    :'<div class="empty">Nothing queued. Upload scans above or load the sample batch.</div>';
+  gG.innerHTML=graded.length?(state.view.g==='compact'?compactTable(graded):graded.map(cardHtml).join(''))
+    :'<div class="empty">No graded sheets yet. Queue sheets in step 1, then run the grading agent in step 2.</div>';
+  aG.innerHTML=archived.length?archived.map(cardHtml).join('')
+    :'<div class="empty">Nothing archived. Use 🗄 Archive selected / all on the queue (step 1) or graded (step 3) frames.</div>';
+  $('#cA').textContent=archived.length; $('#cA').classList.toggle('has',archived.length>0);
+  const selA=archived.filter(s=>state.sel.has(s.id)).length;
+  $('#selInfoA').textContent=selA+' of '+archived.length+' selected';
+  $('#ckAllA').checked=archived.length>0&&selA===archived.length;
+  $$('#segQ button').forEach(b=>b.classList.toggle('on',b.dataset.v===state.view.q));
+  $$('#segG button').forEach(b=>b.classList.toggle('on',b.dataset.v===state.view.g));
+  $('#cQ').textContent=queued.length; $('#cQ').classList.toggle('has',queued.length>0);
+  $('#cG').textContent=graded.length; $('#cG').classList.toggle('has',graded.length>0);
+  const selQ=queued.filter(s=>state.sel.has(s.id)).length, selG=graded.filter(s=>state.sel.has(s.id)).length;
+  $('#selInfoQ').textContent=selQ+' of '+queued.length+' selected';
+  $('#selInfoG').textContent=selG+' of '+graded.length+' selected';
+  $('#ckAllQ').checked=queued.length>0&&selQ===queued.length;
+  $('#ckAllG').checked=graded.length>0&&selG===graded.length;
+  renderSummary(queued,graded);
+  if(!state.__ingesting){
+    if(!state.sheets.length) setIntakeGuide('upload','run','Waiting for worksheets — drop files below, choose files, or load the sample batch.',false);
+    else if(queued.length) setIntakeGuide('ready','ok',queued.length+' sheet(s) queued — press ▶ Run grading agent, or continue to step 2 · Grade.',false);
+    else setIntakeGuide('queue','ok','Queue is empty — everything is graded. Results are in step 3 · Graded.',false);
+  }
+}
+function renderSummary(queued,graded){
+  const box=$('#pipeSummary'); if(!box)return;
+  if(!state.sheets.length){
+    box.innerHTML='<span class="hint" style="margin:0">No sheets yet — upload scans below or load the synthetic sample batch.</span>';
+    return;
+  }
+  const perStu={};
+  state.sheets.forEach(s=>{const k=s.studentId||'unassigned';perStu[k]=(perStu[k]||0)+1;});
+  const stuIds=Object.keys(perStu).filter(k=>k!=='unassigned').sort();
+  const chips=stuIds.map(k=>`<span class="stuchip" title="${perStu[k]} sheet(s) for ${k}">${k} ×${perStu[k]}</span>`).join('')
+    +(perStu.unassigned?`<span class="stuchip" style="background:#EDF1F4;color:#54626E" title="uploaded scans not yet assigned to a student">unassigned ×${perStu.unassigned}</span>`:'');
+  box.innerHTML=`
+    <div class="sum"><span class="n">${state.sheets.length}</span><span class="l">Total sheets</span></div>
+    <div class="sumdiv"></div>
+    <div class="sum"><span class="n">${stuIds.length}</span><span class="l">Students</span></div>
+    <div class="sumdiv"></div>
+    <div class="sum"><span class="n">${queued.length}</span><span class="l">Queued</span></div>
+    <div class="sumdiv"></div>
+    <div class="sum"><span class="n">${graded.length}</span><span class="l">Graded</span></div>
+    <div class="sumdiv"></div>
+    <div class="sum"><span class="n">${state.sheets.filter(x=>x.archived).length}</span><span class="l">Archived</span></div>
+    <div class="stuchips"><span class="l">Sheets per student</span>${chips}</div>`;
+}
+
+/* ── intake validation & visible errors ── */
+state.errors=[]; // session-only: {file, reason, fix}
+function intakeError(file,reason,fix){
+  state.errors.push({file,reason,fix,t:new Date().toTimeString().slice(0,8)});
+  renderErrors();
+  log('REJECTED '+file+' — '+reason,'er');
+}
+function renderErrors(){
+  const box=$('#intakeErrors'); if(!box)return;
+  box.innerHTML=state.errors.map((e,i)=>`<div class="errcard" role="alert">
+    <span class="ic">✕</span>
+    <span class="bd"><b>${e.file} · rejected at ${e.t}</b>${e.reason}<div class="fix">Fix: ${e.fix}</div></span>
+    <button aria-label="Dismiss error for ${e.file}" onclick="dismissError(${i})">×</button></div>`).join('');
+}
+window.dismissError=function(i){ state.errors.splice(i,1); renderErrors(); };
+
+function decodable(url,mime){
+  // verify the browser can actually decode the image; timeout tolerates headless test envs
+  return new Promise(res=>{
+    let done=false; const fin=v=>{ if(!done){done=true;res(v);} };
+    try{ const im=new Image(); im.onload=()=>fin(true); im.onerror=()=>fin(false); im.src=url; }
+    catch(e){ fin(false); }
+    setTimeout(()=>fin(true),2500);
+  });
+}
+
+async function handleFiles(files){
+  state.__ingesting=true;
+  const e0=state.errors.length, s0=state.sheets.length;
+  setIntakeGuide('validate','run','Checking '+files.length+' file(s)…',true);
+  for(const f of files){
+    setIntakeGuide('validate','run','Validating '+(f.name||'file')+'…',true);
+    const name=(f.name||'file').toLowerCase();
+    try{
+      if(!f.size){ intakeError(f.name,'File is empty (0 bytes).','Re-export or re-scan the file, then upload again.'); continue; }
+      if(f.size>60*1024*1024){ intakeError(f.name,'File exceeds the 60 MB alpha ingest limit ('+Math.round(f.size/1048576)+' MB).','Split the batch or rescan at 300 dpi grayscale — the alpha rig scans at 300 dpi.'); continue; }
+      if(name.endsWith('.zip')) await ingestZip(f);
+      else if(name.endsWith('.pdf')) await ingestPdf(f);
+      else if(/\.(png|jpe?g)$/.test(name)) await ingestImage(f,await f.arrayBuffer(),f.type);
+      else intakeError(f.name,'Unsupported file type. GradeFlow ingests worksheet scans only.','Upload .pdf, .zip, .png or .jpg. Word/Excel/text files are not worksheet scans.');
+    }catch(e){ intakeError(f.name,'Ingest failed: '+e.message,'Verify the file opens on your machine, then re-upload. If it persists, rescan the sheet.'); }
+  }
+  const rejected=state.errors.length-e0, added=state.sheets.length-s0;
+  renderQueue(); saveState();
+  state.__ingesting=false;
+  if(added&&rejected) setIntakeGuide('ready','ok',added+' sheet(s) queued · '+rejected+' file(s) rejected — explanations below.',false);
+  else if(rejected) setIntakeGuide('validate','err',rejected+' file(s) rejected — see the explanation card(s) below. Nothing was queued.',false);
+  else if(added) setIntakeGuide('ready','ok',added+' sheet(s) queued — ready for step 2 · Grade.',false);
+  else setIntakeGuide('upload','run','No usable files found — try .pdf, .zip, .png or .jpg scans.',false);
+}
+
+async function ingestImage(f,buf,mime){
+  const blob=new Blob([buf],{type:mime||'image/jpeg'});
+  const url=URL.createObjectURL(blob);
+  if(!(await decodable(url,mime))){
+    URL.revokeObjectURL(url);
+    intakeError(f.name||'image','File has an image extension but the browser cannot decode it — likely corrupt, truncated, or misnamed.','Open it locally to confirm it renders, or rescan the worksheet.');
+    return;
+  }
+  state.sheets.push({id:'WS-'+String(state.nextId++).padStart(4,'0'),studentId:null,setCode:null,
+    fileName:f.name||'scan',examDate:new Date().toISOString().slice(0,10),source:'upload',
+    sides:[{imageUrl:url}],thumb:url,status:'queued',score:null,wrong:null,gradedAt:null});
+  log('Ingested image scan: '+(f.name||'scan'),'ok');
+}
+
+/* scanner-class PDFs embed JPEG page images (DCTDecode) — extract by SOI/EOI scan */
+async function ingestPdf(f){
+  const bytes=new Uint8Array(await f.arrayBuffer());
+  const jpegs=[];
+  for(let i=0;i<bytes.length-3;i++){
+    if(bytes[i]===0xFF&&bytes[i+1]===0xD8&&bytes[i+2]===0xFF){
+      for(let j=i+2;j<bytes.length-1;j++){
+        if(bytes[j]===0xFF&&bytes[j+1]===0xD9){ jpegs.push(bytes.slice(i,j+2)); i=j+1; break; }
+      }
+    }
+  }
+  if(!bytes.length){ intakeError(f.name,'PDF is empty.','Re-export the PDF and upload again.'); return; }
+  if(!(bytes[0]===0x25&&bytes[1]===0x50&&bytes[2]===0x44&&bytes[3]===0x46)){
+    intakeError(f.name,'File has a .pdf extension but is not a PDF (missing %PDF header) — likely renamed or corrupt.','Confirm the file opens in a PDF viewer, or rescan to a fresh PDF.');
+    return;
+  }
+  if(!jpegs.length){
+    intakeError(f.name,'Valid PDF, but it contains no embedded page images. This is a vector/text PDF (e.g., exported from Word), and the M2 alpha ingests scanner-class image PDFs only.','Print and scan the worksheet on the rig, or export as an image PDF at 300 dpi. Vector PDF support is scoped for M3.');
+    return;
+  }
+  // pair pages into duplex sheets (A,B)
+  for(let p=0;p<jpegs.length;p+=2){
+    const urls=[URL.createObjectURL(new Blob([jpegs[p]],{type:'image/jpeg'}))];
+    if(jpegs[p+1]) urls.push(URL.createObjectURL(new Blob([jpegs[p+1]],{type:'image/jpeg'})));
+    state.sheets.push({id:'WS-'+String(state.nextId++).padStart(4,'0'),studentId:null,setCode:null,
+      fileName:f.name+' · pg '+(p+1)+(urls[1]?('–'+(p+2)):''),examDate:new Date().toISOString().slice(0,10),
+      source:'upload',sides:urls.map(u=>({imageUrl:u})),thumb:urls[0],status:'queued',score:null,wrong:null,gradedAt:null});
+  }
+  log('Ingested '+f.name+': '+jpegs.length+' page image(s) → '+Math.ceil(jpegs.length/2)+' duplex sheet(s).','ok');
+}
+
+/* minimal ZIP reader: EOCD → central directory → local entries; deflate via DecompressionStream */
+async function ingestZip(f){
+  const buf=new Uint8Array(await f.arrayBuffer());
+  const dv=new DataView(buf.buffer);
+  let eocd=-1;
+  for(let i=buf.length-22;i>=Math.max(0,buf.length-70000);i--){
+    if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;}
+  }
+  if(eocd<0){ intakeError(f.name,'File has a .zip extension but no ZIP directory was found — corrupt archive or a renamed file.','Rebuild the archive (right-click → Compress) and upload again.'); return; }
+  const count=dv.getUint16(eocd+10,true); let off=dv.getUint32(eocd+16,true);
+  let n=0, skipped=0;
+  for(let e=0;e<count;e++){
+    if(dv.getUint32(off,true)!==0x02014b50) break;
+    const method=dv.getUint16(off+10,true), csize=dv.getUint32(off+20,true),
+          nlen=dv.getUint16(off+28,true), elen=dv.getUint16(off+30,true), clen=dv.getUint16(off+32,true),
+          lho=dv.getUint32(off+42,true);
+    const name=new TextDecoder().decode(buf.slice(off+46,off+46+nlen));
+    off+=46+nlen+elen+clen;
+    if(!/\.(png|jpe?g|pdf)$/i.test(name)||name.endsWith('/')){ if(!name.endsWith('/')&&!name.startsWith('__MACOSX'))skipped++; continue; }
+    const lnlen=dv.getUint16(lho+26,true), lelen=dv.getUint16(lho+28,true);
+    const start=lho+30+lnlen+lelen;
+    let data=buf.slice(start,start+csize);
+    if(method===8){
+      const ds=new DecompressionStream('deflate-raw');
+      const out=await new Response(new Blob([data]).stream().pipeThrough(ds)).arrayBuffer();
+      data=new Uint8Array(out);
+    }else if(method!==0){ log('ZIP entry '+name+': unsupported compression, skipped.','wr'); continue; }
+    if(/\.pdf$/i.test(name)) await ingestPdf(new File([data],name,{type:'application/pdf'}));
+    else await ingestImage({name},data.buffer, name.match(/png$/i)?'image/png':'image/jpeg');
+    n++;
+  }
+  if(n===0){ intakeError(f.name,'Valid ZIP, but it contains no worksheet files ('+skipped+' non-worksheet entr'+(skipped===1?'y':'ies')+' skipped).','Include .pdf / .png / .jpg scans inside the archive.'); return; }
+  log('ZIP '+f.name+': ingested '+n+' entr'+(n===1?'y':'ies')+(skipped?' · skipped '+skipped+' non-worksheet':'')+'.','ok');
+}
+
+/* ══════════════ agent pipeline ══════════════ */
+function log(msg,cls){
+  const el=$('#log'); if(!el)return;
+  const t=new Date().toTimeString().slice(0,8);
+  el.insertAdjacentHTML('beforeend',`<div><span class="t">[${t}]</span> <span class="${cls||''}">${msg}</span></div>`);
+  el.scrollTop=el.scrollHeight;
+}
+function setStage(id,cls){
+  $$('#pathway .stage').forEach(s=>{ if(s.dataset.st===id){s.className='stage '+(cls||'');} });
+}
+function resetStages(){ $$('#pathway .stage').forEach(s=>s.className='stage'); }
+
+let ollamaOk=false;
+async function testOllama(){
+  const url=$('#olUrl').value.replace(/\/$/,'');
+  try{
+    const res=await fetch(url+'/api/tags',{signal:AbortSignal.timeout(2500)});
+    ollamaOk=res.ok;
+  }catch(e){ ollamaOk=false; }
+  $('#olDot').className='dot '+(ollamaOk?'on':'off');
+  log('Ollama '+url+' → '+(ollamaOk?'reachable':'unreachable — deterministic fallback active'),ollamaOk?'ok':'wr');
+  return ollamaOk;
+}
+
+async function ollamaOcrSide(imageUrl){
+  // Vision OCR of a real scan. Only called when user opted in AND endpoint reachable.
+  const url=$('#olUrl').value.replace(/\/$/,''), model=$('#olModel').value.trim();
+  const b64=await fetch(imageUrl).then(r=>r.blob()).then(b=>new Promise((res,rej)=>{
+    const fr=new FileReader(); fr.onload=()=>res(fr.result.split(',')[1]); fr.onerror=rej; fr.readAsDataURL(b);}));
+  const body={model,stream:false,format:'json',
+    prompt:'You are the OCR stage of a worksheet grader. Read each numbered math problem and the handwritten answer. Respond ONLY with JSON: {"problems":[{"n":1,"q":"37 + 48 =","written":"85"}]}',
+    images:[b64]};
+  const res=await fetch(url+'/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(90000)});
+  if(!res.ok) throw new Error('model HTTP '+res.status);
+  const data=await res.json();
+  return JSON.parse(data.response);
+}
+
+/* ── in-browser OCR (vendored Tesseract WASM, same-origin, no CDN) ── */
+let bocrWorker=null, bocrLoadTried=false;
+function loadScript(src){return new Promise((res,rej)=>{const el=document.createElement('script');el.src=src;el.onload=res;el.onerror=()=>rej(new Error('script load failed: '+src));document.head.appendChild(el);});}
+async function getBocrWorker(){
+  if(bocrWorker) return bocrWorker;
+  if(typeof Tesseract==='undefined'){
+    if(bocrLoadTried) throw new Error('engine unavailable');
+    bocrLoadTried=true;
+    await loadScript('vendor/tesseract.min.js'); // same-origin; absent in single-file mode
+  }
+  $('#bocrDot').className='dot on';
+  bocrWorker=await Tesseract.createWorker('eng',1,{workerPath:'vendor/worker.min.js',corePath:'vendor/core/',langPath:'vendor',gzip:false});
+  return bocrWorker;
+}
+function parseOcrProblems(text){
+  // pull "a op b = c" lines out of raw OCR text; tolerant of x / * ÷ − and missing numbering
+  const out=[]; const re=/(\d{1,4})\s*([+xX×*÷\/\-−])\s*(\d{1,4})\s*=\s*(\d{1,4})/g;
+  let m,n=1;
+  while((m=re.exec(text))){
+    const op=m[2].replace('X','x').replace('−','-');
+    out.push({n:n++,q:m[1]+' '+op+' '+m[3]+' =',written:m[4]});
+  }
+  return out;
+}
+async function browserOcrSide(imageUrl){
+  const w=await getBocrWorker();
+  const {data}=await w.recognize(imageUrl);
+  const problems=parseOcrProblems(data.text||'');
+  return {problems,conf:(data.confidence||0)/100};
+}
+
+function evalExpr(q){
+  // deterministic grader: parse "a op b =" — the ONLY source of expected answers
+  const m=q.match(/(\d+)\s*([+×x*÷\/\-])\s*(\d+)/);
+  if(!m) return null;
+  const a=+m[1],b=+m[3];
+  switch(m[2]){case '+':return a+b;case '-':return a-b;case '×':case 'x':case '*':return a*b;case '÷':case '/':return b?Math.round(a/b):null;}
+  return null;
+}
+
+async function runAgent(){
+  const queued=state.sheets.filter(s=>s.status==='queued'&&!s.archived);
+  if(!queued.length){ log('Nothing queued. Load the synthetic batch or upload scans in tab 1.','wr'); return; }
+  $('#btnRun').disabled=true;
+  $('#runDone').innerHTML='';
+  const runIds=queued.map(s=>s.id);
+  const useModel=$('#olUse').checked && (ollamaOk || await testOllama());
+  $('#jsonOut').innerHTML='';
+  log('── Agent run start · '+queued.length+' sheet(s) · OCR='+(useModel?'local model ('+$('#olModel').value+')':'deterministic/synthetic')+' ──');
+
+  let si=0;
+  for(const sheet of queued){
+    si++;
+    const who=`Sheet ${si} of ${queued.length} — ${sheet.id}`;
+    resetStages();
+    $('#agentStatus').textContent='Processing '+sheet.id+'…';
+    setStage('feed','run'); agentGuide(who+': feeding into the transport (ESP32 roller, low-noise profile)…',true);
+    log(sheet.id+' → transport feed engaged (ESP32 roller, low-noise profile)'); await wait(260); setStage('feed','ok');
+    setStage('scanA','run'); agentGuide(who+': scanning side A at 300 dpi…',true);
+    log(sheet.id+' → SANE duplex pass, side A @300dpi'); await wait(300); setStage('scanA','ok');
+    setStage('scanB','run'); agentGuide(who+': scanning side B…',true);
+    log(sheet.id+' → side B'); await wait(240); setStage('scanB','ok');
+
+    setStage('ocr','run');
+    agentGuide(who+(sheet.source==='synthetic'?': reading 20 handwritten answers…':(useModel?': sending both scans to the local model for OCR…':': no local model enabled — routing this scan to the review queue…')),true);
+    let ok=true;
+    if(sheet.source==='synthetic'){
+      const r=mulberry32(sheet.seed+777);
+      sheet.sides.forEach(sd=>sd.problems.forEach(p=>{
+        p.ocr=String(p.written);
+        p.conf=+(0.86+r()*0.135).toFixed(3);
+      }));
+      log(sheet.id+' → OCR complete · 20 fields · mean conf '+(sheet.sides.flatMap(s=>s.problems).reduce((a,p)=>a+p.conf,0)/20).toFixed(3),'ok');
+    }else if(useModel){
+      try{
+        for(const sd of sheet.sides){
+          const out=await ollamaOcrSide(sd.imageUrl);
+          sd.problems=(out.problems||[]).map((p,i)=>({n:p.n||i+1,q:p.q||'',written:p.written,ocr:String(p.written),conf:0.9,expected:evalExpr(p.q||''),correct:null}));
+        }
+        log(sheet.id+' → model OCR returned '+sheet.sides.reduce((a,s)=>a+(s.problems?s.problems.length:0),0)+' fields','ok');
+      }catch(e){ ok=false; log(sheet.id+' → model OCR failed ('+e.message+') — routed to review queue','er'); }
+    }else if($('#bocrUse')&&$('#bocrUse').checked){
+      try{
+        agentGuide(who+': reading the scan with the in-browser OCR engine (all local)…',true);
+        let total=0, confSum=0, nsides=0;
+        for(const sd of sheet.sides){
+          const out=await browserOcrSide(sd.imageUrl);
+          sd.problems=out.problems.map(p=>({...p,ocr:String(p.written),conf:+out.conf.toFixed(3),expected:evalExpr(p.q),correct:null}));
+          total+=out.problems.length; confSum+=out.conf; nsides++;
+        }
+        const meanConf=nsides?confSum/nsides:0;
+        if(!total){ ok=false; log(sheet.id+' → in-browser OCR found no readable "a op b = c" lines — routed to review (faint pencil or skewed scan)','wr'); }
+        else if(meanConf<0.45){ ok=false; log(sheet.id+' → in-browser OCR confidence too low ('+Math.round(meanConf*100)+'%) — routed to review rather than guessing','wr'); }
+        else log(sheet.id+' → in-browser OCR read '+total+' problem(s) · mean confidence '+Math.round(meanConf*100)+'%','ok');
+      }catch(e){
+        ok=false;
+        $('#bocrDot').className='dot off';
+        log(sheet.id+' → in-browser OCR unavailable ('+e.message+'). Single-file build has no vendor/ folder — use the deployed site package, or enable a local model. Routed to review.','wr');
+      }
+    }else{
+      ok=false;
+      log(sheet.id+' → uploaded scan, no OCR tier enabled — routed to instructor review queue (deterministic engine never guesses handwriting)','wr');
+    }
+    await wait(280); setStage('ocr', ok?'ok':'');
+
+    if(!ok){
+      sheet.status='review'; state.rel=0; updateRel();
+      agentGuide(who+': routed to review (instructor intervention) — reliability run reset.',false);
+      log(sheet.id+' → REVIEW · reliability run reset (counts as intervention)','wr');
+      renderQueue(); saveState(); continue;
+    }
+
+    setStage('grade','run');
+    agentGuide(who+': comparing every detected answer against the computed result (deterministic engine)…',true);
+    let correct=0,total=0; const wrong=[];
+    sheet.sides.forEach(sd=>sd.problems.forEach(p=>{
+      if(p.expected==null) p.expected=evalExpr(p.q);
+      p.correct = String(p.ocr)===String(p.expected);
+      total++; if(p.correct)correct++; else wrong.push(p.n);
+    }));
+    sheet.score=Math.round(100*correct/Math.max(1,total));
+    sheet.wrong=wrong; sheet.gradedAt=new Date().toISOString();
+    await wait(300); setStage('grade','ok');
+    log(sheet.id+' → graded: '+correct+'/'+total+' · score '+sheet.score+(wrong.length?' · wrong: #'+wrong.join(', #'):' · perfect'), wrong.length?'wr':'ok');
+
+    setStage('print','run'); agentGuide(who+': compositing red marks and the score stamp onto the original…',true);
+    log(sheet.id+' → overlay composited (marks + score stamp) · spool ready'); await wait(300); setStage('print','ok');
+    setStage('return','run'); agentGuide(who+': returning sheet — scored '+sheet.score+'.',true); await wait(200); setStage('return','ok');
+
+    sheet.status='graded'; state.rel++; updateRel();
+    emitJson(sheet);
+    renderQueue(); renderSheetList(); renderReports(); saveState();
+  }
+
+  $('#agentStatus').textContent='Run complete.';
+  agentGuide('Run complete — see the summary below, or open step 3 · Graded.',false);
+  $('#btnRun').disabled=false;
+  log('── Agent run complete ──','ok');
+  const done=state.sheets.filter(s=>runIds.includes(s.id)&&s.status==='graded');
+  const revN=state.sheets.filter(s=>runIds.includes(s.id)&&s.status==='review').length;
+  if(done.length){
+    const avg=Math.round(done.reduce((a,s)=>a+s.score,0)/done.length);
+    const perfect=done.filter(s=>s.score===100).length;
+    $('#runDone').innerHTML=`<div class="done" role="status"><span class="tk">✓</span>
+      <span>Grading complete — <strong>${done.length}</strong> sheet(s) graded · batch average <strong>${avg}</strong> · <strong>${perfect}</strong> perfect${revN?` · ${revN} sent to review`:''}.</span>
+      <button class="btn" onclick="switchTab('graded')">Open graded sheets →</button>
+      <button class="btn ghost" onclick="switchTab('reports')">View tally</button></div>`;
+    showToast(`Grading complete — ${done.length} sheet(s), average ${avg}.`,'View graded →','graded');
+    pulseCount('#cG');
+  }else if(revN){
+    $('#runDone').innerHTML=`<div class="done" style="border-color:#E0B98A;background:var(--amber-soft);color:var(--amber)"><span class="tk" style="background:var(--amber)">!</span><span>${revN} sheet(s) routed to review — nothing graded this run.</span></div>`;
+  }
+  if(!state.selected){ const g=state.sheets.find(s=>s.status==='graded'); if(g) selectSheet(g.id); }
+}
+
+function emitJson(sheet){
+  const j={sheet_id:sheet.id,student_id:sheet.studentId,set:sheet.setCode,exam_date:sheet.examDate,
+    engine:'deterministic-v0.3',score:sheet.score,
+    problems:sheet.sides.flatMap(sd=>sd.problems.map(p=>({n:p.n,q:p.q,detected:p.ocr,expected:p.expected,correct:p.correct,conf:p.conf})))};
+  const d=document.createElement('details'); d.className='jsonbox';
+  d.innerHTML=`<summary>${sheet.id} · grading result JSON · score ${sheet.score}</summary><pre>${JSON.stringify(j,null,2)}</pre>`;
+  $('#jsonOut').prepend(d);
+  log(sheet.id+' → result JSON emitted ('+j.problems.length+' problems)','js');
+}
+
+function updateRel(){
+  const n=Math.min(state.rel,20);
+  $('#relFill').style.width=(n/20*100)+'%';
+  $('#relTxt').innerHTML=state.rel>=20?`<span class="met">${state.rel} / 20 — ALPHA ACCEPTANCE MET ✓</span>`:state.rel+' / 20';
+}
+function simulateJam(){
+  state.rel=0; updateRel(); saveState();
+  resetStages(); setStage('feed','run');
+  agentGuide('Paper jam (simulated) — transport halted, ESP32 reverse-eject, waiting on the operator. Reliability run reset.',false);
+  log('PAPER JAM (simulated) → transport halt · ESP32 reverse-eject · operator prompt raised · reliability run reset to 0','er');
+  $('#agentStatus').textContent='Jam cleared — reliability counter reset.';
+}
+
+/* ══════════════ graded output tab ══════════════ */
+function renderSheetList(){
+  const filt=$('#fStu').value;
+  const list=$('#sheetList'); list.innerHTML='';
+  const graded=state.sheets.filter(s=>s.status==='graded' && !s.archived && (!filt||s.studentId===filt));
+  // student filter options
+  const stuSel=$('#fStu'); const cur=stuSel.value;
+  const ids=[...new Set(state.sheets.filter(s=>s.studentId).map(s=>s.studentId))].sort();
+  stuSel.innerHTML='<option value="">All students</option>'+ids.map(i=>`<option ${i===cur?'selected':''}>${i}</option>`).join('');
+  if(!graded.length){ list.innerHTML='<div class="empty">No graded sheets'+(filt?' for '+filt:'')+'.</div>'; return; }
+  graded.forEach(s=>{
+    const el=document.createElement('div'); el.className='sitem'+(state.selected===s.id?' sel':'');
+    el.setAttribute('role','button'); el.tabIndex=0;
+    el.innerHTML=`<div class="l"><strong>${s.setCode||s.fileName}</strong><br><span class="st">${s.studentId||'—'} · ${s.examDate}</span></div><div class="stamp">${s.score}</div>`;
+    el.onclick=()=>selectSheet(s.id);
+    el.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')selectSheet(s.id);};
+    list.appendChild(el);
+  });
+}
+
+function selectSheet(id){
+  state.selected=id;
+  const s=state.sheets.find(x=>x.id===id); if(!s)return;
+  renderSheetList();
+  $('#oDate').value=s.examDate||'';
+  const wrong=s.wrong&&s.wrong.length?('wrong: #'+s.wrong.join(', #')):'perfect — no corrections';
+  $('#scoreLine').innerHTML=`<div class="stamp" style="width:56px;height:56px;font-size:20px">${s.score}</div>
+    <div class="big"><strong>${s.setCode||s.fileName}</strong> · ${s.studentId||'unassigned'} · ${s.id}<br>${wrong} · graded ${(s.gradedAt||'').slice(0,10)}</div>`;
+  const pv=$('#preview'); pv.innerHTML='';
+  if(s.source==='synthetic'){
+    s.sides.forEach((_,si)=>{
+      const img=document.createElement('img'); img.alt='Graded overlay, side '+(si?'B':'A');
+      img.src=sideDataUrl(s,si,true,0.9); pv.appendChild(img);
+    });
+  }else{
+    s.sides.forEach((sd,si)=>{
+      const img=document.createElement('img'); img.alt='Uploaded scan side '+(si?'B':'A'); img.src=sd.imageUrl; pv.appendChild(img);
+    });
+  }
+  renderJobLog();
+}
+
+$('#oDate') && ($('#oDate').onchange=()=>{
+  const s=state.sheets.find(x=>x.id===state.selected); if(!s)return;
+  s.examDate=$('#oDate').value; saveState(); renderSheetList(); renderQueue(); renderReports(); selectSheet(s.id);
+});
+
+function jobEntry(action){
+  const s=state.sheets.find(x=>x.id===state.selected); if(!s)return;
+  state.jobLog.unshift(`${new Date().toISOString().slice(0,16).replace('T',' ')} · ${action} · ${s.id} · ${s.studentId||'—'} · score ${s.score} · queue ${$('#oPrinter').value}`);
+  saveState(); renderJobLog();
+}
+function renderJobLog(){
+  $('#jobLog').innerHTML='<strong>Job evidence log</strong><br>'+(state.jobLog.slice(0,10).join('<br>')||'—');
+}
+
+function doPrint(){
+  const s=state.sheets.find(x=>x.id===state.selected);
+  if(!s){alert('Select a graded sheet first.');return;}
+  const pa=$('#printArea'); pa.innerHTML='';
+  const srcs=s.source==='synthetic'?s.sides.map((_,si)=>sideDataUrl(s,si,true,0.92)):s.sides.map(sd=>sd.imageUrl);
+  srcs.forEach(u=>{const img=document.createElement('img');img.src=u;pa.appendChild(img);});
+  jobEntry('PRINT');
+  log('Print job spooled: '+s.id+' → queue '+$('#oPrinter').value+' (routing confirmed in system dialog on alpha rig)','ok');
+  setTimeout(()=>window.print(),120);
+}
+
+/* minimal PDF writer — half-letter duplex, JPEG XObjects, no libraries */
+function dataUrlToBytes(u){const b=atob(u.split(',')[1]);const a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+function buildPdf(pages){ // pages:[{jpeg:Uint8Array,w,h}]
+  const enc=new TextEncoder(); const chunks=[]; let pos=0; const offs=[0];
+  const put=x=>{const b=typeof x==='string'?enc.encode(x):x;chunks.push(b);pos+=b.length;};
+  const obj=(n,body)=>{offs[n]=pos;put(n+' 0 obj\n'+body+'\nendobj\n');};
+  put('%PDF-1.4\n%âãÏÓ\n');
+  const Wpt=396,Hpt=612; // 5.5×8.5in
+  const kids=pages.map((_,i)=>(3+i*3)+' 0 R').join(' ');
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2,'<< /Type /Pages /Count '+pages.length+' /Kids ['+kids+'] >>');
+  pages.forEach((p,i)=>{
+    const pn=3+i*3,cn=4+i*3,xn=5+i*3;
+    obj(pn,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${Wpt} ${Hpt}] /Resources << /XObject << /Im0 ${xn} 0 R >> >> /Contents ${cn} 0 R >>`);
+    const cs=`q ${Wpt} 0 0 ${Hpt} 0 0 cm /Im0 Do Q`;
+    obj(cn,'<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');
+    offs[xn]=pos;
+    put(xn+` 0 obj\n<< /Type /XObject /Subtype /Image /Width ${p.w} /Height ${p.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.jpeg.length} >>\nstream\n`);
+    put(p.jpeg); put('\nendstream\nendobj\n');
+  });
+  const total=3+pages.length*3;
+  const xref=pos;
+  put('xref\n0 '+total+'\n0000000000 65535 f \n');
+  for(let i=1;i<total;i++) put(String(offs[i]).padStart(10,'0')+' 00000 n \n');
+  put('trailer\n<< /Size '+total+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF');
+  return new Blob(chunks,{type:'application/pdf'});
+}
+
+function doSave(){
+  const s=state.sheets.find(x=>x.id===state.selected);
+  if(!s){alert('Select a graded sheet first.');return;}
+  if(s.source!=='synthetic'){alert('PDF re-export of uploaded scans lands in M3 (needs rectified page geometry). Use Print for now.');return;}
+  const pages=s.sides.map((_,si)=>{
+    const c=renderSide(s,si,true);
+    return {jpeg:dataUrlToBytes(c.toDataURL('image/jpeg',0.9)),w:c.width,h:c.height};
+  });
+  const blob=buildPdf(pages);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=s.id+'_'+(s.studentId||'NA')+'_graded.pdf'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  jobEntry('SAVE-PDF');
+  log('Graded PDF exported: '+a.download+' (duplex, half-letter)','ok');
+}
+
+/* ══════════════ reports ══════════════ */
+function renderTally(){
+  const box=$('#repStats'); if(!box)return;
+  const graded=state.sheets.filter(s=>s.status==='graded');
+  if(!graded.length){ box.innerHTML=''; return; }
+  const scores=graded.map(s=>s.score);
+  const avg=Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+  const perfect=scores.filter(v=>v===100).length;
+  const students=new Set(graded.filter(s=>s.studentId).map(s=>s.studentId)).size;
+  const review=state.sheets.filter(s=>s.status==='review'&&!s.archived).length;
+  const bins=[0,0,0,0,0]; // <70 · 70s · 80s · 90s · 100
+  scores.forEach(v=>bins[v<70?0:v<80?1:v<90?2:v<100?3:4]++);
+  const mx=Math.max(...bins,1);
+  box.innerHTML=`
+    <div class="stat"><div class="n">${graded.length}</div><div class="l">Sheets graded</div></div>
+    <div class="stat"><div class="n">${students}</div><div class="l">Students</div></div>
+    <div class="stat"><div class="n">${avg}<small> /100</small></div><div class="l">Batch average</div></div>
+    <div class="stat"><div class="n">${perfect}<small> of ${graded.length}</small></div><div class="l">Perfect scores</div></div>
+    <div class="stat"><div class="n">${review}</div><div class="l">Awaiting review</div></div>
+    <div class="stat hgram"><div class="l" style="margin:0 0 2px">Score distribution</div>
+      <div class="hist">${bins.map((b,i)=>`<i class="${i===0?'red':''}" style="height:${Math.max(5,b/mx*100)}%" title="${b} sheet(s)"></i>`).join('')}</div>
+      <div class="hl"><b>&lt;70</b><b>70s</b><b>80s</b><b>90s</b><b>100</b></div></div>`;
+}
+function renderReports(){
+  renderTally();
+  const body=$('#repBody'); body.innerHTML='';
+  const byStu={};
+  state.sheets.filter(s=>s.status==='graded'&&s.studentId).forEach(s=>{(byStu[s.studentId]=byStu[s.studentId]||[]).push(s);});
+  const ids=Object.keys(byStu).sort();
+  $('#repSummary').textContent=ids.length+' student(s) · '+state.sheets.filter(s=>s.status==='graded').length+' graded sheet(s) all-time · '+state.sheets.filter(s=>s.status==='review'&&!s.archived).length+' in review · '+state.sheets.filter(s=>s.archived).length+' archived (included in history, marked 🗄)';
+  if(!ids.length){ body.innerHTML='<tr><td colspan="7" class="empty">No graded sheets yet.</td></tr>'; return; }
+  ids.forEach(stu=>{
+    const rows=byStu[stu].slice().sort((a,b)=>(a.examDate||'').localeCompare(b.examDate||''));
+    const avg=Math.round(rows.reduce((a,s)=>a+s.score,0)/rows.length);
+    const hundreds=rows.filter(s=>s.score===100).length;
+    const spark='<span class="spark">'+rows.map(s=>`<i class="${s.score<80?'low':''}" style="height:${Math.max(2,s.score/100*22)}px" title="${s.setCode} · ${s.score}"></i>`).join('')+'</span>';
+    const tr=document.createElement('tr'); tr.className='stu';
+    tr.innerHTML=`<td>${stu}</td><td>${rows.length}</td><td class="mini">${avg}</td><td class="mini">${hundreds} / ${rows.length}</td><td>${spark}</td><td class="mini">${rows[rows.length-1].examDate}</td><td class="mini">▾ detail</td>`;
+    body.appendChild(tr);
+    const det=document.createElement('tr'); det.className='det'; det.style.display='none';
+    det.innerHTML=`<td colspan="7"><table>${rows.map(s=>`<tr><td class="mini">${s.archived?'🗄 ':''}${s.id}</td><td>${s.setCode||s.fileName}</td><td class="mini">${s.examDate}</td><td class="mini"><strong>${s.score}</strong></td><td class="mini">${s.wrong&&s.wrong.length?'wrong #'+s.wrong.join(', #'):'perfect'}</td><td><button class="btn ghost" style="padding:3px 9px;font-size:11.5px" onclick="openSheet('${s.id}')">Open</button></td></tr>`).join('')}</table></td>`;
+    body.appendChild(det);
+    tr.onclick=()=>{det.style.display=det.style.display==='none'?'':'none';};
+  });
+}
+window.openSheet=function(id){ switchTab('output'); selectSheet(id); };
+
+function exportCsv(){
+  const rows=[['student_id','sheet_id','set','exam_date','score','wrong_problems','graded_at','archived']];
+  state.sheets.filter(s=>s.status==='graded').forEach(s=>rows.push([s.studentId||'',s.id,s.setCode||s.fileName||'',s.examDate,s.score,(s.wrong||[]).join(';'),s.gradedAt,s.archived?'yes':'no']));
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='gradeflow_reports_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+
+/* ══════════════ tabs & wiring ══════════════ */
+function switchTab(id){
+  $$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===id));
+  $$('.tab').forEach(t=>t.classList.toggle('on',t.id==='tab-'+id));
+  if(id==='intake'||id==='graded'||id==='archive') renderQueue();
+  if(id==='output') renderSheetList();
+  if(id==='reports') renderReports();
+}
+$$('nav button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+
+/* ── selection: select-all, download, remove per tab ── */
+function scopeSheets(scope){
+  if(scope==='archived') return state.sheets.filter(s=>s.archived);
+  if(scope==='graded') return state.sheets.filter(s=>s.status==='graded'&&!s.archived);
+  return state.sheets.filter(s=>s.status!=='graded'&&!s.archived);
+}
+function selectedIn(scope){ return scopeSheets(scope).filter(s=>state.sel.has(s.id)); }
+function setAll(scope,on){ scopeSheets(scope).forEach(s=>on?state.sel.add(s.id):state.sel.delete(s.id)); renderQueue(); }
+$('#ckAllQ').onchange=e=>setAll('queued',e.target.checked);
+$('#ckAllG').onchange=e=>setAll('graded',e.target.checked);
+$('#ckAllA').onchange=e=>setAll('archived',e.target.checked);
+$$('#segQ button').forEach(b=>b.onclick=()=>{state.view.q=b.dataset.v;renderQueue();saveState();});
+$$('#segG button').forEach(b=>b.onclick=()=>{state.view.g=b.dataset.v;renderQueue();saveState();});
+
+function uploadPage(url){ // rasterize an uploaded scan side onto a half-letter page
+  return new Promise(res=>{
+    let done=false; const fin=v=>{if(!done){done=true;res(v);}};
+    try{
+      const im=new Image();
+      im.onload=()=>{ try{
+        const c=document.createElement('canvas'); c.width=W; c.height=H;
+        const x=c.getContext('2d'); x.fillStyle='#FFFFFF'; x.fillRect(0,0,W,H);
+        const sc=Math.min(W/im.width,H/im.height), w2=im.width*sc, h2=im.height*sc;
+        x.drawImage(im,(W-w2)/2,(H-h2)/2,w2,h2);
+        fin({jpeg:dataUrlToBytes(c.toDataURL('image/jpeg',0.88)),w:W,h:H});
+      }catch(e){fin(null);} };
+      im.onerror=()=>fin(null);
+      setTimeout(()=>fin(null),4000);
+      im.src=url;
+    }catch(e){fin(null);}
+  });
+}
+
+async function downloadSelected(scope){
+  const chosen=selectedIn(scope);
+  if(!chosen.length){ alert('Tick at least one sheet first (or use Select all).'); return; }
+  const pages=[]; let skipped=0;
+  for(const s of chosen){
+    if(s.source==='synthetic'){
+      s.sides.forEach((_,si)=>{ const c=renderSide(s,si,s.status==='graded');
+        pages.push({jpeg:dataUrlToBytes(c.toDataURL('image/jpeg',0.9)),w:c.width,h:c.height}); });
+    }else{
+      for(const sd of s.sides){ const p=await uploadPage(sd.imageUrl); if(p)pages.push(p); else skipped++; }
+    }
+  }
+  if(!pages.length){ alert('None of the selected sheets could be rendered.'); return; }
+  const blob=buildPdf(pages);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='gradeflow_'+scope+'_'+chosen.length+'-sheets_'+new Date().toISOString().slice(0,10)+'.pdf'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  state.jobLog.unshift(new Date().toISOString().slice(0,16).replace('T',' ')+' · DOWNLOAD-'+scope.toUpperCase()+' · '+chosen.length+' sheets · '+pages.length+' pages');
+  saveState(); renderJobLog();
+  log('Combined PDF downloaded: '+chosen.length+' '+scope+' sheet(s), '+pages.length+' pages'+(skipped?' · '+skipped+' upload side(s) skipped (could not decode)':'')+'.','ok');
+}
+$('#btnDlQ').onclick=()=>downloadSelected('queued');
+$('#btnDlG').onclick=()=>downloadSelected('graded');
+$('#btnRmSelQ').onclick=()=>{ const ids=new Set(selectedIn('queued').map(s=>s.id)); if(!ids.size){alert('Tick at least one sheet first.');return;} removeSheets(s=>ids.has(s.id),'Remove selected queued'); };
+$('#btnRmSelG').onclick=()=>{ const ids=new Set(selectedIn('graded').map(s=>s.id)); if(!ids.size){alert('Tick at least one sheet first.');return;} removeSheets(s=>ids.has(s.id),'Remove selected graded'); };
+function archiveSheets(pred,label){
+  const hit=state.sheets.filter(s=>pred(s)&&!s.archived);
+  if(!hit.length){ log(label+': nothing to archive.','wr'); return; }
+  hit.forEach(s=>s.archived=true);
+  if(hit.some(s=>s.id===state.selected)) state.selected=null;
+  refreshAll(); pulseCount('#cA');
+  showToast(hit.length+' sheet(s) archived — find them in 🗄 Archive.','Open archive →','archive');
+  log(label+': '+hit.length+' sheet(s) archived (kept as history, out of the active pipeline).','ok');
+}
+function restoreSheets(pred,label){
+  const hit=state.sheets.filter(s=>pred(s)&&s.archived);
+  if(!hit.length){ log(label+': nothing to restore.','wr'); return; }
+  hit.forEach(s=>s.archived=false);
+  refreshAll();
+  showToast(hit.length+' sheet(s) restored to the active pipeline.');
+  log(label+': '+hit.length+' sheet(s) restored ('+hit.filter(s=>s.status==='graded').length+' graded, '+hit.filter(s=>s.status!=='graded').length+' queued).','ok');
+}
+const removeEverything=()=>removeSheets(()=>true,'Remove all (everything)');
+$('#btnArSelQ').onclick=()=>{ const ids=new Set(selectedIn('queued').map(s=>s.id)); if(!ids.size){alert('Tick at least one sheet first.');return;} archiveSheets(s=>ids.has(s.id),'Archive selected queued'); };
+$('#btnArSelG').onclick=()=>{ const ids=new Set(selectedIn('graded').map(s=>s.id)); if(!ids.size){alert('Tick at least one sheet first.');return;} archiveSheets(s=>ids.has(s.id),'Archive selected graded'); };
+$('#btnArAllQ').onclick=()=>archiveSheets(s=>s.status!=='graded','Archive all queued');
+$('#btnArAllG').onclick=()=>archiveSheets(s=>s.status==='graded','Archive all graded');
+$('#btnReSelA').onclick=()=>{ const ids=new Set(selectedIn('archived').map(s=>s.id)); if(!ids.size){alert('Tick at least one sheet first.');return;} restoreSheets(s=>ids.has(s.id),'Restore selected'); };
+$('#btnReAllA').onclick=()=>restoreSheets(()=>true,'Restore all');
+$('#btnRmSelA').onclick=()=>{ const ids=new Set(selectedIn('archived').map(s=>s.id)); if(!ids.size){alert('Tick at least one sheet first.');return;} removeSheets(s=>ids.has(s.id),'Remove selected archived'); };
+$('#btnDlA').onclick=()=>downloadSelected('archived');
+$('#btnRmAllQ').onclick=removeEverything;
+$('#btnRmAllG').onclick=removeEverything;
+$('#btnRmAllA').onclick=removeEverything;
+$('#btnGoAgent').onclick=()=>{ switchTab('agent'); runAgent(); };
+
+$('#btnPick').onclick=()=>$('#filePick').click();
+$('#filePick').onchange=e=>handleFiles([...e.target.files]);
+const drop=$('#drop');
+['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('hot');}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('hot');}));
+drop.addEventListener('drop',e=>handleFiles([...e.dataTransfer.files]));
+$('#btnSynth').onclick=loadSyntheticBatch;
+
+/* ── data maintenance ── */
+function refreshAll(){
+  renderQueue(); renderSheetList(); renderReports(); updateRel(); renderJobLog(); saveState();
+  if(!state.sheets.find(s=>s.id===state.selected)){
+    state.selected=null;
+    $('#preview').innerHTML='<div class="empty">No graded sheets yet — run the grading agent in step 2.</div>';
+    $('#scoreLine').innerHTML='';
+  }
+}
+async function removeSheets(pred,label){
+  const gone=state.sheets.filter(pred);
+  if(!gone.length){ log(label+': nothing to remove.','wr'); showToast(label+' — nothing to remove.'); return; }
+  const q=gone.filter(s=>s.status!=='graded'&&!s.archived).length,
+        g=gone.filter(s=>s.status==='graded'&&!s.archived).length,
+        a=gone.filter(s=>s.archived).length;
+  const sample=gone.slice(0,6).map(s=>s.id).join(', ')+(gone.length>6?' … +'+(gone.length-6)+' more':'');
+  const ok=await appConfirm(label,
+    `Permanently removes <strong>${gone.length}</strong> sheet(s): <strong>${q}</strong> queued · <strong>${g}</strong> graded · <strong>${a}</strong> archived.<br>
+     <span class="mini" style="color:var(--muted)">${sample}</span><br><br>
+     Their job-log entries go too${g?', and the reliability run resets because graded evidence is destroyed':''}. This cannot be undone.`,
+    'Remove '+gone.length+' sheet(s)');
+  if(!ok){ log(label+': cancelled.','wr'); return; }
+  gone.forEach(s=>(s.sides||[]).forEach(sd=>{ if(sd.imageUrl){ try{URL.revokeObjectURL(sd.imageUrl);}catch(e){} } }));
+  const ids=new Set(gone.map(s=>s.id));
+  state.sheets=state.sheets.filter(s=>!ids.has(s.id));
+  state.jobLog=state.jobLog.filter(l=>![...ids].some(id=>l.includes(id)));
+  if(gone.some(s=>s.status==='graded')){ state.rel=0; log(label+': reliability run reset (graded evidence removed).','wr'); }
+  refreshAll();
+  log(label+': removed '+gone.length+' sheet(s) and associated results.','ok');
+  showToast(gone.length+' sheet(s) removed.');
+}
+
+/* ── email reports (mailto: opens the operator's mail client; attachments are added there — browsers cannot attach files programmatically) ── */
+function mailto(subject,body){
+  const href='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body.slice(0,1800));
+  const a=document.createElement('a'); a.href=href; a.click();
+}
+$('#btnEmail').onclick=()=>{
+  const s=state.sheets.find(x=>x.id===state.selected);
+  if(!s||s.status!=='graded'){alert('Select a graded sheet first.');return;}
+  const wrong=s.wrong&&s.wrong.length?('Wrong problems: #'+s.wrong.join(', #')):'Perfect — no corrections.';
+  mailto('GradeFlow report · '+(s.setCode||s.fileName)+' · '+(s.studentId||'unassigned')+' · score '+s.score,
+    'GradeFlow AI grading report (alpha)\n'
+    +'-----------------------------------\n'
+    +'Sheet: '+s.id+' · '+(s.setCode||s.fileName)+'\nStudent ID: '+(s.studentId||'unassigned')+' (IDs only — no names stored)\n'
+    +'Exam date: '+s.examDate+'\nScore: '+s.score+'\n'+wrong+'\nGraded: '+(s.gradedAt||'').slice(0,16).replace('T',' ')+' · engine deterministic-v0.3\n\n'
+    +'Attach the graded PDF from "Save graded PDF" before sending (browser mail links cannot attach files automatically).');
+  jobEntry('EMAIL');
+  log('Email drafted for '+s.id+' in your mail client. Attach the saved PDF manually.','ok');
+};
+$('#btnEmailAll').onclick=()=>{
+  const graded=state.sheets.filter(s=>s.status==='graded'&&s.studentId);
+  if(!graded.length){alert('No graded sheets to report.');return;}
+  const byStu={};
+  graded.forEach(s=>{(byStu[s.studentId]=byStu[s.studentId]||[]).push(s);});
+  let body='GradeFlow AI — batch grading summary (alpha)\nGenerated '+new Date().toISOString().slice(0,16).replace('T',' ')+'\n\n';
+  Object.keys(byStu).sort().forEach(stu=>{
+    const rows=byStu[stu].slice().sort((a,b)=>(a.examDate||'').localeCompare(b.examDate||''));
+    const avg=Math.round(rows.reduce((a,s)=>a+s.score,0)/rows.length);
+    body+=stu+' — '+rows.length+' sheet(s), avg '+avg+'\n'
+      +rows.map(s=>'  '+s.examDate+' · '+(s.setCode||s.fileName)+' · score '+s.score+(s.wrong&&s.wrong.length?' · wrong #'+s.wrong.join(', #'):'')+(s.archived?' · [archived]':'')).join('\n')+'\n\n';
+  });
+  body+='Student IDs only — no names are captured or stored.\nAttach the CSV from "Export CSV" for the full dataset.';
+  mailto('GradeFlow batch summary · '+graded.length+' sheets · '+Object.keys(byStu).length+' students',body);
+  state.jobLog.unshift(new Date().toISOString().slice(0,16).replace('T',' ')+' · EMAIL-BATCH · '+graded.length+' sheets');
+  saveState(); renderJobLog();
+  log('Batch summary email drafted ('+Object.keys(byStu).length+' students). Attach the CSV manually.','ok');
+};
+$('#btnRun').onclick=runAgent;
+$('#btnJam').onclick=simulateJam;
+$('#olTest').onclick=testOllama;
+$('#btnPrint').onclick=doPrint;
+$('#btnSave').onclick=doSave;
+$('#btnCsv').onclick=exportCsv;
+$('#oPrinter').onchange=saveState;
+$('#fStu').onchange=renderSheetList;
+
+/* boot */
+function applyTheme(t){
+  document.body.classList.toggle('dark',t==='dark');
+  const b=$('#themeBtn');
+  if(b){ b.textContent=t==='dark'?'☀':'☾';
+    b.setAttribute('aria-label',t==='dark'?'Switch to light background':'Switch to dark background'); }
+  try{localStorage.setItem('gftheme',t);}catch(e){}
+}
+$('#themeBtn').onclick=()=>applyTheme(document.body.classList.contains('dark')?'light':'dark');
+
+(function boot(){
+  let th='light'; try{th=localStorage.getItem('gftheme')||'light';}catch(e){}
+  applyTheme(th);
+  const restored=loadState();
+  renderQueue();
+  if(restored) log('Restored '+state.sheets.length+' synthetic sheet(s) from local storage (uploads are session-only by design).','ok');
+  updateRel(); renderJobLog(); renderSheetList(); renderReports();
+  log('GradeFlow AI v0.3-alpha ready · engine deterministic-v0.3 · privacy: student IDs only, all data local.');
+})();
+</script>
+</body>
+</html>
