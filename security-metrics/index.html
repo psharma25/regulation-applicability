@@ -1,490 +1,1552 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Security Metrics</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cybersecurity Risk — Board Overview, Register &amp; Revenue-at-Risk</title>
 <style>
-:root{
-  --ink:#FFFFFF;--ink2:#F4F6F8;--panel:#FFFFFF;--line:#DCE2E8;--line2:#EAEEF2;
-  --text:#16202B;--muted:#566472;--faint:#8A98A4;
-  --signal:#0D9488;--signal-dim:#0d948814;--signal-line:#0d948855;
-  --good:#15803D;--good-dim:#15803d12;--risk:#B45309;--risk-dim:#b4530912;--flat:#7C8B99;
-  --reg:#B45309;--ops:#2563EB;--cmp:#0D9488;--rep:#7C3AED;
-  --r:6px;--maxw:1240px;
-  --disp:'Space Grotesk',sans-serif;--body:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--ink);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
-b{font-weight:600}
-.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  :root{
+    --ink:#14181f; --muted:#5b6472; --faint:#8a929e;
+    --line:#e4e7ec; --line2:#eef1f4; --bg:#ffffff; --panel:#f7f8fa; --panel2:#fbfcfd;
+    --exposure:#b4471f; --exposure-bg:#fbeee7; --reduce:#1f7a4d; --reduce-bg:#eaf5ef;
+    --primary:#243b6b; --primary-bg:#eef1f8; --amber:#9a6a12;
+    --rag-red:#c0392b; --rag-red-bg:#fbeae7; --rag-amber:#c0870f; --rag-amber-bg:#fbf2df; --rag-green:#1f7a4d; --rag-green-bg:#e8f4ee;
+    --shadow:0 1px 2px rgba(20,24,31,.05), 0 4px 16px rgba(20,24,31,.04);
+    --raise:0 1px 2px rgba(20,24,31,.06), 0 5px 16px rgba(20,24,31,.06);
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  body.dark{
+    --ink:#eef1f5; --muted:#a3adba; --faint:#6b7480; --line:#2a303a; --line2:#232830; --bg:#12151b; --panel:#171b22; --panel2:#1b2029;
+    --exposure:#e5764a; --exposure-bg:#3a241a; --reduce:#4fb787; --reduce-bg:#16301f; --primary:#8aa4e6; --primary-bg:#1e2740; --amber:#d9a441;
+    --rag-red:#e5674c; --rag-red-bg:#39201a; --rag-amber:#e0aa3a; --rag-amber-bg:#332a15; --rag-green:#46b487; --rag-green-bg:#163026;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.35); --raise:0 1px 2px rgba(0,0,0,.5), 0 6px 20px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:var(--sans);color:var(--ink);background:var(--panel);line-height:1.45;-webkit-font-smoothing:antialiased;font-size:13.5px;transition:background .2s,color .2s}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+  h1,h2,h3,h4{margin:0;font-weight:650;letter-spacing:-.01em}
+  button{font-family:inherit;cursor:pointer}
+  input,select,textarea{font-family:inherit}
 
-/* top */
-.top{position:sticky;top:0;z-index:30;background:#ffffffe9;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;gap:16px;padding:14px 24px}
-.brand{display:flex;align-items:center;gap:11px;font-family:var(--disp);font-weight:600}
-.brand .glyph{position:relative;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--signal)}
-.brand .glyph::after{content:"";position:absolute;inset:6px;border-radius:50%;border:1.5px solid var(--signal);border-top-color:transparent;border-right-color:transparent;transform:rotate(-30deg)}
-.brand small{display:block;font-family:var(--mono);font-size:9px;font-weight:400;color:var(--faint);letter-spacing:.15em;text-transform:uppercase;margin-top:1px}
-.top .sp{flex:1}
-.expbtns{display:flex;gap:8px}
-.expbtns button{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:var(--r);padding:8px 13px;font-family:var(--mono);font-size:11.5px;cursor:pointer;transition:.15s}
-.expbtns button:hover{border-color:var(--signal);color:var(--signal)}
-.expbtns .pr{background:var(--signal);color:#fff;border-color:var(--signal)}
-.expbtns .pr:hover{color:#fff;opacity:.92}
+  header.app{background:var(--bg);border-bottom:1px solid var(--line);padding:12px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:30}
+  header.app .brand{display:flex;flex-direction:column;gap:1px}
+  header.app h1{font-size:15px}
+  header.app .sub{font-size:10.5px;color:var(--muted);letter-spacing:.02em;text-transform:uppercase;font-weight:600}
+  .tabs{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px;flex-wrap:wrap}
+  .tabs button{border:0;background:transparent;padding:6px 12px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--muted)}
+  .tabs button.active{background:var(--bg);color:var(--ink);box-shadow:var(--shadow)}
+  .spacer{flex:1}
+  .theme-btn{border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+  .theme-btn:hover{color:var(--ink)}
 
-/* hero */
-.hero{padding:34px 0 6px}
-.hero h1{font-family:var(--disp);font-weight:600;font-size:clamp(28px,4.4vw,42px);margin:0;letter-spacing:-.01em}
-.hero p{color:var(--muted);margin:10px 0 0;max-width:680px}
+  .wrap{max-width:1360px;margin:0 auto;padding:20px 22px 80px}
+  .slide{max-width:1160px;margin:0 auto}
+  .pane{display:none}
+  .pane.active{display:block}
 
-/* controls bar */
-.controls{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 0 6px}
-.seg{display:inline-flex;background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);padding:3px}
-.seg button{border:none;background:transparent;color:var(--muted);font-family:var(--mono);font-size:11.5px;padding:6px 13px;border-radius:4px;cursor:pointer}
-.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 2px #16202b14;font-weight:600}
-.ctl-lab{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-right:-8px}
-.chips{display:flex;gap:7px;flex-wrap:wrap}
-.chip-sec{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:6px 13px;font-size:12.5px;cursor:pointer;transition:.15s;user-select:none}
-.chip-sec .dotc{width:8px;height:8px;border-radius:50%;background:var(--faint)}
-.chip-sec.on{border-color:var(--signal);background:var(--signal-dim);color:var(--text)}
-.chip-sec.on .dotc{background:var(--signal)}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+  .card>.card-h{padding:12px 16px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:10px}
+  .card>.card-h h2{font-size:13.5px}
+  .card>.card-h .hint{font-size:11px;color:var(--faint);margin-left:auto;font-weight:500}
+  .card-b{padding:14px 16px}
 
-/* regulation banner */
-.regbar{margin-top:12px;background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);padding:11px 15px;font-size:12.5px;color:var(--muted);line-height:1.6}
-.regbar b{color:var(--text)}
+  .btn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:8px 13px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .btn:hover{background:var(--panel)}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+  .btn.ghost:hover{background:var(--panel);color:var(--ink)}
+  .btn.danger:hover{background:var(--rag-red-bg);border-color:var(--rag-red);color:var(--rag-red)}
+  .btn.sm{padding:5px 9px;font-size:11.5px}
+  .actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 
-/* tabs */
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:24px;overflow-x:auto}
-.tab{border:none;background:transparent;padding:13px 18px 14px;font-family:var(--disp);font-weight:600;font-size:15px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
-.tab .ts{display:block;font-family:var(--body);font-weight:400;font-size:11px;color:var(--faint);margin-top:1px}
-.tab.on{color:var(--text);border-bottom-color:var(--signal)}
-.tab.on .ts{color:var(--signal)}
+  /* headline band */
+  .headline{background:var(--bg);border:1px solid var(--line);border-radius:12px;box-shadow:var(--raise);padding:12px 16px;margin-bottom:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .headline .hl-txt{font-size:13.5px;line-height:1.5;flex:1;min-width:260px}
+  .headline .fig{font-family:var(--mono);font-weight:650}
+  .headline .up{color:var(--exposure)} .headline .dn{color:var(--reduce)}
+  .headline .hl-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);border:1px solid var(--line);border-radius:20px;padding:3px 10px}
 
-main{padding:24px 0 70px}
+  .slide-head{display:flex;align-items:flex-end;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .slide-head h2{font-size:19px;letter-spacing:-.02em}
+  .slide-head .sh-sub{font-size:12px;color:var(--muted)}
+  .slide-head .asof{margin-left:auto;font-size:11.5px;color:var(--faint)}
 
-/* risk panel + nist */
-.toprow{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-bottom:8px}
-@media(max-width:880px){.toprow{grid-template-columns:1fr}}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.phead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line2)}
-.phead h2{font-family:var(--disp);font-size:15px;font-weight:600;margin:0}
-.phead .tagn{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--signal);font-weight:600}
-.risk{border-bottom:1px solid var(--line2)}
-.risk:last-child{border-bottom:none}
-.risk .rhead{display:flex;align-items:center;gap:11px;padding:12px 16px;cursor:pointer;transition:.12s}
-.risk .rhead:hover{background:var(--ink2)}
-.risk .rn{width:22px;height:22px;flex:0 0 auto;border-radius:6px;background:var(--risk-dim);color:var(--risk);font-family:var(--mono);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.risk .rt{flex:1;font-weight:600;font-size:13.5px}
-.risk .rsev{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:3px;border:1px solid #b4530944;color:var(--risk);background:var(--risk-dim)}
-.risk .rcar{color:var(--faint);font-size:12px;transition:transform .15s}
-.risk.open .rcar{transform:rotate(90deg)}
-.risk .rbody{display:none;padding:0 16px 14px 49px;font-size:12.5px;color:var(--muted);line-height:1.6}
-.risk.open .rbody{display:block}
-.risk .rbody .lab{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);display:block;margin:9px 0 3px}
-.risk .caps{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
-.risk .cap{background:var(--signal-dim);border:1px solid var(--signal-line);color:var(--signal);border-radius:20px;padding:3px 9px;font-size:11px;font-weight:500}
+  /* summary tiles — compact */
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}
+  @media(max-width:900px){.summary{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.summary{grid-template-columns:1fr}}
+  .stile{background:var(--bg);border:1px solid var(--line);border-radius:11px;box-shadow:var(--raise);padding:11px 12px;position:relative;overflow:hidden}
+  .stile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+  .stile.red::before{background:var(--rag-red)} .stile.amber::before{background:var(--rag-amber)} .stile.green::before{background:var(--rag-green)}
+  .stile .st-lab{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .stile .st-val{font-size:21px;font-weight:700;letter-spacing:-.02em;margin-top:4px;display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+  .stile .st-val small{font-size:11.5px;font-weight:600;color:var(--faint)}
+  .stile .st-sub{font-size:10.5px;color:var(--muted);margin-top:2px}
+  .st-tier{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+  .tier-red{background:var(--rag-red-bg);color:var(--rag-red)} .tier-amber{background:var(--rag-amber-bg);color:var(--rag-amber)} .tier-green{background:var(--rag-green-bg);color:var(--rag-green)}
+  .nist-mini{display:flex;gap:4px;margin-top:8px;align-items:flex-end;height:28px}
+  .nist-mini .fbar{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .nist-mini .fbar .bar{width:100%;border-radius:2px 2px 0 0;background:var(--primary);min-height:2px}
+  .nist-mini .fbar .fl{font-size:8px;color:var(--faint);font-weight:700}
+  .nist-edit{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+  .nist-edit label{font-size:9.5px;color:var(--muted);font-weight:600;display:flex;flex-direction:column;gap:2px}
+  .nist-edit input{border:1px solid var(--line);border-radius:5px;padding:3px 5px;font-size:11.5px;text-align:right;background:var(--bg);color:var(--ink)}
 
-.nist .nbody{padding:14px 16px}
-.nrow{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2)}
-.nrow:last-child{border-bottom:none}
-.nrow .nlab{flex:1}
-.nrow .nlab .nt{font-weight:600;font-size:13px}
-.nrow .nlab .nsub{font-size:11px;color:var(--faint)}
-.nrow .nsc{font-family:var(--mono);font-weight:700;font-size:20px}
-.nrow .nspark{width:84px}
-.tier{font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .trend{font-weight:800;line-height:1}
+  .trend.up{color:var(--rag-red)} .trend.down{color:var(--rag-green)} .trend.right{color:var(--faint)}
 
-/* domain sections */
-.domsec{margin-top:20px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
-.dhead{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;user-select:none}
-.dhead:hover{background:var(--ink2)}
-.dhead .dcar{color:var(--faint);transition:transform .15s}
-.domsec.open .dcar{transform:rotate(90deg)}
-.dhead h3{font-family:var(--disp);font-size:16px;font-weight:600;margin:0}
-.dhead .dsub{font-size:12px;color:var(--muted)}
-.dhead .dcount{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint)}
-.dbody{display:none;padding:4px 16px 18px}
-.domsec.open .dbody{display:block}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:12px}
+  .risk-head{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
+  .risk-head h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .risk-head .legend{margin-left:auto;display:flex;gap:10px;font-size:10.5px;color:var(--muted);align-items:center;flex-wrap:wrap}
+  .risk-head .legend span{display:inline-flex;align-items:center;gap:4px}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .dot.red{background:var(--rag-red)} .dot.amber{background:var(--rag-amber)} .dot.green{background:var(--rag-green)}
 
-/* metric tile */
-.tile{border:1px solid var(--line);border-radius:9px;padding:13px 14px 11px;background:#fff;transition:.15s}
-.tile:hover{border-color:var(--signal-line);box-shadow:0 4px 14px #16202b10}
-.tile.attn{box-shadow:inset 0 0 0 1px var(--risk-dim)}
-.t-name{font-size:13px;font-weight:600;line-height:1.3;min-height:34px}
-.t-mid{display:flex;align-items:flex-end;gap:9px;margin:6px 0 8px}
-.t-val{font-family:var(--mono);font-weight:700;font-size:23px;line-height:1}
-.tile.attn .t-val{color:var(--risk)}
-.t-dir{font-family:var(--mono);font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:3px;padding-bottom:2px}
-.t-dir.up{color:var(--good)}.t-dir.down{color:var(--good)} /* colored by good/bad below */
-.t-dir.bad{color:var(--risk)}.t-dir.good{color:var(--good)}.t-dir.side{color:var(--flat)}
-.t-spark{margin-left:auto}
-.t-fin{font-family:var(--mono);font-size:11px;margin-top:2px}
-.t-fin.loss{color:var(--risk)}.t-fin.gain{color:var(--good)}
-.t-foot{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid var(--line2)}
-.rtag{font-family:var(--mono);font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;padding:2px 7px;border-radius:3px;border:1px solid}
-.rtag.Regulatory{color:var(--reg);border-color:#b4530944;background:var(--risk-dim)}
-.rtag.Operational{color:var(--ops);border-color:#2563eb44;background:#2563eb0d}
-.rtag.Compliance{color:var(--cmp);border-color:#0d948844;background:var(--signal-dim)}
-.rtag.Reputational{color:var(--rep);border-color:#7c3aed44;background:#7c3aed0d}
-.t-reg{font-size:10.5px;color:var(--muted)}
-.t-tgt{font-family:var(--mono);font-size:9px;color:var(--faint);margin-left:auto}
+  /* overview risk bars — compact */
+  .risks{display:flex;flex-direction:column;gap:7px}
+  .rbar{display:flex;align-items:center;gap:11px;background:var(--bg);border:1px solid var(--line);border-left-width:5px;border-radius:9px;box-shadow:var(--raise);padding:8px 12px}
+  .rbar.red{border-left-color:var(--rag-red)} .rbar.amber{border-left-color:var(--rag-amber)} .rbar.green{border-left-color:var(--rag-green)}
+  .rbar .rag-chip{flex:none;width:66px;font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;text-align:center;padding:4px 0;border-radius:6px}
+  .rbar.red .rag-chip{background:var(--rag-red-bg);color:var(--rag-red)} .rbar.amber .rag-chip{background:var(--rag-amber-bg);color:var(--rag-amber)} .rbar.green .rag-chip{background:var(--rag-green-bg);color:var(--rag-green)}
+  .rbar .rtext{flex:1;min-width:0}
+  .rbar .rname{font-weight:650;font-size:13px}
+  .rbar .rdesc{font-size:11px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rbar .rtrend{flex:none;width:16px;text-align:center;font-size:14px}
 
-.spark{display:block}
-.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:18px;font-size:11.5px;color:var(--muted)}
-.legend span{display:inline-flex;align-items:center;gap:6px}
-.legend i{font-style:normal;font-family:var(--mono);font-weight:700}
+  /* RAG buttons */
+  .ragbtns{display:inline-flex;gap:3px}
+  .ragbtn{width:22px;height:20px;border-radius:5px;border:1px solid var(--line);background:var(--bg);font-size:0;position:relative;padding:0}
+  .ragbtn::after{content:"";position:absolute;inset:4px;border-radius:3px;opacity:.28}
+  .ragbtn.g::after{background:var(--rag-green)} .ragbtn.y::after{background:var(--rag-amber)} .ragbtn.r::after{background:var(--rag-red)}
+  .ragbtn.active{border-width:2px}
+  .ragbtn.g.active{border-color:var(--rag-green)} .ragbtn.g.active::after{opacity:1}
+  .ragbtn.y.active{border-color:var(--rag-amber)} .ragbtn.y.active::after{opacity:1}
+  .ragbtn.r.active{border-color:var(--rag-red)} .ragbtn.r.active::after{opacity:1}
+  .ragbtn:hover{transform:translateY(-1px)}
 
-footer{border-top:1px solid var(--line);color:var(--faint);font-size:11.5px;line-height:1.7;padding:26px 0 50px;margin-top:36px}
+  /* register cards */
+  .reg-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .reg-toolbar .grp{display:flex;gap:6px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:9px;background:var(--bg)}
+  .reg-toolbar .grp .gl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--faint)}
+  .rcard{background:var(--bg);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden;border-left-width:5px}
+  .rcard.red{border-left-color:var(--rag-red)} .rcard.amber{border-left-color:var(--rag-amber)} .rcard.green{border-left-color:var(--rag-green)}
+  .rcard-h{display:flex;align-items:center;gap:10px;padding:10px 13px;cursor:pointer;user-select:none}
+  .rcard-h .caret{color:var(--faint);font-size:10px;transition:transform .15s;width:11px;flex:none}
+  .rcard.open .rcard-h .caret{transform:rotate(90deg)}
+  .rcard-h .rc-name{font-weight:650;font-size:13.5px;flex:1;min-width:0}
+  .rcard-h .rc-name input{font-weight:650;font-size:13.5px;border:1px solid transparent;background:transparent;color:var(--ink);border-radius:5px;padding:2px 5px;width:100%}
+  .rcard-h .rc-name input:focus{outline:2px solid var(--primary-bg);border-color:var(--primary);background:var(--bg)}
+  .rc-move{display:flex;flex-direction:column;gap:1px}
+  .rc-move button{border:0;background:transparent;color:var(--faint);font-size:9px;line-height:1;padding:1px 3px;border-radius:3px}
+  .rc-move button:hover{background:var(--panel);color:var(--ink)}
+  .rc-del{border:0;background:transparent;color:var(--faint);font-size:16px;padding:2px 6px;border-radius:6px;flex:none}
+  .rc-del:hover{background:var(--rag-red-bg);color:var(--rag-red)}
+  .rcard-b{display:none;padding:4px 13px 14px;border-top:1px solid var(--line2)}
+  .rcard.open .rcard-b{display:block}
+  .lvl-grid{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+  .lvl-row{display:grid;grid-template-columns:120px auto 1fr;gap:10px;align-items:center;padding:6px 8px;background:var(--panel2);border:1px solid var(--line2);border-radius:8px}
+  @media(max-width:640px){.lvl-row{grid-template-columns:1fr;gap:5px}}
+  .lvl-row .lvl-name{font-size:11.5px;font-weight:700;color:var(--ink)}
+  .lvl-row .lvl-name small{display:block;font-weight:500;color:var(--faint);font-size:10px}
+  .lvl-row input.lvl-note{border:1px solid var(--line);border-radius:6px;padding:5px 7px;font-size:11.5px;background:var(--bg);color:var(--ink);width:100%}
+  .lvl-row input.lvl-note:focus{outline:2px solid var(--primary-bg);border-color:var(--primary)}
+  .detail-toggle{margin-top:11px}
+  .detail-toggle>summary{cursor:pointer;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:6px 0;list-style:none;display:flex;align-items:center;gap:6px}
+  .detail-toggle>summary::before{content:"▸";color:var(--faint);transition:transform .15s}
+  .detail-toggle[open]>summary::before{transform:rotate(90deg)}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}
+  @media(max-width:640px){.detail-grid{grid-template-columns:1fr}}
+  .detail-cell label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);display:block;margin-bottom:3px}
+  .detail-cell textarea{width:100%;border:1px solid var(--line);border-radius:7px;padding:6px 8px;font-size:11.5px;background:var(--bg);color:var(--ink);resize:vertical;min-height:44px;line-height:1.45}
+  .detail-cell textarea:focus{outline:2px solid var(--primary-bg);border-color:var(--primary)}
+  .esc-cell{grid-column:1 / -1}
 
-/* toast */
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#16202b;color:#fff;font-size:13px;padding:11px 18px;border-radius:8px;box-shadow:0 12px 30px #0004;opacity:0;pointer-events:none;transition:.25s;z-index:60}
-.toast.show{opacity:1}
+  /* trends */
+  .trend-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+  .snap-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+  .snap-table th,.snap-table td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line2)}
+  .snap-table th{font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--faint);font-weight:700}
+  .snap-table td.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .period-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--primary-bg);color:var(--primary);text-transform:capitalize}
+
+  /* benchmarks */
+  .bench-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:760px){.bench-grid{grid-template-columns:1fr}}
+  .bench-card{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--bg);box-shadow:var(--shadow)}
+  .bench-card h4{font-size:12.5px;margin-bottom:3px}
+  .bench-card .bc-you{font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .bench-card .bc-peer{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .bench-card .bc-gap{font-size:11px;font-weight:700;margin-top:7px;display:inline-block;padding:3px 9px;border-radius:20px}
+  .bc-gap.red{background:var(--rag-red-bg);color:var(--rag-red)} .bc-gap.amber{background:var(--rag-amber-bg);color:var(--rag-amber)} .bc-gap.green{background:var(--rag-green-bg);color:var(--rag-green)}
+  .bench-bar{height:8px;background:var(--panel);border-radius:5px;margin-top:9px;position:relative;overflow:visible}
+  .bench-bar .fill{height:100%;border-radius:5px;background:var(--primary)}
+  .bench-bar .mark{position:absolute;top:-3px;width:2px;height:14px;background:var(--ink)}
+  .src{font-size:10px;color:var(--faint);margin-top:6px}
+  .sources-list{font-size:11px;color:var(--muted);line-height:1.7;margin-top:6px}
+
+  /* board brief + calculator (reused) */
+  .board h2.section{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:24px 0 11px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+  .board-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:760px){.board-kpis{grid-template-columns:1fr}}
+  .stmt{font-size:14px;line-height:1.7;color:var(--ink)}
+  .stmt .fig{font-family:var(--mono);font-weight:650}.stmt .up{color:var(--exposure)}.stmt .dn{color:var(--reduce)}
+  table.brd{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+  table.brd th,table.brd td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line2)}
+  table.brd th{font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--faint);font-weight:700}
+  table.brd td.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  table.brd tr.total td{border-top:2px solid var(--line);font-weight:700;border-bottom:0}
+  .kpi{border:1px solid var(--line);border-radius:10px;padding:12px 13px;background:var(--panel2)}
+  .kpi .k-lab{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .kpi .k-val{font-size:21px;font-weight:680;margin-top:4px;letter-spacing:-.02em}
+  .kpi .k-sub{font-size:10.5px;color:var(--faint);margin-top:2px}
+  .kpi.exposure{background:var(--exposure-bg);border-color:transparent}.kpi.exposure .k-val{color:var(--exposure)}
+  .kpi.reduce{background:var(--reduce-bg);border-color:transparent}.kpi.reduce .k-val{color:var(--reduce)}
+  .kpi.wide{grid-column:1 / -1}
+  .note{font-size:11px;color:var(--muted);background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:10px 12px;line-height:1.5}
+  .note b{color:var(--ink)}
+
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+  @media(max-width:1080px){.grid{grid-template-columns:1fr}}
+  .config{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:11px}
+  .field{display:flex;flex-direction:column;gap:3px}
+  .field label{font-size:10.5px;font-weight:650;color:var(--muted)}
+  .field .u{font-size:10px;color:var(--faint);font-weight:500}
+  .field input,.field select{border:1px solid var(--line);border-radius:7px;padding:7px 8px;font-size:12.5px;background:var(--bg);color:var(--ink);width:100%}
+  .field input.num{text-align:right}
+  .field input:focus,.field select:focus{outline:2px solid var(--primary-bg);border-color:var(--primary)}
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .barrow{display:grid;grid-template-columns:150px 1fr 100px;gap:10px;align-items:center;padding:5px 0}
+  .barrow .blab{font-size:11.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .barrow .btrack{height:15px;background:var(--panel);border-radius:5px;overflow:hidden}
+  .barrow .bfill{height:100%;border-radius:5px}
+  .barrow .bval{font-size:11.5px;text-align:right;color:var(--muted)}
+  .path-op{background:#c8703a}.path-ip{background:#6b3fa0}.path-rep{background:#2f7ea8}
+  table.lec-legend{width:100%;border-collapse:collapse;margin-top:8px;font-size:11.5px}
+  table.lec-legend td{padding:3px 0}
+  table.lec-legend td:last-child{text-align:right}
+  .scn{border:1px solid var(--line);border-radius:11px;margin-bottom:11px;overflow:hidden;background:var(--bg)}
+  .scn.disabled{opacity:.55}
+  .scn-h{display:flex;align-items:center;gap:9px;padding:10px 13px;background:var(--panel2);cursor:pointer;user-select:none}
+  .scn-h .caret{color:var(--faint);font-size:10px;transition:transform .15s;width:11px}
+  .scn.open .scn-h .caret{transform:rotate(90deg)}
+  .scn-h .nm{font-weight:650;font-size:13px}
+  .pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.03em;text-transform:uppercase}
+  .pill.ent{background:var(--primary-bg);color:var(--primary)}.pill.prod{background:var(--rag-amber-bg);color:var(--amber)}
+  .scn-h .lef{margin-left:auto;font-size:11px;color:var(--muted)}.scn-h .lef b{color:var(--ink)}
+  .scn-b{padding:5px 13px 13px;border-top:1px solid var(--line2);display:none}.scn.open .scn-b{display:block}
+  .path{border:1px solid var(--line2);border-radius:9px;margin-top:11px;background:var(--panel2)}
+  .path-h{display:flex;align-items:center;gap:8px;padding:8px 11px}
+  .path-h h3{font-size:11.5px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted)}
+  .path-h .formula{margin-left:auto;font-size:10px;color:var(--faint);font-family:var(--mono)}
+  .path-b{padding:2px 11px 11px}.path.off .path-b{display:none}
+  .vrow{display:grid;grid-template-columns:1fr 58px 58px 58px;gap:7px;align-items:center;padding:4px 0;border-bottom:1px solid var(--line2)}
+  .vrow:last-child{border-bottom:0}
+  .vrow .vlab{font-size:11.5px;color:var(--ink);display:flex;flex-direction:column}
+  .vrow .vlab .vd{font-size:10px;color:var(--faint)}
+  .vrow input{border:1px solid var(--line);border-radius:6px;padding:4px 5px;font-size:11.5px;text-align:right;width:100%;background:var(--bg);color:var(--ink)}
+  .vrow input:focus{outline:2px solid var(--primary-bg);border-color:var(--primary)}
+  .vrow.head{border-bottom:1px solid var(--line);padding-bottom:5px}
+  .vrow.head span{font-size:9.5px;font-weight:700;color:var(--faint);text-align:right;text-transform:uppercase}
+  .vrow.head span:first-child{text-align:left}
+  .toggle{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);font-weight:600;cursor:pointer}
+  .sw{width:30px;height:17px;border-radius:20px;background:var(--line);position:relative;transition:.15s;flex:none}
+  .sw::after{content:"";position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  input.swin{display:none}input.swin:checked + .sw{background:var(--reduce)}input.swin:checked + .sw::after{left:15px}
+
+  svg text{font-family:var(--sans)}
+  .empty{padding:34px;text-align:center;color:var(--faint);font-size:12.5px}
+  .foot{font-size:10.5px;color:var(--faint);margin-top:28px;text-align:center;line-height:1.6}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:9px;font-size:12.5px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.25);opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:60}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+  .menu{position:relative;display:inline-block}
+  .menu-pop{position:absolute;top:calc(100% + 4px);right:0;background:var(--bg);border:1px solid var(--line);border-radius:9px;box-shadow:var(--raise);padding:5px;min-width:160px;z-index:40;display:none}
+  .menu.open .menu-pop{display:block}
+  .menu-pop button{display:block;width:100%;text-align:left;border:0;background:transparent;color:var(--ink);padding:7px 10px;border-radius:6px;font-size:12px;font-weight:600}
+  .menu-pop button:hover{background:var(--panel)}
+  .edit-only{display:none}
+  body.editing .edit-only{display:inline-flex}
+
+  @media print{
+    header.app,.tabs,.no-print,.spacer,.theme-btn,.reg-toolbar,.trend-controls,.rc-move,.rc-del,.edit-only{display:none!important}
+    body,body.dark{background:#fff;color:#14181f;font-size:11.5px}
+    .pane{display:none!important}.pane.active{display:block!important}
+    .card,.stile,.rbar,.rcard,.bench-card,.headline{box-shadow:none!important;break-inside:avoid}
+    .rcard-b{display:block!important}
+    .wrap{padding:0}
+  }
 </style>
 </head>
 <body>
-<div class="top"><div class="wrap">
-  <div class="brand"><span class="glyph"></span><div>Security Metrics<small>board · c-suite · ciso · developers</small></div></div>
-  <div class="sp"></div>
-  <div class="expbtns">
-    <button id="exp-xls">⤓ Excel</button>
-    <button id="exp-ppt" class="pr">⤓ Slides</button>
+<header class="app">
+  <div class="brand"><h1>Cybersecurity Risk — Board Overview</h1><span class="sub">RAG posture · NIST CSF · benchmarks · Revenue-at-Risk</span></div>
+  <div class="tabs no-print">
+    <button id="tab-overview" class="active" onclick="showTab('overview')">Overview</button>
+    <button id="tab-register" onclick="showTab('register')">Risk Register</button>
+    <button id="tab-trends" onclick="showTab('trends')">Trends</button>
+    <button id="tab-benchmarks" onclick="showTab('benchmarks')">Benchmarks</button>
+    <button id="tab-brief" onclick="showTab('brief')">Board Brief</button>
+    <button id="tab-calc" onclick="showTab('calc')">Calculator</button>
   </div>
-</div></div>
+  <div class="spacer"></div>
+  <button class="theme-btn no-print" id="theme-btn" onclick="toggleTheme()">◐ <span id="theme-lab">Dark slides</span></button>
+</header>
 
 <div class="wrap">
-  <section class="hero">
-    <h1>Security Metrics</h1>
-    <p>A board-to-developer view of security &amp; privacy posture — risks, financial exposure, regulatory mapping, and trends you can take into any room.</p>
-  </section>
-
-  <div class="controls">
-    <span class="ctl-lab">Period</span>
-    <div class="seg" id="period">
-      <button data-p="month" class="on">Month</button>
-      <button data-p="quarter">Quarter</button>
-      <button data-p="year">Year</button>
+  <!-- ============ OVERVIEW ============ -->
+  <div class="pane active slide" id="overview-pane">
+    <div class="headline" id="headline"></div>
+    <div class="slide-head">
+      <div><h2>Cybersecurity risk posture</h2><div class="sh-sub">Key enterprise &amp; product risks, control maturity, and revenue exposure</div></div>
+      <div class="asof" id="asof"></div>
+      <div class="actions no-print" style="margin-left:12px">
+        <button class="btn sm ghost" id="edit-btn" onclick="toggleEdit()">✎ Edit</button>
+        <button class="btn sm ghost" onclick="window.print()">⎙ Print</button>
+      </div>
     </div>
-    <span class="ctl-lab">Sectors</span>
-    <div class="chips" id="sectors"></div>
+    <div class="summary" id="summary"></div>
+    <div class="risk-head">
+      <h3>Top cybersecurity risks</h3>
+      <div class="legend">
+        <span><i class="dot red"></i>Critical</span><span><i class="dot amber"></i>Elevated</span><span><i class="dot green"></i>Managed</span>
+        <span style="color:var(--faint)">|</span>
+        <span><b class="trend up">↑</b>worsening</span><span><b class="trend right">→</b>stable</span><span><b class="trend down">↓</b>improving</span>
+      </div>
+    </div>
+    <div class="risks" id="risks"></div>
+    <div class="sh-sub no-print" style="margin-top:8px;color:var(--faint)">Full level-by-level detail, escalation paths and editing are on the <b>Risk Register</b> tab.</div>
   </div>
-  <div class="regbar" id="regbar"></div>
 
-  <div class="tabs" id="tabs"></div>
+  <!-- ============ RISK REGISTER ============ -->
+  <div class="pane" id="register-pane">
+    <div class="slide-head"><div><h2>Risk register</h2><div class="sh-sub">Each board risk translated to C-suite, product, engineering and developer views — with real-world context and escalation</div></div></div>
+    <div class="reg-toolbar no-print">
+      <button class="btn sm" onclick="addRisk()">+ Add risk</button>
+      <div class="grp"><span class="gl">Sort</span>
+        <select id="sort-mode" onchange="applySort(this.value)" style="border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-size:12px;background:var(--bg);color:var(--ink)">
+          <option value="manual">Manual order</option>
+          <option value="severity">By severity</option>
+          <option value="name">A → Z</option>
+        </select>
+      </div>
+      <div class="grp"><span class="gl">Export</span>
+        <button class="btn sm ghost" onclick="exportExcel()">Excel</button>
+        <button class="btn sm ghost" onclick="exportWord()">Word</button>
+        <button class="btn sm ghost" onclick="exportPptx()">PowerPoint</button>
+      </div>
+      <div class="grp"><span class="gl">Import</span>
+        <button class="btn sm ghost" onclick="document.getElementById('reg-imp').click()">CSV / Excel</button>
+        <input id="reg-imp" type="file" accept=".csv,.xlsx" style="display:none" onchange="importRegister(event)">
+        <button class="btn sm ghost" onclick="downloadTemplate()">Template</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn sm ghost" onclick="expandAll(true)">Expand all</button>
+      <button class="btn sm ghost" onclick="expandAll(false)">Collapse all</button>
+    </div>
+    <div id="register"></div>
+  </div>
+
+  <!-- ============ TRENDS ============ -->
+  <div class="pane" id="trends-pane">
+    <div class="slide-head"><div><h2>Trends over time</h2><div class="sh-sub">Capture weekly, quarterly or yearly snapshots and track posture, maturity and exposure</div></div></div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-b">
+        <div class="trend-controls">
+          <div class="field"><label>Cadence</label><select id="snap-period" style="border:1px solid var(--line);border-radius:7px;padding:7px 8px;font-size:12.5px;background:var(--bg);color:var(--ink)"><option value="weekly">Weekly</option><option value="quarterly" selected>Quarterly</option><option value="yearly">Yearly</option></select></div>
+          <div class="field"><label>Label (optional)</label><input id="snap-label" placeholder="e.g. Q3 FY26" style="min-width:160px"></div>
+          <button class="btn primary" onclick="captureSnapshot()">◉ Capture snapshot</button>
+          <div class="spacer"></div>
+          <div class="field"><label>Show</label><select id="snap-filter" onchange="renderTrends()" style="border:1px solid var(--line);border-radius:7px;padding:7px 8px;font-size:12.5px;background:var(--bg);color:var(--ink)"><option value="all">All cadences</option><option value="weekly">Weekly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option></select></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px" id="trend-chart-card" hidden>
+      <div class="card-h"><h2>Posture over time</h2><span class="hint">NIST maturity &amp; residual Revenue-at-Risk</span></div>
+      <div class="card-b"><div id="trend-chart"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Snapshots</h2><span class="hint" id="snap-count"></span></div>
+      <div class="card-b"><div id="snap-table-wrap"></div></div>
+    </div>
+  </div>
+
+  <!-- ============ BENCHMARKS ============ -->
+  <div class="pane slide" id="benchmarks-pane">
+    <div class="slide-head"><div><h2>Peer benchmarks</h2><div class="sh-sub">Your posture vs. organizations of similar sector, size and revenue</div></div></div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-b">
+        <div class="config">
+          <div class="field"><label>Annual revenue</label><input class="num" id="b-rev" type="number" step="1000000"><span class="u">$ · for spend ratio</span></div>
+          <div class="field"><label>Peer sector</label><select id="b-sector" onchange="renderBenchmarks()"><option value="healthcare">Healthcare / Medtech</option><option value="financial">Financial services</option><option value="technology">Technology</option><option value="pharma">Pharmaceutical</option><option value="global">Cross-industry avg</option></select></div>
+          <div class="field" style="justify-content:flex-end"><button class="btn sm" onclick="renderBenchmarks()">Recompute</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="bench-grid" id="bench-grid"></div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-h"><h2>Sector context &amp; sources</h2></div>
+      <div class="card-b" id="bench-context"></div>
+    </div>
+  </div>
+
+  <!-- ============ BOARD BRIEF ============ -->
+  <div class="pane slide board" id="brief-pane">
+    <div class="actions no-print" style="margin-bottom:16px">
+      <button class="btn primary" onclick="window.print()">⎙ Print / Export PDF</button>
+      <button class="btn sm" onclick="copyBoardSummary()">Copy summary</button>
+      <span class="spacer"></span><span style="font-size:11.5px;color:var(--faint)">Rounded, decision-grade figures.</span>
+    </div>
+    <div id="board-content"><div class="empty">Loading…</div></div>
+  </div>
+
+  <!-- ============ CALCULATOR ============ -->
+  <div class="pane" id="calc-pane">
+    <div class="grid">
+      <div>
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-h"><h2>Simulation controls</h2><span class="hint">same seed + inputs → identical output</span></div>
+          <div class="card-b">
+            <div class="config">
+              <div class="field"><label>Iterations</label><input class="num" id="c-iter" type="number" min="1000" max="200000" step="1000"><span class="u">trials</span></div>
+              <div class="field"><label>Random seed</label><input class="num" id="c-seed" type="number" min="0" step="1"><span class="u">reproducible</span></div>
+              <div class="field"><label>Control effectiveness</label><input class="num" id="c-ce" type="number" min="0" max="0.99" step="0.01"><span class="u">0–1</span></div>
+              <div class="field"><label>Security spend</label><input class="num" id="c-spend" type="number" min="0" step="10000"><span class="u">$/yr</span></div>
+              <div class="field"><label>Insurance limit</label><input class="num" id="c-ins" type="number" min="0" step="1000000"><span class="u">$</span></div>
+            </div>
+            <div class="actions" style="margin-top:14px">
+              <button class="btn primary" onclick="run()">▸ Run simulation</button>
+              <button class="btn sm" onclick="addScenario()">+ Add scenario</button>
+              <span class="spacer"></span>
+              <button class="btn ghost sm" onclick="saveState()">Save</button>
+              <button class="btn ghost sm" onclick="exportJSON()">Export JSON</button>
+              <button class="btn ghost sm" onclick="document.getElementById('imp').click()">Import</button>
+              <input id="imp" type="file" accept="application/json" style="display:none" onchange="importJSON(event)">
+              <button class="btn ghost sm danger" onclick="resetAll()">Reset</button>
+            </div>
+          </div>
+        </div>
+        <div class="card"><div class="card-h"><h2>Loss scenarios</h2><span class="hint" id="scn-count"></span></div>
+          <div class="card-b"><div id="scenarios"></div><button class="btn sm" onclick="addScenario()" style="margin-top:4px">+ Add scenario</button></div></div>
+      </div>
+      <div id="results-col">
+        <div class="card" style="margin-bottom:20px"><div class="card-h"><h2>Revenue-at-Risk</h2><span class="hint" id="run-stamp">not run yet</span></div><div class="card-b"><div class="kpis" id="kpis"></div></div></div>
+        <div class="card" style="margin-bottom:20px" id="lec-card" hidden><div class="card-h"><h2>Loss exceedance curve</h2><span class="hint">P(annual loss &gt; x)</span></div>
+          <div class="card-b"><div id="lec"></div><table class="lec-legend"><tr><td><span style="color:var(--exposure);font-weight:700">■</span> Inherent</td><td class="num" id="leg-inh"></td></tr><tr><td><span style="color:var(--reduce);font-weight:700">■</span> Residual</td><td class="num" id="leg-res"></td></tr></table></div></div>
+        <div class="card" style="margin-bottom:20px" id="path-card" hidden><div class="card-h"><h2>Contribution by pathway</h2><span class="hint">share of expected RaR</span></div><div class="card-b" id="path-bars"></div></div>
+        <div class="card" id="scn-card" hidden><div class="card-h"><h2>Contribution by scenario</h2><span class="hint">expected annual loss</span></div><div class="card-b" id="scn-bars"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">Revenue-at-Risk = Σ<sub>scenarios</sub> LEF<sub>i</sub> × (LM<sub>op</sub> + LM<sub>IP</sub> + LM<sub>rep</sub>). All computation and file generation run in your browser; no data leaves this page.</div>
 </div>
-
-<main class="wrap" id="view"></main>
-
-<div class="wrap"><footer id="foot"></footer></div>
 <div class="toast" id="toast"></div>
-
 <script>
-/* ============================== DATA ============================== */
-const SECTORS={
-  finance:{label:'Finance',regs:{Regulatory:'SEC cyber disclosure · DORA',Compliance:'PCI-DSS · SOX · GLBA',Operational:'FFIEC · NYDFS 500',Reputational:'GDPR · CCPA'},note:'Fraud loss, operational resilience (DORA), and third-party concentration dominate.'},
-  medical:{label:'Medical / Health',regs:{Regulatory:'FDA 524B · EU MDR/IVDR',Compliance:'HIPAA · ISO 13485',Operational:'IEC 62304 · IEC 80001',Reputational:'HHS OCR breach rules'},note:'Patient safety + PHI liability; device cyber (FDA 524B) gates market access.'},
-  itot:{label:'IT / OT',regs:{Regulatory:'NERC CIP · NIS2',Compliance:'IEC 62443 · TSA SDs',Operational:'CISA CIRCIA reporting',Reputational:'State breach laws'},note:'OT resilience + safety; mandatory incident reporting raises board accountability.'},
-  manufacturing:{label:'Manufacturing',regs:{Regulatory:'EU CRA',Compliance:'IEC 62443 · ISO 27001',Operational:'NIST CSF 2.0',Reputational:'Customer security SLAs'},note:'OT/IT convergence, IP protection, connected-product cyber (EU CRA) market access.'},
-};
-const TABMETA={
-  board:{label:'Board',ts:'Oversight',blurb:'Money, materiality, and risk appetite.'},
-  csuite:{label:'C-Suite',ts:'Finance · Ops',blurb:'Cost, return, and resilience.'},
-  ciso:{label:'CISO',ts:'Program',blurb:'Controls, coverage, and exposure.'},
-  dev:{label:'Developers',ts:'Product',blurb:'Secure SDLC, SBOM, and PSIRT.'},
-};
-const DOMAINS={all:'All-encompassing',enterprise:'Enterprise Security',product:'Product Security'};
-const DOMSUB={all:'Cross-cutting posture, governance & resilience',enterprise:'Identity, endpoint, cloud, data & human layer',product:'Secure SDLC, supply chain & shipped-product cyber'};
+/* ============================================================
+   OFFICE UTILITIES — ZIP writer (store), xlsx/docx/pptx builders,
+   DEFLATE inflate + xlsx reader.  Pure vanilla JS (no deps).
+   Developed here for node unit-testing, then embedded verbatim.
+   ============================================================ */
 
-const RISKS={
-  board:[
-    {t:'Undisclosed material cyber incident',sev:'High',why:'Sector disclosure rules (SEC, NIS2, OCR) demand a timely materiality call; a missed or late disclosure creates legal, regulatory, and reputational exposure.',mit:'Pre-agreed materiality thresholds, a tested disclosure runbook, and standing quarterly board reporting.',cap:['IR retainer','Materiality framework','Board cyber dashboard']},
-    {t:'Risk exposure beyond appetite',sev:'High',why:'Aggregate residual risk (quantified loss) can drift past the board-approved tolerance without a single visible event.',mit:'Quantify Cyber Value-at-Risk (FAIR), set a numeric appetite, and treat/transfer the tail with insurance.',cap:['FAIR risk quantification','Risk register','Cyber insurance']},
-    {t:'Third-party / supply-chain concentration',sev:'Med',why:'A single critical provider (cloud, software, AI) failing can become a systemic, board-level event.',cap:['TPRM program','SBOM + VEX','Concentration mapping'],mit:'Map concentration, require attestations from critical vendors, and rehearse provider-failure scenarios.'},
-  ],
-  csuite:[
-    {t:'Unquantified loss exposure',sev:'High',why:'Without a loss model, security spend can\'t be defended and risk transfer is guesswork.',mit:'Stand up loss-avoidance / ROSI modeling and report it next to spend.',cap:['FAIR model','ROSI tracking','Spend benchmarking']},
-    {t:'Resilience gaps (RTO/RPO)',sev:'High',why:'Untested recovery turns an incident into a prolonged, revenue-impacting outage.',mit:'Test RTO/RPO for crown-jewel services; close the gap to target each quarter.',cap:['BC/DR testing','Immutable backups','Crisis runbook']},
-    {t:'Rising compliance cost',sev:'Med',why:'Manual evidence and audits scale cost faster than risk reduction.',mit:'Automate evidence collection and control mapping across frameworks.',cap:['GRC automation','Continuous control monitoring','Unified control map']},
-  ],
-  ciso:[
-    {t:'Identity & access compromise',sev:'High',why:'Phishing-resistant MFA gaps and over-privileged accounts remain the top initial-access vector.',mit:'Drive MFA + PAM coverage to target; right-size cloud entitlements (CIEM).',cap:['Phishing-resistant MFA','PAM','CIEM']},
-    {t:'Unremediated known-exploited vulns',sev:'High',why:'KEV-listed and critical vulns past SLA are actively exploited and dwell on the attack surface.',mit:'Gate on KEV, cut critical vuln MTTR, and expand EDR/runtime coverage.',cap:['Risk-based VM','EDR/CNAPP','KEV gating']},
-    {t:'Cloud misconfiguration & exposure',sev:'Med',why:'Public exposure and benchmark drift create data-loss paths that scale instantly.',mit:'Enforce CIS benchmarks, kill public exposure, and gate IaC pre-merge.',cap:['CSPM/DSPM','IaC policy','Encryption + KMS']},
-  ],
-  dev:[
-    {t:'Vulnerable / unverified dependencies',sev:'High',why:'Most product risk now enters through open-source and third-party components (KEV, transitive CVEs).',mit:'Enforce SCA + SBOM/VEX, gate on critical, and patch within SLA.',cap:['SCA + SBOM','VEX issuance','Dependency firewall']},
-    {t:'Secrets & pipeline compromise',sev:'High',why:'Leaked secrets and unguarded CI/CD give attackers a direct path to production.',mit:'Scan for secrets pre-commit, harden the pipeline, and rotate on exposure.',cap:['Secrets scanning','Signed builds (SLSA)','OIDC, no static keys']},
-    {t:'Shipping non-conformant product',sev:'Med',why:'Regulated-product cyber (FDA 524B, EU CRA, IEC 62443) gates market access and recalls.',mit:'Bake conformity into the SDLC; ship SBOM + PSIRT process with each release.',cap:['Threat modeling','PSIRT/CVD','Conformity evidence']},
-  ],
-};
-const NIST={
-  board:{csf:3.1,ai:2.6},csuite:{csf:3.2,ai:2.7},ciso:{csf:3.4,ai:2.9},dev:{csf:3.3,ai:2.8},
-};
+/* ---------- CRC32 ---------- */
+const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(buf){let c=0xFFFFFFFF;for(let i=0;i<buf.length;i++)c=CRC_TABLE[(c^buf[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
 
-// metric authoring: {id,name,domain,goal,unit,tv, risk?(board), fin?, finNote?}
-const M={
-  board:[
-    {id:'b-var',name:'Cyber Value-at-Risk',domain:'all',goal:'down',unit:'$M',tv:null,risk:'Operational',fin:-7.8,finNote:'annualized loss exposure'},
-    {id:'b-mat',name:'Material incidents (disclosable)',domain:'all',goal:'down',unit:'count',tv:0,risk:'Regulatory',fin:-12.0,finNote:'disclosure + legal exposure'},
-    {id:'b-reg',name:'Regulatory posture',domain:'all',goal:'up',unit:'%',tv:100,risk:'Compliance',fin:-4.5,finNote:'fine exposure if unmet'},
-    {id:'b-priv',name:'Privacy rights fulfillment',domain:'all',goal:'up',unit:'%',tv:98,risk:'Reputational',fin:-6.0,finNote:'brand + privacy fines'},
-    {id:'b-tpa',name:'Critical third-party attestation',domain:'all',goal:'up',unit:'%',tv:95,risk:'Operational',fin:-3.2,finNote:'supply-chain exposure'},
-    {id:'b-ins',name:'Insurance coverage adequacy',domain:'all',goal:'up',unit:'x',tv:1,risk:'Operational',fin:25,finNote:'risk transferred'},
-    {id:'b-ranr',name:'Ransomware recovery readiness',domain:'all',goal:'up',unit:'%',tv:95,risk:'Reputational',fin:-9.0,finNote:'downtime + brand exposure'},
-    {id:'b-aud',name:'Open audit findings (material)',domain:'all',goal:'down',unit:'count',tv:0,risk:'Compliance',fin:-2.0,finNote:'remediation + penalty'},
-  ],
-  csuite:[
-    {id:'c-rosi',name:'Loss avoidance (ROSI)',domain:'all',goal:'up',unit:'$M',tv:null,fin:18,finNote:'modeled loss avoided'},
-    {id:'c-spend',name:'Security spend (% of IT)',domain:'all',goal:'up',unit:'%',tv:11},
-    {id:'c-mttr',name:'Mean time to respond',domain:'enterprise',goal:'down',unit:'h',tv:4,fin:-1.5,finNote:'cost per hour of incident'},
-    {id:'c-avail',name:'Resilience: RTO/RPO met',domain:'all',goal:'up',unit:'%',tv:100},
-    {id:'c-cov',name:'Crown-jewel control coverage',domain:'enterprise',goal:'up',unit:'%',tv:98},
-    {id:'c-cost',name:'Audit & compliance cost',domain:'all',goal:'down',unit:'$M',tv:null,fin:-2.4,finNote:'annual program cost'},
-  ],
-  ciso:[
-    {id:'k-mfa',name:'MFA coverage (phishing-resistant)',domain:'enterprise',goal:'up',unit:'%',tv:99},
-    {id:'k-pam',name:'Privileged access coverage (PAM)',domain:'enterprise',goal:'up',unit:'%',tv:100},
-    {id:'k-edr',name:'EDR endpoint coverage',domain:'enterprise',goal:'up',unit:'%',tv:98},
-    {id:'k-vmttr',name:'Critical/High vuln MTTR',domain:'enterprise',goal:'down',unit:'d',tv:7},
-    {id:'k-cis',name:'Cloud CIS benchmark pass',domain:'enterprise',goal:'up',unit:'%',tv:90},
-    {id:'k-pub',name:'Public data exposure',domain:'enterprise',goal:'down',unit:'count',tv:0},
-    {id:'k-phish',name:'Phishing click rate',domain:'all',goal:'down',unit:'%',tv:5},
-    {id:'k-kev',name:'KEV components exposed',domain:'product',goal:'down',unit:'count',tv:0},
-    {id:'k-sbom',name:'SBOM & VEX coverage',domain:'product',goal:'up',unit:'%',tv:100},
-    {id:'k-tm',name:'Threat models completed',domain:'product',goal:'up',unit:'%',tv:100},
-  ],
-  dev:[
-    {id:'d-scan',name:'Pipeline scan coverage (SAST/DAST/SCA)',domain:'product',goal:'up',unit:'%',tv:95},
-    {id:'d-sbom',name:'SBOM coverage & VEX issuance',domain:'product',goal:'up',unit:'%',tv:100},
-    {id:'d-kev',name:'KEV components in releases',domain:'product',goal:'down',unit:'count',tv:0},
-    {id:'d-ttf',name:'Critical vuln time-to-fix',domain:'product',goal:'down',unit:'d',tv:30},
-    {id:'d-psirt',name:'PSIRT triage SLA',domain:'product',goal:'down',unit:'d',tv:3},
-    {id:'d-sec',name:'Secrets scanning coverage',domain:'product',goal:'up',unit:'%',tv:100},
-    {id:'d-pen',name:'Pentest finding closure',domain:'product',goal:'up',unit:'%',tv:90},
-    {id:'d-conf',name:'Regulated product conformity',domain:'product',goal:'up',unit:'%',tv:100},
-  ],
-};
+/* ---------- text <-> bytes ---------- */
+function strToU8(s){return new TextEncoder().encode(s);}
+function u8ToStr(u){return new TextDecoder().decode(u);}
 
-/* ============================== STATE ============================== */
-let TAB='board', PERIOD='month';
-let SECS=new Set(['finance','medical']);
-
-/* ============================== SERIES ============================== */
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
-function round(u,v){if(u==='count'||u==='idx')return Math.max(0,Math.round(v));if(u==='x')return Math.max(0,+v.toFixed(2));if(u==='%')return Math.min(100,Math.max(0,+v.toFixed(1)));return Math.max(0,+v.toFixed(1));}
-const SERIES={};
-function monthly(m){ // 36 pts oldest->newest
-  if(SERIES[m.id])return SERIES[m.id];
-  const rnd=mulberry32(hash(m.id)); const tv=m.tv; let start,end;
-  if(m.goal==='up'){const cap=m.unit==='%'?100:m.unit==='x'?1.6:(tv||100);const ceil=tv==null?cap:tv;end=ceil-rnd()*(m.unit==='x'?0.15:m.unit==='%'?6:8);start=end-(10+rnd()*16)*(m.unit==='x'?0.05:1);}
-  else{const base=tv==null?(m.unit==='$M'?8:100):tv;end=base+(rnd()<0.5?0:rnd()*(m.unit==='count'?3:m.unit==='d'?6:m.unit==='$M'?1.6:12));start=end+(5+rnd()*12)*(m.unit==='$M'?0.4:m.unit==='count'?0.8:1);}
-  const out=[];for(let i=0;i<36;i++){const t=i/35;const noise=(rnd()-0.5)*((Math.abs(end-start)||4)*0.16);out.push(round(m.unit,start+(end-start)*t+noise));}
-  SERIES[m.id]=out;return out;
-}
-function avg(a){return a.reduce((x,y)=>x+y,0)/a.length;}
-function agg(m){const s=monthly(m);
-  if(PERIOD==='month')return s.slice(-12);
-  if(PERIOD==='quarter'){const q=[];for(let i=0;i<s.length;i+=3)q.push(round(m.unit,avg(s.slice(i,i+3))));return q.slice(-8);}
-  const y=[];for(let i=0;i<s.length;i+=12)y.push(round(m.unit,avg(s.slice(i,i+12))));return y; // year: 3 pts
-}
-function dirOf(m){const v=agg(m);if(v.length<2)return{dir:'side',cls:'side'};const a=v[v.length-2],b=v[v.length-1];const ch=(b-a)/(Math.abs(a)||1);
-  let dir=ch>0.02?'up':ch<-0.02?'down':'side';let cls='side';if(dir!=='side'){const good=m.goal==='up'?dir==='up':dir==='down';cls=good?'good':'bad';}return{dir,cls,cur:b,prev:a,vals:v};}
-function fmt(u,v){if(v==null)return'—';if(u==='%')return v+'%';if(u==='$M')return'$'+v+'M';if(u==='x')return v+'×';if(u==='d')return v+'d';if(u==='h')return v+'h';if(u==='idx')return String(v);return String(v);}
-function meets(m,v){if(m.tv==null)return null;return m.goal==='up'?v>=m.tv:v<=m.tv;}
-
-/* sparkline */
-function spark(vals,goal,tv,unit,w,h){w=w||96;h=h||26;if(!vals||vals.length<2)return'';
-  const min=Math.min(...vals),max=Math.max(...vals),pad=(max-min)*0.12||1,lo=min-pad,hi=max+pad,rng=hi-lo||1;
-  const x=i=>(i/(vals.length-1))*(w-2)+1,y=v=>h-1-((v-lo)/rng)*(h-2);
-  const pts=vals.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`);
-  const last=vals[vals.length-1],prev=vals.length>1?vals[vals.length-2]:last;
-  const good=(last-prev)===0?null:(goal==='up'?last>prev:last<prev);
-  const col=good==null?'var(--flat)':(good?'var(--good)':'var(--risk)');
-  let tl='';if(tv!=null&&tv>=lo&&tv<=hi){const ty=y(tv).toFixed(1);tl=`<line x1="1" y1="${ty}" x2="${w-1}" y2="${ty}" stroke="var(--signal-line)" stroke-width="1" stroke-dasharray="2 2"/>`;}
-  const area=`M${x(0).toFixed(1)},${y(vals[0]).toFixed(1)} `+pts.slice(1).map(p=>'L'+p).join(' ')+` L${x(vals.length-1).toFixed(1)},${h-1} L${x(0).toFixed(1)},${h-1} Z`;
-  const uid='s'+Math.random().toString(36).slice(2,7);
-  return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none"><defs><linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".16"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>${tl}<path d="${area}" fill="url(#${uid})"/><polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${x(vals.length-1).toFixed(1)}" cy="${y(last).toFixed(1)}" r="2.2" fill="${col}"/></svg>`;
-}
-const ARROW={up:'↑',down:'↓',side:'→'};
-
-/* regulation union for a risk type across active sectors */
-function regFor(riskType){const set=[...SECS].map(s=>SECTORS[s].regs[riskType]).filter(Boolean);return[...new Set(set)].join(' · ');}
-function finStr(m){if(m.fin==null)return'';const g=m.fin>=0;const v=Math.abs(m.fin);return`<div class="t-fin ${g?'gain':'loss'}">${g?'+':'−'}$${v}M · ${m.finNote||''}</div>`;}
-
-/* ============================== RENDER ============================== */
-const el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
-function renderChrome(){
-  // sectors
-  const sc=document.getElementById('sectors');sc.innerHTML='';
-  Object.entries(SECTORS).forEach(([k,v])=>{const c=el('div','chip-sec'+(SECS.has(k)?' on':''));c.innerHTML=`<span class="dotc"></span>${v.label}`;
-    c.onclick=()=>{if(SECS.has(k)){if(SECS.size>1)SECS.delete(k);}else SECS.add(k);renderChrome();render();};sc.appendChild(c);});
-  // regbar
-  const types=['Regulatory','Compliance','Operational','Reputational'];
-  document.getElementById('regbar').innerHTML=`<b>Active sectors:</b> ${[...SECS].map(s=>SECTORS[s].label).join(', ')} &nbsp;·&nbsp; `+
-    types.map(t=>`<b>${t}:</b> ${regFor(t)}`).join(' &nbsp;|&nbsp; ');
-  // tabs
-  const tb=document.getElementById('tabs');tb.innerHTML='';
-  Object.entries(TABMETA).forEach(([k,v])=>{const b=el('button','tab'+(k===TAB?' on':''));b.innerHTML=`${v.label}<span class="ts">${v.ts}</span>`;b.onclick=()=>{TAB=k;renderChrome();render();};tb.appendChild(b);});
-  // period
-  document.querySelectorAll('#period button').forEach(b=>{b.classList.toggle('on',b.dataset.p===PERIOD);b.onclick=()=>{PERIOD=b.dataset.p;renderChrome();render();};});
-  document.getElementById('foot').innerHTML=`<b>Security Metrics</b> — illustrative example values and financial figures for demonstration; trends are seeded. Regulatory mappings reflect the selected sectors. Calibrate to your organization before use. NIST CSF tiers are 1–4; AI governance score is an illustrative 0–4 maturity proxy. Period: <b>${PERIOD}</b>.`;
-}
-function nistSpark(score,seed){const rnd=mulberry32(seed);const out=[];let v=score-0.6;for(let i=0;i<10;i++){v+=(score-v)*0.25+(rnd()-0.5)*0.08;out.push(+v.toFixed(2));}out[out.length-1]=score;return out;}
-function render(){
-  const root=document.getElementById('view');root.innerHTML='';
-  const meta=TABMETA[TAB];
-  // top row: risks + nist
-  const top=el('div','toprow');
-  const rp=el('div','panel');
-  rp.innerHTML=`<div class="phead"><span class="tagn">Top risks</span><h2>${meta.label} — three to watch</h2></div>`;
-  RISKS[TAB].forEach((r,i)=>{
-    const d=el('div','risk');
-    d.innerHTML=`<div class="rhead"><span class="rn">${i+1}</span><span class="rt">${r.t}</span><span class="rsev">${r.sev}</span><span class="rcar">▸</span></div>
-      <div class="rbody"><span class="lab">Why it matters</span>${r.why}<span class="lab">How to mitigate</span>${r.mit}<span class="lab">Capabilities to use</span><div class="caps">${r.cap.map(c=>`<span class="cap">${c}</span>`).join('')}</div></div>`;
-    d.querySelector('.rhead').onclick=()=>d.classList.toggle('open');
-    if(i===0)d.classList.add('open');
-    rp.appendChild(d);
-  });
-  top.appendChild(rp);
-  // nist
-  const np=el('div','panel nist');
-  const n=NIST[TAB];
-  np.innerHTML=`<div class="phead"><span class="tagn">Maturity</span><h2>NIST CSF / AI trend</h2></div><div class="nbody">
-    <div class="nrow"><div class="nlab"><div class="nt">NIST CSF 2.0</div><div class="nsub">Govern · Identify · Protect · Detect · Respond · Recover</div><div class="tier">Tier ${Math.round(n.csf)} of 4 · trending up</div></div><div class="nspark">${spark(nistSpark(n.csf,hash(TAB+'csf')),'up',null,'idx',84,30)}</div><div class="nsc">${n.csf.toFixed(1)}</div></div>
-    <div class="nrow"><div class="nlab"><div class="nt">AI governance</div><div class="nsub">NIST AI RMF · ISO 42001 readiness</div><div class="tier">${n.ai.toFixed(1)} of 4 · trending up</div></div><div class="nspark">${spark(nistSpark(n.ai,hash(TAB+'ai')),'up',null,'idx',84,30)}</div><div class="nsc">${n.ai.toFixed(1)}</div></div>
-  </div>`;
-  top.appendChild(np);
-  root.appendChild(top);
-
-  // domain sections
-  const metrics=M[TAB];
-  const byDom={};metrics.forEach(m=>{(byDom[m.domain]=byDom[m.domain]||[]).push(m);});
-  Object.keys(DOMAINS).forEach((dk,di)=>{
-    const list=byDom[dk];if(!list||!list.length)return;
-    const sec=el('div','domsec'+(di===0||Object.keys(byDom).length===1?' open':(byDom[Object.keys(byDom)[0]]?'':' open')));
-    if(dk===Object.keys(byDom).find(k=>byDom[k]&&byDom[k].length))sec.classList.add('open'); // open first non-empty
-    sec.innerHTML=`<div class="dhead"><span class="dcar">▸</span><h3>${DOMAINS[dk]}</h3><span class="dsub">${DOMSUB[dk]}</span><span class="dcount">${list.length} metric${list.length===1?'':'s'}</span></div><div class="dbody"></div>`;
-    sec.querySelector('.dhead').onclick=()=>sec.classList.toggle('open');
-    const grid=el('div','tiles');
-    list.forEach(m=>grid.appendChild(tile(m)));
-    sec.querySelector('.dbody').appendChild(grid);
-    root.appendChild(sec);
-  });
-
-  // legend
-  const lg=el('div','legend');
-  lg.innerHTML=`<span><i style="color:var(--good)">↑</i> improving vs target direction</span><span><i style="color:var(--risk)">↓</i> worsening</span><span><i style="color:var(--flat)">→</i> sideways</span>`+
-    (TAB==='board'?`<span><b class="rtag Regulatory" style="border:none;background:none;padding:0">Regulatory</b> / <b class="rtag Operational" style="border:none;background:none;padding:0">Operational</b> / <b class="rtag Compliance" style="border:none;background:none;padding:0">Compliance</b> / <b class="rtag Reputational" style="border:none;background:none;padding:0">Reputational</b> risk</span>`:'');
-  root.appendChild(lg);
-}
-function tile(m){
-  const t=dirOf(m);const off=meets(m,t.cur)===false;
-  const d=el('div','tile'+(off?' attn':''));
-  const dirChip=`<span class="t-dir ${t.cls}">${ARROW[t.dir]} ${t.dir}</span>`;
-  const board=TAB==='board';
-  const foot=board
-    ? `<span class="rtag ${m.risk}">${m.risk}</span><span class="t-reg">${regFor(m.risk)}</span>`
-    : `<span class="t-tgt">${m.tv==null?'appetite':'target '+fmt(m.unit,m.tv)}</span>`;
-  d.innerHTML=`<div class="t-name">${m.name}</div>
-    <div class="t-mid"><span class="t-val">${fmt(m.unit,t.cur)}</span>${dirChip}<span class="t-spark">${spark(t.vals,m.goal,m.tv,m.unit)}</span></div>
-    ${finStr(m)}
-    <div class="t-foot">${foot}${board?`<span class="t-tgt">${m.tv==null?'appetite':'tgt '+fmt(m.unit,m.tv)}</span>`:''}</div>`;
-  return d;
-}
-
-/* ============================== EXPORTS ============================== */
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);}
-function rowsForTab(tab){return M[tab].map(m=>{const t=dirOf(m);return{
-  audience:TABMETA[tab].label,domain:DOMAINS[m.domain],metric:m.name,value:fmt(m.unit,t.cur),unit:m.unit,
-  trend:t.dir,risk:m.risk||'',regulation:m.risk?regFor(m.risk):'',fin:(m.fin==null?'':(m.fin>=0?'+':'-')+'$'+Math.abs(m.fin)+'M'),
-  finNote:m.finNote||'',target:m.tv==null?'appetite':fmt(m.unit,m.tv),period:PERIOD};});}
-function xmlEsc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function exportExcel(){
-  const cols=['audience','domain','metric','value','unit','trend','risk','regulation','fin','finNote','target','period'];
-  const head=['Audience','Domain','Metric','Value','Unit','Trend','Risk type','Regulation (sectors)','Financial ≈','Financial note','Target','Period'];
-  function sheet(name,rows){
-    let r=`<Worksheet ss:Name="${xmlEsc(name)}"><Table>`;
-    r+='<Row>'+head.map(h=>`<Cell><Data ss:Type="String">${xmlEsc(h)}</Data></Cell>`).join('')+'</Row>';
-    rows.forEach(o=>{r+='<Row>'+cols.map(c=>`<Cell><Data ss:Type="String">${xmlEsc(o[c])}</Data></Cell>`).join('')+'</Row>';});
-    return r+'</Table></Worksheet>';
+/* ---------- ZIP (STORE / method 0) ---------- */
+function zipStore(files){
+  // files: [{name, data:Uint8Array}]
+  const enc=strToU8;
+  const chunks=[]; let offset=0; const central=[];
+  const dosTime=0, dosDate=0x21; // 1980-01-01
+  for(const f of files){
+    const nameBytes=enc(f.name); const data=f.data; const crc=crc32(data);
+    const local=new Uint8Array(30+nameBytes.length);
+    const dv=new DataView(local.buffer);
+    dv.setUint32(0,0x04034b50,true); dv.setUint16(4,20,true); dv.setUint16(6,0,true);
+    dv.setUint16(8,0,true); dv.setUint16(10,dosTime,true); dv.setUint16(12,dosDate,true);
+    dv.setUint32(14,crc,true); dv.setUint32(18,data.length,true); dv.setUint32(22,data.length,true);
+    dv.setUint16(26,nameBytes.length,true); dv.setUint16(28,0,true);
+    local.set(nameBytes,30);
+    chunks.push(local); chunks.push(data);
+    const cd=new Uint8Array(46+nameBytes.length);
+    const cdv=new DataView(cd.buffer);
+    cdv.setUint32(0,0x02014b50,true); cdv.setUint16(4,20,true); cdv.setUint16(6,20,true);
+    cdv.setUint16(8,0,true); cdv.setUint16(10,0,true); cdv.setUint16(12,dosTime,true); cdv.setUint16(14,dosDate,true);
+    cdv.setUint32(16,crc,true); cdv.setUint32(20,data.length,true); cdv.setUint32(24,data.length,true);
+    cdv.setUint16(28,nameBytes.length,true); cdv.setUint16(30,0,true); cdv.setUint16(32,0,true);
+    cdv.setUint16(34,0,true); cdv.setUint16(36,0,true); cdv.setUint32(38,0,true); cdv.setUint32(42,offset,true);
+    cd.set(nameBytes,46);
+    central.push(cd);
+    offset+=local.length+data.length;
   }
-  let body='';Object.keys(M).forEach(tab=>body+=sheet(TABMETA[tab].label,rowsForTab(tab)));
-  // risks sheet
-  let rs=`<Worksheet ss:Name="Top Risks"><Table><Row>`+['Suite','#','Risk','Severity','Why','Mitigation','Capabilities'].map(h=>`<Cell><Data ss:Type="String">${h}</Data></Cell>`).join('')+'</Row>';
-  Object.keys(RISKS).forEach(tab=>RISKS[tab].forEach((r,i)=>{rs+='<Row>'+[TABMETA[tab].label,i+1,r.t,r.sev,r.why,r.mit,r.cap.join(', ')].map(v=>`<Cell><Data ss:Type="String">${xmlEsc(v)}</Data></Cell>`).join('')+'</Row>';}));
-  rs+='</Table></Worksheet>';
-  const xml=`<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${body}${rs}</Workbook>`;
-  dl(new Blob([xml],{type:'application/vnd.ms-excel'}),'security-metrics.xls');
-  toast('Excel workbook downloaded (5 sheets).');
+  const cdStart=offset; let cdSize=0;
+  for(const cd of central){chunks.push(cd); cdSize+=cd.length;}
+  const eocd=new Uint8Array(22); const edv=new DataView(eocd.buffer);
+  edv.setUint32(0,0x06054b50,true); edv.setUint16(4,0,true); edv.setUint16(6,0,true);
+  edv.setUint16(8,central.length,true); edv.setUint16(10,central.length,true);
+  edv.setUint32(12,cdSize,true); edv.setUint32(16,cdStart,true); edv.setUint16(20,0,true);
+  chunks.push(eocd);
+  let total=0; for(const c of chunks) total+=c.length;
+  const out=new Uint8Array(total); let p=0; for(const c of chunks){out.set(c,p); p+=c.length;}
+  return out;
 }
-function dl(blob,name){const a=el('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 
-function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('load fail'));document.head.appendChild(s);});}
-async function exportSlides(){
-  toast('Building slides…');
-  try{
-    if(!window.PptxGenJS) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js');
-    buildPptx();
-  }catch(e){ buildHtmlDeck(); }
+/* ---------- XML escape ---------- */
+function xesc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
+
+/* ============================================================
+   XLSX builder  (inlineStr cells; multiple sheets)
+   sheets: [{name, rows:[[cell,...]]}]  cell = {v, t:'s'|'n', b:bool}
+   ============================================================ */
+function colName(n){let s='';n++;while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=(n-m-1)/26;}return s;}
+function xlsxCell(r,c,cell){
+  const ref=colName(c)+(r+1);
+  if(cell==null||cell.v===''||cell.v==null) return `<c r="${ref}"${cell&&cell.b?' s="1"':''}/>`;
+  if(cell.t==='n'&&isFinite(cell.v)) return `<c r="${ref}"${cell.b?' s="1"':''}><v>${cell.v}</v></c>`;
+  return `<c r="${ref}" t="inlineStr"${cell.b?' s="1"':''}><is><t xml:space="preserve">${xesc(cell.v)}</t></is></c>`;
 }
-function buildPptx(){
-  const P=new PptxGenJS();P.defineLayout({name:'W',width:13.333,height:7.5});P.layout='W';
-  const T='15212C',MU='566472',SG='0D9488',RK='B45309',GD='15803D',LN='DCE2E8';
-  // title
-  let s=P.addSlide();s.background={color:'FFFFFF'};
-  s.addText('Security Metrics',{x:0.7,y:1.0,w:11,h:1,fontFace:'Cambria',fontSize:46,bold:true,color:T});
-  s.addText(`Board · C-Suite · CISO · Developers   |   Sectors: ${[...SECS].map(k=>SECTORS[k].label).join(', ')}   |   Period: ${PERIOD}`,{x:0.72,y:2.0,w:11,h:0.5,fontFace:'Calibri',fontSize:14,color:MU});
-  s.addText('Illustrative example values — calibrate before use.',{x:0.72,y:6.7,w:11,h:0.3,fontFace:'Calibri',fontSize:10,color:'8A98A4'});
-  // per-tab slide
-  Object.keys(TABMETA).forEach(tab=>{
-    const sl=P.addSlide();sl.background={color:'FFFFFF'};
-    sl.addText(TABMETA[tab].label,{x:0.5,y:0.4,w:8,h:0.6,fontFace:'Cambria',fontSize:28,bold:true,color:T});
-    sl.addText('TOP RISKS',{x:0.5,y:1.15,w:6,h:0.3,fontFace:'Calibri',fontSize:11,bold:true,color:SG,charSpacing:2});
-    RISKS[tab].forEach((r,i)=>{
-      const y=1.5+i*1.0;
-      sl.addShape(P.shapes.ROUNDED_RECTANGLE,{x:0.5,y,w:6.0,h:0.88,rectRadius:0.06,fill:{color:'F7F9FA'},line:{color:LN,width:0.75}});
-      sl.addText(`${i+1}. ${r.t}`,{x:0.65,y:y+0.08,w:5.2,h:0.3,fontFace:'Calibri',fontSize:12.5,bold:true,color:T});
-      sl.addText('Mitigate: '+r.mit,{x:0.65,y:y+0.38,w:5.7,h:0.45,fontFace:'Calibri',fontSize:9.5,color:MU});
+function buildXlsx(sheets){
+  const files=[];
+  files.push({name:'[Content_Types].xml',data:strToU8(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">`+
+    `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>`+
+    `<Default Extension="xml" ContentType="application/xml"/>`+
+    `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>`+
+    `<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>`+
+    sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')+
+    `</Types>`)});
+  files.push({name:'_rels/.rels',data:strToU8(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>`+
+    `</Relationships>`)});
+  files.push({name:'xl/workbook.xml',data:strToU8(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">`+
+    `<sheets>`+sheets.map((s,i)=>`<sheet name="${xesc(s.name.slice(0,31))}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')+`</sheets></workbook>`)});
+  files.push({name:'xl/_rels/workbook.xml.rels',data:strToU8(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+    sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')+
+    `<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`+
+    `</Relationships>`)});
+  // styles: s=1 -> bold header
+  files.push({name:'xl/styles.xml',data:strToU8(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`+
+    `<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>`+
+    `<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>`+
+    `<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>`+
+    `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>`+
+    `<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>`+
+    `</styleSheet>`)});
+  sheets.forEach((s,i)=>{
+    const rowsXml=s.rows.map((row,r)=>{
+      const cells=row.map((cell,c)=>xlsxCell(r,c,cell)).join('');
+      return `<row r="${r+1}">${cells}</row>`;
+    }).join('');
+    const maxc=s.rows.reduce((m,r)=>Math.max(m,r.length),1);
+    const dim=`A1:${colName(maxc-1)}${Math.max(1,s.rows.length)}`;
+    files.push({name:`xl/worksheets/sheet${i+1}.xml`,data:strToU8(
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+      `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="${dim}"/>`+
+      `<cols><col min="1" max="${maxc}" width="26" customWidth="1"/></cols>`+
+      `<sheetData>${rowsXml}</sheetData></worksheet>`)});
+  });
+  return zipStore(files);
+}
+
+/* ============================================================
+   DOCX builder  (Calibri; headings, paragraphs, tables)
+   blocks: [{type:'h1'|'h2'|'p', text} | {type:'table', header:[], rows:[[...]]}]
+   ============================================================ */
+function docRun(text,{b=false,color=null,sz=null}={}){
+  return `<w:r><w:rPr>${b?'<w:b/>':''}${color?`<w:color w:val="${color}"/>`:''}${sz?`<w:sz w:val="${sz}"/>`:''}</w:rPr><w:t xml:space="preserve">${xesc(text)}</w:t></w:r>`;
+}
+function docPara(runs,{style=null,spacingAfter=120}={}){
+  return `<w:p><w:pPr>${style?`<w:pStyle w:val="${style}"/>`:''}<w:spacing w:after="${spacingAfter}"/></w:pPr>${runs}</w:p>`;
+}
+function docCell(text,{b=false,color=null,w=2400,shade=null}={}){
+  return `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${shade?`<w:shd w:val="clear" w:fill="${shade}"/>`:''}</w:tcPr>${docPara(docRun(text,{b,color}),{spacingAfter:0})}</w:tc>`;
+}
+function docTable(header,rows){
+  const hdr=`<w:tr>${header.map(h=>docCell(h,{b:true,shade:'1F2A44',color:'FFFFFF'})).join('')}</w:tr>`;
+  const body=rows.map(r=>`<w:tr>${r.map(c=>{const cell=typeof c==='object'?c:{text:c};return docCell(cell.text,{color:cell.color||null});}).join('')}</w:tr>`).join('');
+  return `<w:tbl><w:tblPr><w:tblStyle w:val="TableGrid"/><w:tblW w:w="0" w:type="auto"/><w:tblBorders>`+
+    `<w:top w:val="single" w:sz="4" w:color="CCCCCC"/><w:left w:val="single" w:sz="4" w:color="CCCCCC"/><w:bottom w:val="single" w:sz="4" w:color="CCCCCC"/><w:right w:val="single" w:sz="4" w:color="CCCCCC"/><w:insideH w:val="single" w:sz="4" w:color="CCCCCC"/><w:insideV w:val="single" w:sz="4" w:color="CCCCCC"/>`+
+    `</w:tblBorders></w:tblPr>${hdr}${body}</w:tbl>`;
+}
+function buildDocx(blocks,title){
+  const body=blocks.map(bl=>{
+    if(bl.type==='h1') return docPara(docRun(bl.text,{b:true,sz:'40'}),{spacingAfter:160});
+    if(bl.type==='h2') return docPara(docRun(bl.text,{b:true,sz:'30',color:'1F2A44'}),{spacingAfter:120});
+    if(bl.type==='p') return docPara(docRun(bl.text||'',{color:bl.color||null}),{spacingAfter:120});
+    if(bl.type==='table') return docTable(bl.header,bl.rows)+docPara('',{spacingAfter:120});
+    return '';
+  }).join('');
+  const doc=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}`+
+    `<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1080" w:right="1080" w:bottom="1080" w:left="1080"/></w:sectPr></w:body></w:document>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">`+
+    `<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="21"/></w:rPr></w:rPrDefault></w:docDefaults>`+
+    `<w:style w:type="table" w:styleId="TableGrid"><w:name w:val="Table Grid"/></w:style></w:styles>`;
+  const files=[
+    {name:'[Content_Types].xml',data:strToU8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`)},
+    {name:'_rels/.rels',data:strToU8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`)},
+    {name:'word/_rels/document.xml.rels',data:strToU8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`)},
+    {name:'word/document.xml',data:strToU8(doc)},
+    {name:'word/styles.xml',data:strToU8(styles)},
+  ];
+  return zipStore(files);
+}
+
+/* ============================================================
+   PPTX builder (text-only slides: title + body lines)
+   slides: [{title, bullets:[{text,color}], subtitle}]
+   ============================================================ */
+function pptTextBody(bullets){
+  return bullets.map(b=>{
+    const col=b.color?`<a:solidFill><a:srgbClr val="${b.color}"/></a:solidFill>`:'';
+    const sz=b.sz||1600;
+    return `<a:p><a:pPr${b.bullet===false?' indent="0"><a:buNone/>':'>'}${b.bullet===false?'':''}</a:pPr><a:r><a:rPr lang="en-US" sz="${sz}" b="${b.b?1:0}">${col}</a:rPr><a:t>${xesc(b.text)}</a:t></a:r></a:p>`;
+  }).join('');
+}
+function buildPptx(slides){
+  const files=[];
+  const slideCount=slides.length;
+  files.push({name:'[Content_Types].xml',data:strToU8(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">`+
+    `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>`+
+    `<Default Extension="xml" ContentType="application/xml"/>`+
+    `<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>`+
+    `<Override PartName="/ppt/slideMasters/slideMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml"/>`+
+    `<Override PartName="/ppt/slideLayouts/slideLayout1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml"/>`+
+    `<Override PartName="/ppt/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>`+
+    slides.map((s,i)=>`<Override PartName="/ppt/slides/slide${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>`).join('')+
+    `</Types>`)});
+  files.push({name:'_rels/.rels',data:strToU8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/></Relationships>`)});
+  files.push({name:'ppt/presentation.xml',data:strToU8(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<p:presentation xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">`+
+    `<p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst>`+
+    `<p:sldIdLst>`+slides.map((s,i)=>`<p:sldId id="${256+i}" r:id="rId${i+2}"/>`).join('')+`</p:sldIdLst>`+
+    `<p:sldSz cx="12192000" cy="6858000" type="screen16x9"/><p:notesSz cx="6858000" cy="9144000"/></p:presentation>`)});
+  files.push({name:'ppt/_rels/presentation.xml.rels',data:strToU8(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="slideMasters/slideMaster1.xml"/>`+
+    slides.map((s,i)=>`<Relationship Id="rId${i+2}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide${i+1}.xml"/>`).join('')+
+    `<Relationship Id="rId${slideCount+2}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>`+
+    `</Relationships>`)});
+  // theme
+  files.push({name:'ppt/theme/theme1.xml',data:strToU8(THEME_XML())});
+  // slide master
+  files.push({name:'ppt/slideMasters/slideMaster1.xml',data:strToU8(SLIDE_MASTER_XML())});
+  files.push({name:'ppt/slideMasters/_rels/slideMaster1.xml.rels',data:strToU8(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>`+
+    `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="../theme/theme1.xml"/></Relationships>`)});
+  // slide layout
+  files.push({name:'ppt/slideLayouts/slideLayout1.xml',data:strToU8(SLIDE_LAYOUT_XML())});
+  files.push({name:'ppt/slideLayouts/_rels/slideLayout1.xml.rels',data:strToU8(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="../slideMasters/slideMaster1.xml"/></Relationships>`)});
+  // slides
+  slides.forEach((s,i)=>{
+    files.push({name:`ppt/slides/slide${i+1}.xml`,data:strToU8(SLIDE_XML(s))});
+    files.push({name:`ppt/slides/_rels/slide${i+1}.xml.rels`,data:strToU8(
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/></Relationships>`)});
+  });
+  return zipStore(files);
+}
+function SLIDE_XML(s){
+  const titleRun=`<a:p><a:r><a:rPr lang="en-US" sz="2800" b="1"><a:solidFill><a:srgbClr val="1F2A44"/></a:solidFill></a:rPr><a:t>${xesc(s.title||'')}</a:t></a:r></a:p>`;
+  const body=pptTextBody(s.bullets||[]);
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree>`+
+    `<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>`+
+    `<p:sp><p:nvSpPr><p:cNvPr id="2" name="Title"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="title"/></p:nvPr></p:nvSpPr>`+
+    `<p:spPr><a:xfrm><a:off x="640080" y="365760"/><a:ext cx="10911840" cy="900000"/></a:xfrm></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/>${titleRun}</p:txBody></p:sp>`+
+    `<p:sp><p:nvSpPr><p:cNvPr id="3" name="Body"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="body" idx="1"/></p:nvPr></p:nvSpPr>`+
+    `<p:spPr><a:xfrm><a:off x="640080" y="1400000"/><a:ext cx="10911840" cy="5000000"/></a:xfrm></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/>${body||'<a:p/>'}</p:txBody></p:sp>`+
+    `</p:spTree></p:cSld><p:clrMapOvr><a:overrideClrMapping bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/></p:clrMapOvr></p:sld>`;
+}
+function SLIDE_LAYOUT_XML(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<p:sldLayout xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" type="obj" preserve="1"><p:cSld name="Title and Content"><p:spTree>`+
+    `<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/>`+
+    `<p:sp><p:nvSpPr><p:cNvPr id="2" name="Title"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="title"/></p:nvPr></p:nvSpPr><p:spPr/><p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr lang="en-US"/><a:t>Title</a:t></a:r></a:p></p:txBody></p:sp>`+
+    `<p:sp><p:nvSpPr><p:cNvPr id="3" name="Body"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="body" idx="1"/></p:nvPr></p:nvSpPr><p:spPr/><p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr lang="en-US"/><a:t>Body</a:t></a:r></a:p></p:txBody></p:sp>`+
+    `</p:spTree></p:cSld><p:clrMapOvr><a:overrideClrMapping bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/></p:clrMapOvr></p:sldLayout>`;
+}
+function SLIDE_MASTER_XML(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<p:sldMaster xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill><a:effectLst/></p:bgPr></p:bg><p:spTree>`+
+    `<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/>`+
+    `<p:sp><p:nvSpPr><p:cNvPr id="2" name="Title"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="title"/></p:nvPr></p:nvSpPr><p:spPr><a:xfrm><a:off x="640080" y="365760"/><a:ext cx="10911840" cy="900000"/></a:xfrm></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:endParaRPr lang="en-US"/></a:p></p:txBody></p:sp>`+
+    `<p:sp><p:nvSpPr><p:cNvPr id="3" name="Body"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="body" idx="1"/></p:nvPr></p:nvSpPr><p:spPr><a:xfrm><a:off x="640080" y="1400000"/><a:ext cx="10911840" cy="5000000"/></a:xfrm></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:endParaRPr lang="en-US"/></a:p></p:txBody></p:sp>`+
+    `</p:spTree></p:cSld><p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>`+
+    `<p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="rId1"/></p:sldLayoutIdLst>`+
+    `<p:txStyles><p:titleStyle><a:lvl1pPr><a:defRPr sz="2800" b="1"><a:solidFill><a:srgbClr val="1F2A44"/></a:solidFill><a:latin typeface="Calibri"/></a:defRPr></a:lvl1pPr></p:titleStyle>`+
+    `<p:bodyStyle><a:lvl1pPr marL="285750" indent="-285750"><a:buChar char="&#8226;"/><a:defRPr sz="1600"><a:latin typeface="Calibri"/></a:defRPr></a:lvl1pPr>`+
+    `<a:lvl2pPr marL="571500" indent="-285750"><a:buChar char="&#8211;"/><a:defRPr sz="1400"><a:latin typeface="Calibri"/></a:defRPr></a:lvl2pPr></p:bodyStyle>`+
+    `<p:otherStyle/></p:txStyles></p:sldMaster>`;
+}
+function THEME_XML(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office Theme"><a:themeElements>`+
+    `<a:clrScheme name="Office"><a:dk1><a:sysClr val="windowText" lastClr="000000"/></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF"/></a:lt1>`+
+    `<a:dk2><a:srgbClr val="1F2A44"/></a:dk2><a:lt2><a:srgbClr val="EEEEEE"/></a:lt2>`+
+    `<a:accent1><a:srgbClr val="243B6B"/></a:accent1><a:accent2><a:srgbClr val="C0392B"/></a:accent2><a:accent3><a:srgbClr val="C0870F"/></a:accent3><a:accent4><a:srgbClr val="1F7A4D"/></a:accent4><a:accent5><a:srgbClr val="2F7EA8"/></a:accent5><a:accent6><a:srgbClr val="6B3FA0"/></a:accent6>`+
+    `<a:hlink><a:srgbClr val="0563C1"/></a:hlink><a:folHlink><a:srgbClr val="954F72"/></a:folHlink></a:clrScheme>`+
+    `<a:fontScheme name="Office"><a:majorFont><a:latin typeface="Calibri"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont><a:minorFont><a:latin typeface="Calibri"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont></a:fontScheme>`+
+    `<a:fmtScheme name="Office"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:fillStyleLst>`+
+    `<a:lnStyleLst><a:ln><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln></a:lnStyleLst>`+
+    `<a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle></a:effectStyleLst>`+
+    `<a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:bgFillStyleLst></a:fmtScheme>`+
+    `</a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/></a:theme>`;
+}
+
+/* ============================================================
+   DEFLATE inflate (raw)  — compact, for reading uploaded .xlsx
+   Port of the classic tinf/puff algorithm.
+   ============================================================ */
+function inflateRaw(data){
+  let bitpos=0;
+  const out=[];
+  function getbit(){const b=(data[bitpos>>>3]>>>(bitpos&7))&1;bitpos++;return b;}
+  function getbits(n){let v=0;for(let i=0;i<n;i++)v|=getbit()<<i;return v;}
+  function buildTree(lengths){
+    const MAXBITS=15;const blcount=new Array(MAXBITS+1).fill(0);
+    for(const l of lengths) if(l) blcount[l]++;
+    const next=new Array(MAXBITS+1).fill(0);let code=0;
+    for(let bits=1;bits<=MAXBITS;bits++){code=(code+blcount[bits-1])<<1;next[bits]=code;}
+    const codes=new Array(lengths.length).fill(0);
+    for(let n=0;n<lengths.length;n++){if(lengths[n])codes[n]=next[lengths[n]]++;}
+    return {lengths,codes};
+  }
+  function decodeSym(tree){
+    let code=0,len=0;
+    while(true){code|=getbit();
+      for(let i=0;i<tree.lengths.length;i++){if(tree.lengths[i]===len+1&&tree.codes[i]===code)return i;}
+      code<<=1;len++;if(len>15)throw new Error('bad code');
+    }
+  }
+  const LBASE=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+  const LEXT=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+  const DBASE=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
+  const DEXT=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+  const CLORDER=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+  let fixedL=null,fixedD=null;
+  function fixedTrees(){
+    if(fixedL)return;
+    const ll=new Array(288);for(let i=0;i<144;i++)ll[i]=8;for(let i=144;i<256;i++)ll[i]=9;for(let i=256;i<280;i++)ll[i]=7;for(let i=280;i<288;i++)ll[i]=8;
+    fixedL=buildTree(ll);const dl=new Array(30).fill(5);fixedD=buildTree(dl);
+  }
+  function inflateBlock(lt,dt){
+    while(true){
+      const sym=decodeSym(lt);
+      if(sym===256)return;
+      if(sym<256){out.push(sym);continue;}
+      const s=sym-257;const length=LBASE[s]+getbits(LEXT[s]);
+      const dsym=decodeSym(dt);const dist=DBASE[dsym]+getbits(DEXT[dsym]);
+      const start=out.length-dist;
+      for(let i=0;i<length;i++)out.push(out[start+i]);
+    }
+  }
+  let final=0;
+  do{
+    final=getbit();const type=getbits(2);
+    if(type===0){
+      bitpos=(bitpos+7)&~7;const p=bitpos>>>3;
+      const len=data[p]|(data[p+1]<<8);bitpos+=32;
+      for(let i=0;i<len;i++){out.push(data[(bitpos>>>3)]);bitpos+=8;}
+    } else if(type===1){fixedTrees();inflateBlock(fixedL,fixedD);}
+    else if(type===2){
+      const hlit=getbits(5)+257,hdist=getbits(5)+1,hclen=getbits(4)+4;
+      const cl=new Array(19).fill(0);
+      for(let i=0;i<hclen;i++)cl[CLORDER[i]]=getbits(3);
+      const clTree=buildTree(cl);
+      const lens=[];
+      while(lens.length<hlit+hdist){
+        const sym=decodeSym(clTree);
+        if(sym<16)lens.push(sym);
+        else if(sym===16){const r=getbits(2)+3,prev=lens[lens.length-1];for(let i=0;i<r;i++)lens.push(prev);}
+        else if(sym===17){const r=getbits(3)+3;for(let i=0;i<r;i++)lens.push(0);}
+        else if(sym===18){const r=getbits(7)+11;for(let i=0;i<r;i++)lens.push(0);}
+      }
+      const lt=buildTree(lens.slice(0,hlit));const dt=buildTree(lens.slice(hlit));
+      inflateBlock(lt,dt);
+    } else throw new Error('bad block type');
+  } while(!final);
+  return new Uint8Array(out);
+}
+
+/* ---------- read entries from a zip (store OR deflate) ---------- */
+function unzip(bytes){
+  const dv=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+  // find EOCD
+  let eocd=-1;
+  for(let i=bytes.length-22;i>=0;i--){if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;}}
+  if(eocd<0)throw new Error('not a zip');
+  const count=dv.getUint16(eocd+10,true);let cdOff=dv.getUint32(eocd+16,true);
+  const entries={};
+  for(let n=0;n<count;n++){
+    if(dv.getUint32(cdOff,true)!==0x02014b50)throw new Error('bad central dir');
+    const method=dv.getUint16(cdOff+10,true);
+    const compSize=dv.getUint32(cdOff+20,true);
+    const nameLen=dv.getUint16(cdOff+28,true);
+    const extraLen=dv.getUint16(cdOff+30,true);
+    const commentLen=dv.getUint16(cdOff+32,true);
+    const localOff=dv.getUint32(cdOff+42,true);
+    const name=u8ToStr(bytes.subarray(cdOff+46,cdOff+46+nameLen));
+    // local header
+    const lNameLen=dv.getUint16(localOff+26,true);const lExtra=dv.getUint16(localOff+28,true);
+    const dataStart=localOff+30+lNameLen+lExtra;
+    const comp=bytes.subarray(dataStart,dataStart+compSize);
+    let content;
+    if(method===0)content=comp;
+    else if(method===8)content=inflateRaw(comp);
+    else throw new Error('unsupported method '+method);
+    entries[name]=content;
+    cdOff+=46+nameLen+extraLen+commentLen;
+  }
+  return entries;
+}
+
+/* ---------- parse a simple xlsx (first sheet) into rows of strings ---------- */
+function parseXlsx(bytes){
+  const files=unzip(bytes);
+  // shared strings
+  let shared=[];
+  if(files['xl/sharedStrings.xml']){
+    const xml=u8ToStr(files['xl/sharedStrings.xml']);
+    shared=[...xml.matchAll(/<si>([\s\S]*?)<\/si>/g)].map(m=>{
+      const texts=[...m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(t=>unescXml(t[1]));
+      return texts.join('');
     });
-    // metrics table
-    sl.addText('METRICS',{x:6.9,y:1.15,w:6,h:0.3,fontFace:'Calibri',fontSize:11,bold:true,color:SG,charSpacing:2});
-    const rows=[[{text:'Metric',options:{bold:true,color:'FFFFFF',fill:{color:SG}}},{text:'Value',options:{bold:true,color:'FFFFFF',fill:{color:SG}}},{text:'Trend',options:{bold:true,color:'FFFFFF',fill:{color:SG}}}]];
-    M[tab].forEach(m=>{const t=dirOf(m);const col=t.cls==='good'?GD:t.cls==='bad'?RK:MU;rows.push([{text:m.name,options:{fontSize:9,color:T}},{text:fmt(m.unit,t.cur),options:{fontSize:9,bold:true,color:T}},{text:({up:'▲',down:'▼',side:'▬'})[t.dir],options:{fontSize:9,color:col,align:'center'}}]);});
-    sl.addTable(rows,{x:6.9,y:1.5,w:5.9,colW:[3.9,1.1,0.9],border:{pt:0.5,color:LN},rowH:0.26,valign:'middle'});
-    sl.addText(`NIST CSF ${NIST[tab].csf.toFixed(1)} / 4  ·  AI governance ${NIST[tab].ai.toFixed(1)} / 4  ·  trending up`,{x:6.9,y:6.7,w:6,h:0.3,fontFace:'Calibri',fontSize:10,italic:true,color:MU});
-  });
-  P.writeFile({fileName:'security-metrics.pptx'}).then(()=>toast('Slides (.pptx) downloaded.'));
+  }
+  // first sheet
+  const sheetName=Object.keys(files).filter(n=>/^xl\/worksheets\/sheet\d+\.xml$/.test(n)).sort()[0];
+  if(!sheetName)return [];
+  const sx=u8ToStr(files[sheetName]);
+  const rows=[];
+  for(const rm of sx.matchAll(/<row[^>]*>([\s\S]*?)<\/row>/g)){
+    const cells=[];
+    for(const cm of rm[1].matchAll(/<c[^>]*?(?:\s+r="([A-Z]+)\d+")?[^>]*?(?:\s+t="([^"]*)")?[^>]*>([\s\S]*?)<\/c>/g)){
+      const ref=cm[1],type=cm[2],inner=cm[3];
+      let val='';
+      if(type==='inlineStr'){const t=inner.match(/<t[^>]*>([\s\S]*?)<\/t>/);val=t?unescXml(t[1]):'';}
+      else if(type==='s'){const v=inner.match(/<v>([\s\S]*?)<\/v>/);val=v?(shared[+v[1]]||''):'';}
+      else{const v=inner.match(/<v>([\s\S]*?)<\/v>/);val=v?unescXml(v[1]):'';}
+      const col=ref?colIndex(ref):cells.length;
+      cells[col]=val;
+    }
+    for(let i=0;i<cells.length;i++)if(cells[i]==null)cells[i]='';
+    rows.push(cells);
+  }
+  return rows;
 }
-function buildHtmlDeck(){
-  // offline fallback: a pretty self-contained HTML deck (open + print to PDF)
-  let slides=`<section class="sl title"><h1>Security Metrics</h1><p>Sectors: ${[...SECS].map(k=>SECTORS[k].label).join(', ')} · Period: ${PERIOD}</p></section>`;
-  Object.keys(TABMETA).forEach(tab=>{
-    slides+=`<section class="sl"><h2>${TABMETA[tab].label}</h2><div class="cols"><div><h3>Top risks</h3>${RISKS[tab].map((r,i)=>`<div class="rk"><b>${i+1}. ${r.t}</b><div>${r.mit}</div></div>`).join('')}</div><div><h3>Metrics</h3><table>${M[tab].map(m=>{const t=dirOf(m);return `<tr><td>${m.name}</td><td><b>${fmt(m.unit,t.cur)}</b></td><td>${({up:'▲',down:'▼',side:'▬'})[t.dir]}</td></tr>`;}).join('')}</table><p class="nist">NIST CSF ${NIST[tab].csf.toFixed(1)}/4 · AI ${NIST[tab].ai.toFixed(1)}/4</p></div></div></section>`;
-  });
-  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Security Metrics — Slides</title><style>
-  body{font-family:Inter,Arial,sans-serif;margin:0;color:#16202b;background:#eef1f4}
-  .sl{width:1100px;min-height:620px;margin:24px auto;background:#fff;border:1px solid #dce2e8;border-radius:10px;padding:48px;page-break-after:always;box-shadow:0 6px 24px #0001}
-  .title{display:flex;flex-direction:column;justify-content:center}
-  h1{font-size:54px;margin:0} h2{font-size:34px;margin:0 0 18px} h3{color:#0d9488;font-size:14px;letter-spacing:1px;text-transform:uppercase}
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:36px}
-  .rk{border:1px solid #dce2e8;border-radius:8px;padding:12px;margin-bottom:10px} .rk div{color:#566472;font-size:13px;margin-top:4px}
-  table{width:100%;border-collapse:collapse} td{padding:7px 6px;border-bottom:1px solid #eaeef2;font-size:13px} td:nth-child(2){text-align:right} td:nth-child(3){text-align:center;color:#15803d}
-  .nist{color:#566472;font-style:italic;margin-top:14px}
-  @media print{body{background:#fff}.sl{margin:0;border:none;box-shadow:none}}
-  </style></head><body>${slides}</body></html>`;
-  dl(new Blob([html],{type:'text/html'}),'security-metrics-slides.html');
-  toast('Slides downloaded as HTML (offline) — open & print to PDF.');
+function colIndex(ref){const letters=ref.replace(/[0-9]/g,'');let n=0;for(let i=0;i<letters.length;i++)n=n*26+(letters.charCodeAt(i)-64);return n-1;}
+function unescXml(s){return String(s).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');}
+
+/* ---------- CSV parse ---------- */
+function parseCSV(text){
+  const rows=[];let row=[],field='',inQ=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(inQ){if(ch==='"'){if(text[i+1]==='"'){field+='"';i++;}else inQ=false;}else field+=ch;}
+    else{if(ch==='"')inQ=true;else if(ch===','){row.push(field);field='';}else if(ch==='\n'){row.push(field);rows.push(row);row=[];field='';}else if(ch==='\r'){}else field+=ch;}
+  }
+  if(field!==''||row.length){row.push(field);rows.push(row);}
+  return rows;
 }
 
-/* ============================== INIT ============================== */
-document.getElementById('exp-xls').onclick=exportExcel;
-document.getElementById('exp-ppt').onclick=exportSlides;
-renderChrome();render();
+"use strict";
+/* ===== PRNG + triangular ===== */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function tri(rng,min,ml,max){min=+min;ml=+ml;max=+max;if(!(max>min))return ml;if(ml<min)ml=min;if(ml>max)ml=max;const u=rng(),c=(ml-min)/(max-min);return(u<c)?min+Math.sqrt(u*(max-min)*(ml-min)):max-Math.sqrt((1-u)*(max-min)*(max-ml));}
+const clamp01=x=>x<0?0:x>1?1:x;
+const V=(min,ml,max)=>({min,ml,max});
+const uid=()=>'s'+Math.random().toString(36).slice(2,8);
+
+const LEVELS=[['csuite','C-Suite','Business impact & accountability'],['pm','Product / PM','Roadmap, features, customer commitments'],['eng','Engineering','Architecture, infrastructure, operations'],['dev','Developer','Code, dependencies, daily practice']];
+
+/* ===== rich default risks ===== */
+function R(name,rag,trend,desc,levels,detail){
+  return {id:uid(),name,rag,trend,desc,
+    levels:{csuite:{rag:levels[0][0],note:levels[0][1]},pm:{rag:levels[1][0],note:levels[1][1]},eng:{rag:levels[2][0],note:levels[2][1]},dev:{rag:levels[3][0],note:levels[3][1]}},
+    detail:{how:detail[0],when:detail[1],where:detail[2],escalation:detail[3]},
+    open:false};
+}
+function defaultRisks(){return [
+  R("Ransomware & operational disruption","red","up",
+    "Encryption/extortion across IT and OT; primary driver of downtime, recovery cost and SLA exposure.",
+    [["red","Enterprise-wide outage risk; revenue, patient-safety and disclosure exposure"],
+     ["amber","Feature freeze during recovery; customer SLA credits and delayed launches"],
+     ["red","Backups, segmentation and recovery runbooks not fully tested at scale"],
+     ["amber","Patch latency on internet-facing systems; phishing-prone workflows"]],
+    ["Phishing or exploited edge device → credential theft → lateral movement → domain-wide encryption. Increasingly double-extortion with data theft first.",
+     "Highest during holidays, staff changes and after unpatched CVE disclosures. Median dwell time hours-to-days once initial access is sold.",
+     "IT domain controllers, hypervisors, backup infrastructure, and connected OT/medical-device networks.",
+     "SOC → CISO within 1h → CEO/CFO + IR retainer + counsel within 4h → Board notification within 24h; regulator/OCR clock starts on PHI involvement."]),
+  R("IP & trade-secret exfiltration","red","up",
+    "Source, designs and regulatory dossiers; high revenue leverage if a competitor or adversary obtains them.",
+    [["red","Erosion of durable margin and competitive moat; M&A/valuation impact"],
+     ["amber","Leaked roadmap/designs undercut differentiation and pricing power"],
+     ["amber","Crown-jewel repos and design data need tighter access and egress control"],
+     ["red","Broad repo access, long-lived tokens, and copy to unmanaged endpoints"]],
+    ["Insider copy, compromised developer credentials, or third-party access to source, CAD/firmware, and FDA submission dossiers; slow exfil over sanctioned channels.",
+     "Elevated around reorgs, layoffs, and partner off-boarding; often discovered late (avg IP record loss is the most costly data type).",
+     "Source control, design/PLM systems, regulatory submission stores, and email/cloud drives.",
+     "DLP/insider-risk alert → CISO + Legal + HR within 4h → CEO if material → trade-secret counsel; preserve evidence before containment."]),
+  R("Third-party & supply-chain","amber","right",
+    "Concentration in critical SaaS and suppliers; limited visibility into fourth-party dependencies.",
+    [["amber","Revenue depends on a few critical vendors with unpriced concentration risk"],
+     ["amber","Launch and delivery timelines exposed to vendor incidents"],
+     ["amber","Vendor inventory and SBOM/dependency mapping incomplete"],
+     ["amber","Unpinned dependencies and unreviewed third-party packages"]],
+    ["Compromise or outage at a critical SaaS, MSP, or software dependency cascades into your operations (e.g. supply-chain compromise averaged $4.91M, 267 days to resolve).",
+     "Any time; correlated with widely-used component CVEs and vendor breaches. Fourth-party exposure often invisible until incident.",
+     "SaaS platforms, MSP/IT providers, CI/CD and package registries, contract manufacturers.",
+     "Vendor-risk owner → CISO → invoke contractual notification & IR clauses → CEO if a tier-1 vendor; activate continuity/alternate-supplier plan."]),
+  R("Product & medical-device security","amber","down",
+    "Fielded-device vulnerabilities and §524B/CRA obligations; improving via SBOM/VEX and PSIRT maturity.",
+    [["amber","Field action / recall and regulatory exposure on shipped products"],
+     ["amber","Security debt competes with roadmap; §524B gating new submissions"],
+     ["amber","Legacy firmware and long field life complicate patching"],
+     ["green","PSIRT intake, SBOM/VEX and secure-SDLC practices maturing"]],
+    ["Exploitable vulnerability in a fielded/SaMD device leads to safety impact, coordinated disclosure, and potential field action; 99% of hospitals run devices with known exploitable flaws (Claroty).",
+     "On CVE disclosure affecting embedded components, or researcher/coordinated disclosure; heightened pre-submission and at end-of-support.",
+     "Fielded devices, embedded firmware/OS, update infrastructure, and the installed base on legacy OS.",
+     "PSIRT triage → ISO 14971 safety assessment → Regulatory/Quality + CISO → executive field-action decision → FDA/EU notification per §524B/CRA timelines."]),
+  R("Regulatory & compliance exposure","amber","down",
+    "FDA §524B, EU CRA, HIPAA and CMMC readiness; gaps closing but audit-ready evidence incomplete.",
+    [["amber","Fines, consent decrees and market-access delays if obligations missed"],
+     ["amber","New security requirements gate product submissions and contracts"],
+     ["amber","Control evidence and continuous-compliance automation incomplete"],
+     ["green","Secure-SDLC and control mapping largely embedded in workflow"]],
+    ["Failure to meet FDA §524B, EU CRA, HIPAA, or CMMC obligations surfaces in audit, submission review, or post-incident regulator inquiry.",
+     "At submission gates, audit cycles, contract renewals, and in the 60–72h notification windows after an incident.",
+     "Regulated product lines, PHI-handling systems, and CUI environments for defense-adjacent work.",
+     "Compliance owner → CISO + Regulatory/Legal → executive sponsor → Board audit committee for material findings; pre-brief regulators where required."]),
+  R("Identity & insider risk","amber","right",
+    "Privileged access and insider misuse; MFA broad, privileged-access management still maturing.",
+    [["amber","Insider or account-takeover fraud with financial and data impact"],
+     ["green","Limited direct product impact; mainly internal exposure"],
+     ["amber","Privileged access management and joiner-mover-leaver gaps"],
+     ["amber","Standing admin rights and shared secrets in tooling"]],
+    ["Stolen/abused credentials or malicious insider misuse privileged access; ~30% of intrusions now use legitimate credentials rather than malware.",
+     "Concentrated around off-boarding, contractor access, and after phishing campaigns; insider risk peaks during workforce change.",
+     "Identity provider, privileged accounts, admin consoles, and SaaS with weak SSO coverage.",
+     "IAM/insider-risk alert → CISO + HR + Legal for insider cases → disable access → CEO if executive or mass-data involved."]),
+  R("Data protection & privacy (PHI/PII)","green","right",
+    "HIPAA/GDPR-governed data with DLP and monitoring largely in place across crown-jewel stores.",
+    [["green","Privacy program mature; residual notification risk on large breach"],
+     ["green","Privacy-by-design embedded in product data flows"],
+     ["green","Encryption, classification and DLP broadly deployed"],
+     ["amber","Sensitive data occasionally reaches lower environments/logs"]],
+    ["Unauthorized access or exfiltration of PHI/PII (customer PII compromised in 53% of breaches); healthcare breach lifecycle averages 279 days.",
+     "Any time; risk rises during migrations, cloud adoption, and AI data movement where oversight lapses.",
+     "EHR/claims data stores, data lakes, backups, analytics/AI pipelines, and third-party processors.",
+     "Privacy/DPO + CISO → Legal for breach determination → notify individuals/OCR/regulators within statutory windows → Board for large-scale events."]),
+  R("AI & agentic system risk","amber","up",
+    "Emerging exposure from AI/agentic tooling and model supply chain; governance controls nascent.",
+    [["amber","Ungoverned/shadow AI adds breach cost and compliance uncertainty"],
+     ["amber","AI features ship faster than security & governance review"],
+     ["amber","Agent permissions, prompt-injection and data egress unmonitored"],
+     ["red","Unsanctioned AI tools and unvetted model/API dependencies in use"]],
+    ["Shadow AI, prompt-injection, over-permissioned agents, and model-supply-chain risk; 97% of AI-related breaches lacked proper AI access controls, adding ~$670K to breach cost.",
+     "Rising continuously with AI adoption; spikes where teams wire agents to production data/tools without review.",
+     "Internal AI copilots, agentic automations, model APIs, vector stores, and training/RAG data.",
+     "AI-governance owner → CISO + Data/Privacy → restrict agent scope → executive AI council; Board update as exposure grows."]),
+];}
+
+/* ===== benchmarks (cited, current) ===== */
+const BENCH={
+  breach:{healthcare:7.42,financial:5.56,technology:4.79,pharma:4.61,global:4.44,us:10.22},
+  lifecycleDays:{healthcare:279,global:241},
+  spendPctRevenue:{avg:0.69, healthcareLow:0.3, healthcareHigh:0.5},
+  spendPctIT:{avg:13.2, regulatedLow:10, regulatedHigh:15},
+  device:{hospitalsExploitable:99, criticalFlaws:53, eolOS:14, ransomwareLinked:89},
+  ransomwareEncrypted:59, ipPerRecord:178, irPlanSaving:2.66, aiSaving:1.9,
+  sources:[
+    "IBM Cost of a Data Breach Report 2025 (Ponemon; 600 orgs, 17 industries)",
+    "IANS Research 2025–26 / VikingCloud security-budget benchmarks",
+    "Gartner cybersecurity spend forecast 2025–26",
+    "Claroty Team82 medical-device exposure research",
+  ]};
+
+/* ===== State ===== */
+function defaultState(){
+  return {
+    config:{iterations:20000, seed:42, ce:0.55, spend:4200000, ins:25000000, theme:'light', revenue:600000000},
+    board:{
+      nist:{govern:2.6, identify:3.0, protect:2.8, detect:2.5, respond:2.9, recover:2.7},
+      operational:{status:'amber', trend:'right', note:'MTTD/MTTC within target; DR tested for tier-1 systems.'},
+      compliance:{pct:88, status:'amber', trend:'up', note:'§524B, EU CRA, HIPAA, CMMC L2'},
+      finance:{trend:'down'},
+      risks:defaultRisks(),
+      snapshots:[]
+    },
+    scenarios:[
+      { id:uid(), name:"Enterprise ransomware (IT/OT)", tier:"enterprise", enabled:true, open:true,
+        tef:V(0.4,0.7,1.2), vuln:V(0.20,0.35,0.50),
+        op:{enabled:true, d:V(24,72,168), rhr:V(80000,140000,220000), r:V(0.30,0.50,0.70), crec:V(1500000,3000000,6000000), psla:V(200000,800000,2000000),
+             recall:{enabled:false, crecall:V(0,0,0), ulost:V(0,0,0), munit:V(0,0,0)}},
+        ip:{enabled:false, pcond:V(0,0,0), npv:V(0,0,0), e:V(0,0,0)},
+        rep:{enabled:true, arr:V(180000000,180000000,180000000), dchurn:V(0.02,0.04,0.07), t:V(1,2,3),
+             pipeline:V(60000000,60000000,60000000), dwin:V(0.05,0.10,0.18), dcac:V(2000,5000,9000), nnew:V(200,400,700)} },
+      { id:uid(), name:"Source-code / design IP exfiltration", tier:"product", enabled:true, open:false,
+        tef:V(0.15,0.30,0.60), vuln:V(0.30,0.50,0.70),
+        op:{enabled:false, d:V(0,0,0), rhr:V(0,0,0), r:V(0,0,0), crec:V(0,0,0), psla:V(0,0,0), recall:{enabled:false, crecall:V(0,0,0), ulost:V(0,0,0), munit:V(0,0,0)}},
+        ip:{enabled:true, pcond:V(0.50,0.70,0.90), npv:V(120000000,250000000,500000000), e:V(0.20,0.40,0.65)},
+        rep:{enabled:true, arr:V(180000000,180000000,180000000), dchurn:V(0.005,0.015,0.03), t:V(1,1,2), pipeline:V(60000000,60000000,60000000), dwin:V(0.02,0.05,0.10), dcac:V(1000,2500,5000), nnew:V(80,200,400)} },
+      { id:uid(), name:"Fielded device field action (safety-linked vuln)", tier:"product", enabled:true, open:false,
+        tef:V(0.10,0.25,0.50), vuln:V(0.25,0.40,0.60),
+        op:{enabled:true, d:V(0,0,0), rhr:V(0,0,0), r:V(0,0,0), crec:V(500000,1500000,4000000), psla:V(0,0,0), recall:{enabled:true, crecall:V(5000000,15000000,40000000), ulost:V(5000,12000,25000), munit:V(600,1200,2200)}},
+        ip:{enabled:false, pcond:V(0,0,0), npv:V(0,0,0), e:V(0,0,0)},
+        rep:{enabled:true, arr:V(180000000,180000000,180000000), dchurn:V(0.01,0.025,0.05), t:V(1,2,3), pipeline:V(60000000,60000000,60000000), dwin:V(0.04,0.09,0.16), dcac:V(2000,4000,8000), nnew:V(150,350,600)} },
+      { id:uid(), name:"Third-party SaaS / supplier outage", tier:"enterprise", enabled:true, open:false,
+        tef:V(0.8,1.5,3.0), vuln:V(0.40,0.60,0.80),
+        op:{enabled:true, d:V(4,12,36), rhr:V(60000,120000,200000), r:V(0.40,0.60,0.80), crec:V(100000,400000,1000000), psla:V(100000,500000,1500000), recall:{enabled:false, crecall:V(0,0,0), ulost:V(0,0,0), munit:V(0,0,0)}},
+        ip:{enabled:false, pcond:V(0,0,0), npv:V(0,0,0), e:V(0,0,0)},
+        rep:{enabled:false, arr:V(0,0,0), dchurn:V(0,0,0), t:V(0,0,0), pipeline:V(0,0,0), dwin:V(0,0,0), dcac:V(0,0,0), nnew:V(0,0,0)} },
+      { id:uid(), name:"PII / PHI data breach (disclosure)", tier:"enterprise", enabled:true, open:false,
+        tef:V(0.30,0.60,1.10), vuln:V(0.20,0.35,0.55),
+        op:{enabled:true, d:V(0,0,0), rhr:V(0,0,0), r:V(0,0,0), crec:V(2000000,5000000,12000000), psla:V(0,0,0), recall:{enabled:false, crecall:V(0,0,0), ulost:V(0,0,0), munit:V(0,0,0)}},
+        ip:{enabled:false, pcond:V(0,0,0), npv:V(0,0,0), e:V(0,0,0)},
+        rep:{enabled:true, arr:V(180000000,180000000,180000000), dchurn:V(0.015,0.03,0.06), t:V(1,2,3), pipeline:V(60000000,60000000,60000000), dwin:V(0.03,0.08,0.15), dcac:V(2000,4000,8000), nnew:V(150,350,600)} },
+    ]
+  };
+}
+let state=load()||defaultState();
+migrate();
+let lastRun=null, editMode=false;
+
+function migrate(){
+  const d=defaultState();
+  if(!state.board) state.board=d.board;
+  if(!state.board.snapshots) state.board.snapshots=[];
+  if(!state.config.theme) state.config.theme='light';
+  if(state.config.revenue==null) state.config.revenue=d.config.revenue;
+  (state.board.risks||[]).forEach(r=>{
+    if(!r.levels) r.levels={csuite:{rag:r.rag,note:''},pm:{rag:r.rag,note:''},eng:{rag:r.rag,note:''},dev:{rag:r.rag,note:''}};
+    for(const [k] of LEVELS) if(!r.levels[k]) r.levels[k]={rag:r.rag,note:''};
+    if(!r.detail) r.detail={how:'',when:'',where:'',escalation:''};
+    if(r.open==null) r.open=false;
+  });
+}
+
+/* ===== Formatting ===== */
+function money(x){if(x==null||isNaN(x))return "—";const s=x<0?"-":"";x=Math.abs(x);if(x>=1e9)return s+"$"+(x/1e9).toFixed(x>=1e10?1:2)+"B";if(x>=1e6)return s+"$"+(x/1e6).toFixed(x>=1e7?1:2)+"M";if(x>=1e3)return s+"$"+(x/1e3).toFixed(0)+"K";return s+"$"+Math.round(x);}
+function pct(x,d=0){return(x*100).toFixed(d)+"%";}
+function escapeAttr(s){return String(s==null?'':s).replace(/"/g,'&quot;');}
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ===== Monte Carlo engine ===== */
+function scenarioLM(sc,rng){
+  let op=0,ip=0,rep=0;
+  if(sc.op.enabled){const o=sc.op;const d=tri(rng,o.d.min,o.d.ml,o.d.max),rhr=tri(rng,o.rhr.min,o.rhr.ml,o.rhr.max),r=clamp01(tri(rng,o.r.min,o.r.ml,o.r.max)),crec=tri(rng,o.crec.min,o.crec.ml,o.crec.max),psla=tri(rng,o.psla.min,o.psla.ml,o.psla.max);op=d*rhr*(1-r)+crec+psla;if(o.recall.enabled){const cr=tri(rng,o.recall.crecall.min,o.recall.crecall.ml,o.recall.crecall.max),ul=tri(rng,o.recall.ulost.min,o.recall.ulost.ml,o.recall.ulost.max),mu=tri(rng,o.recall.munit.min,o.recall.munit.ml,o.recall.munit.max);op+=cr+ul*mu;}}
+  if(sc.ip.enabled){const p=sc.ip;const pc=clamp01(tri(rng,p.pcond.min,p.pcond.ml,p.pcond.max)),npv=tri(rng,p.npv.min,p.npv.ml,p.npv.max),e=clamp01(tri(rng,p.e.min,p.e.ml,p.e.max));ip=pc*npv*e;}
+  if(sc.rep.enabled){const q=sc.rep;const arr=tri(rng,q.arr.min,q.arr.ml,q.arr.max),dch=tri(rng,q.dchurn.min,q.dchurn.ml,q.dchurn.max),t=tri(rng,q.t.min,q.t.ml,q.t.max),pipe=tri(rng,q.pipeline.min,q.pipeline.ml,q.pipeline.max),dwin=tri(rng,q.dwin.min,q.dwin.ml,q.dwin.max),dcac=tri(rng,q.dcac.min,q.dcac.ml,q.dcac.max),nnew=tri(rng,q.nnew.min,q.nnew.ml,q.nnew.max);rep=arr*dch*t+pipe*dwin+dcac*nnew;}
+  return {op,ip,rep};
+}
+function simulate(){
+  const {iterations,seed}=state.config;const rng=mulberry32(seed>>>0);
+  const active=state.scenarios.filter(s=>s.enabled);const N=iterations;const totals=new Float64Array(N);
+  const scnExp=active.map(()=>0);let pOp=0,pIp=0,pRep=0;
+  for(let i=0;i<N;i++){let total=0;for(let k=0;k<active.length;k++){const sc=active[k];const tef=tri(rng,sc.tef.min,sc.tef.ml,sc.tef.max),vuln=clamp01(tri(rng,sc.vuln.min,sc.vuln.ml,sc.vuln.max)),lef=Math.max(0,tef*vuln);const {op,ip,rep}=scenarioLM(sc,rng);const aOp=lef*op,aIp=lef*ip,aRep=lef*rep,a=aOp+aIp+aRep;total+=a;scnExp[k]+=a;pOp+=aOp;pIp+=aIp;pRep+=aRep;}totals[i]=total;}
+  totals.sort();const mean=totals.reduce((s,v)=>s+v,0)/N;const q=p=>totals[Math.min(N-1,Math.max(0,Math.floor(p*(N-1))))];
+  const inherent={mean,p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),p995:q(0.995),max:totals[N-1]};
+  for(let k=0;k<scnExp.length;k++)scnExp[k]/=N;pOp/=N;pIp/=N;pRep/=N;
+  const ce=clamp01(state.config.ce);
+  const residual={mean:mean*(1-ce),p95:inherent.p95*(1-ce),p50:inherent.p50*(1-ce),p99:inherent.p99*(1-ce),max:inherent.max*(1-ce)};
+  return {N,active,inherent,residual,ce,scnExp:active.map((s,k)=>({name:s.name,tier:s.tier,exp:scnExp[k]})).sort((a,b)=>b.exp-a.exp),paths:{op:pOp,ip:pIp,rep:pRep},totalsSorted:totals};
+}
+function run(opt){opt=opt||{};syncConfigFromInputs();if(state.scenarios.filter(s=>s.enabled).length===0){toast("Enable at least one scenario.");return;}const t0=performance.now();lastRun=simulate();const ms=Math.round(performance.now()-t0);saveState(true);renderResults();renderBoard();renderDashboard();const rs=document.getElementById('run-stamp');if(rs)rs.textContent=`${lastRun.N.toLocaleString()} trials · seed ${state.config.seed} · ${ms} ms`;if(!opt.silent)toast("Simulation complete.");}
+
+/* ===== RAG helpers ===== */
+const ragNext={green:'amber',amber:'red',red:'green'};
+const trendNext={up:'right',right:'down',down:'up'};
+function trendGlyph(t){return t==='up'?'↑':t==='down'?'↓':'→';}
+function trendLabel(t){return t==='up'?'Worsening':t==='down'?'Improving':'Stable';}
+function ragWeight(r){return r==='red'?3:r==='amber'?2:1;}
+function ragBtns(current,handler,argsStr){const map=[['g','green'],['y','amber'],['r','red']];return `<span class="ragbtns">`+map.map(([cls,val])=>`<button class="ragbtn ${cls} ${current===val?'active':''}" title="${val}" onclick="${handler}(${argsStr}'${val}');event.stopPropagation()"></button>`).join('')+`</span>`;}
+
+/* ===== NIST ===== */
+const NIST_FN=[['govern','GV'],['identify','ID'],['protect','PR'],['detect','DE'],['respond','RS'],['recover','RC']];
+function nistAvg(){const n=state.board.nist;return NIST_FN.reduce((s,[k])=>s+(+n[k]||0),0)/NIST_FN.length;}
+function ragFromScore4(v){return v>=3.0?'green':v>=2.0?'amber':'red';}
+function ragFromPct(v){return v>=90?'green':v>=75?'amber':'red';}
+function tierWord(v){return v>=3.5?'Adaptive':v>=2.5?'Repeatable':v>=1.5?'Risk-informed':'Partial';}
+
+/* ===== BOARD OVERVIEW ===== */
+function renderHeadline(){
+  const el=document.getElementById('headline');if(!el)return;
+  const risks=state.board.risks;const red=risks.filter(r=>r.rag==='red').length,amber=risks.filter(r=>r.rag==='amber').length;
+  const avg=nistAvg();
+  if(!lastRun){el.innerHTML=`<div class="hl-txt">Run the calculator to populate financial exposure. <b>${red}</b> critical and <b>${amber}</b> elevated risks tracked; overall NIST CSF maturity <span class="fig">${avg.toFixed(1)}/4</span> (${tierWord(avg)}).</div>`;return;}
+  const res=lastRun.residual.mean,p95=lastRun.residual.p95,inh=lastRun.inherent.mean;
+  el.innerHTML=`<div class="hl-txt"><b>Headline.</b> Residual Revenue-at-Risk is <span class="fig dn">${money(res)}</span>/yr (from <span class="fig up">${money(inh)}</span> inherent), with a <span class="fig up">${money(p95)}</span> P95 tail. <b>${red}</b> critical and <b>${amber}</b> elevated risks; NIST CSF maturity <span class="fig">${avg.toFixed(1)}/4</span> — ${tierWord(avg)}.</div><span class="hl-badge">Board headline</span>`;
+}
+function renderDashboard(){
+  const b=state.board;const asof=document.getElementById('asof');if(asof)asof.textContent='As of '+new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  renderHeadline();
+  const avg=nistAvg(),nistRag=ragFromScore4(avg),nMax=4;
+  const nistMini=NIST_FN.map(([k,lab])=>{const v=+b.nist[k]||0;return `<div class="fbar"><div class="bar" style="height:${Math.max(2,v/nMax*28)}px"></div><div class="fl">${lab}</div></div>`;}).join('');
+  const nistEdit=NIST_FN.map(([k,lab])=>`<label>${lab}<input type="number" min="0" max="4" step="0.1" value="${b.nist[k]}" oninput="setNist('${k}',this.value)"></label>`).join('');
+  const opRag=b.operational.status,compRag=b.compliance.status;
+  const fin=lastRun?{res:lastRun.residual.mean,p95:lastRun.residual.p95}:null;
+  const finRag=fin?(fin.res>=15e6?'red':fin.res>=6e6?'amber':'green'):'amber';
+  const tTrend=(t)=>`<span class="trend ${t}" style="font-size:13px" title="${trendLabel(t)}">${trendGlyph(t)}</span>`;
+  const sm=document.getElementById('summary');
+  sm.innerHTML=`
+    <div class="stile ${nistRag}"><div class="st-lab">Overall NIST CSF</div>
+      <div class="st-val num">${avg.toFixed(1)}<small>/ 4.0</small> <span class="st-tier tier-${nistRag}">${tierWord(avg)}</span></div>
+      ${editMode?`<div class="nist-edit">${nistEdit}</div>`:`<div class="nist-mini">${nistMini}</div>`}</div>
+    <div class="stile ${opRag}"><div class="st-lab">Operational resilience ${tTrend(b.operational.trend)}</div>
+      <div class="st-val">${opRag==='green'?'Managed':opRag==='amber'?'Stable':'Strained'}</div>
+      ${editMode?`<div style="margin-top:6px">${ragBtns(opRag,'setBoardStatus',"'operational',")}</div>`:''}
+      <div class="st-sub">${editMode?`<input style="width:100%;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--bg);color:var(--ink);font-size:10.5px;margin-top:4px" value="${escapeAttr(b.operational.note)}" oninput="setBoardNote('operational',this.value)">`:escHtml(b.operational.note)}</div></div>
+    <div class="stile ${compRag}"><div class="st-lab">Compliance posture ${tTrend(b.compliance.trend)}</div>
+      <div class="st-val num">${b.compliance.pct}<small>%</small> ${editMode?`<input type="number" min="0" max="100" value="${b.compliance.pct}" oninput="setComp(this.value)" style="width:58px;border:1px solid var(--line);border-radius:6px;padding:3px 5px;background:var(--bg);color:var(--ink);font-size:12px">`:''}</div>
+      <div class="st-sub">${escHtml(b.compliance.note)}</div></div>
+    <div class="stile ${finRag}"><div class="st-lab">Cumulative financial impact ${tTrend(b.finance.trend)}</div>
+      <div class="st-val num">${fin?money(fin.res):'—'}</div>
+      <div class="st-sub">${fin?`residual E[RaR]/yr · P95 ${money(fin.p95)}`:'run the calculator'}</div></div>`;
+  document.getElementById('risks').innerHTML=b.risks.map(r=>`
+    <div class="rbar ${r.rag}" data-id="${r.id}">
+      <div class="rag-chip">${r.rag==='red'?'Critical':r.rag==='amber'?'Elevated':'Managed'}</div>
+      <div class="rtext"><div class="rname">${escHtml(r.name)}</div><div class="rdesc">${escHtml(r.desc)}</div></div>
+      <div class="rtrend trend ${r.trend}" title="${trendLabel(r.trend)}">${trendGlyph(r.trend)}</div>
+    </div>`).join('')||'<div class="empty">No risks. Add them on the Register tab.</div>';
+}
+function setNist(k,v){state.board.nist[k]=Math.max(0,Math.min(4,parseFloat(v)||0));renderDashboard();scheduleSave();}
+function setComp(v){state.board.compliance.pct=Math.max(0,Math.min(100,parseInt(v)||0));state.board.compliance.status=ragFromPct(state.board.compliance.pct);renderDashboard();scheduleSave();}
+function setBoardNote(k,v){state.board[k].note=v;scheduleSave();}
+function setBoardStatus(k,val){state.board[k].status=val;renderDashboard();scheduleSave();}
+function toggleEdit(){editMode=!editMode;document.body.classList.toggle('editing',editMode);document.getElementById('edit-btn').innerHTML=editMode?'✓ Done':'✎ Edit';renderDashboard();}
+
+/* ===== RISK REGISTER ===== */
+function renderRegister(){
+  const host=document.getElementById('register');
+  host.innerHTML=state.board.risks.map((r,idx)=>{
+    const lvlRows=LEVELS.map(([k,label,hint])=>`
+      <div class="lvl-row">
+        <div class="lvl-name">${label}<small>${hint}</small></div>
+        ${ragBtns(r.levels[k].rag,'setLevelRag',`'${r.id}','${k}',`)}
+        <input class="lvl-note" value="${escapeAttr(r.levels[k].note)}" placeholder="What this risk means at the ${label} level…" oninput="setLevelNote('${r.id}','${k}',this.value)">
+      </div>`).join('');
+    return `<div class="rcard ${r.rag} ${r.open?'open':''}" data-id="${r.id}">
+      <div class="rcard-h" onclick="toggleRiskOpen('${r.id}',event)">
+        <div class="rc-move no-print"><button title="Move up" onclick="moveRisk('${r.id}',-1);event.stopPropagation()">▲</button><button title="Move down" onclick="moveRisk('${r.id}',1);event.stopPropagation()">▼</button></div>
+        <span class="caret">▶</span>
+        ${ragBtns(r.rag,'setRiskRag',`'${r.id}',`)}
+        <div class="rc-name"><input value="${escapeAttr(r.name)}" onclick="event.stopPropagation()" oninput="setRiskName('${r.id}',this.value)"></div>
+        <span class="trend ${r.trend}" title="${trendLabel(r.trend)}" style="font-size:15px;cursor:pointer" onclick="cycleRiskTrend('${r.id}');event.stopPropagation()">${trendGlyph(r.trend)}</span>
+        <button class="rc-del no-print" title="Delete" onclick="delRisk('${r.id}');event.stopPropagation()">×</button>
+      </div>
+      <div class="rcard-b">
+        <div class="detail-cell" style="margin-top:6px"><label>Board-level summary</label><input class="lvl-note" value="${escapeAttr(r.desc)}" oninput="setRiskDesc('${r.id}',this.value)"></div>
+        <div class="lvl-grid">${lvlRows}</div>
+        <details class="detail-toggle"><summary>Real-world context — how · when · where · escalation</summary>
+          <div class="detail-grid">
+            <div class="detail-cell"><label>How it happens</label><textarea oninput="setDetail('${r.id}','how',this.value)">${escHtml(r.detail.how)}</textarea></div>
+            <div class="detail-cell"><label>When (timing / triggers)</label><textarea oninput="setDetail('${r.id}','when',this.value)">${escHtml(r.detail.when)}</textarea></div>
+            <div class="detail-cell"><label>Where (systems / assets)</label><textarea oninput="setDetail('${r.id}','where',this.value)">${escHtml(r.detail.where)}</textarea></div>
+            <div class="detail-cell esc-cell"><label>Escalation path</label><textarea oninput="setDetail('${r.id}','escalation',this.value)">${escHtml(r.detail.escalation)}</textarea></div>
+          </div>
+        </details>
+      </div>
+    </div>`;
+  }).join('')||'<div class="empty">No risks yet. Add one or import a register.</div>';
+}
+function getRisk(id){return state.board.risks.find(r=>r.id===id);}
+function setRiskRag(id,val){getRisk(id).rag=val;renderRegister();renderDashboard();scheduleSave();}
+function setLevelRag(id,k,val){getRisk(id).levels[k].rag=val;renderRegister();scheduleSave();}
+function setLevelNote(id,k,v){getRisk(id).levels[k].note=v;scheduleSave();}
+function setRiskName(id,v){getRisk(id).name=v;renderDashboard();scheduleSave();}
+function setRiskDesc(id,v){getRisk(id).desc=v;renderDashboard();scheduleSave();}
+function setDetail(id,f,v){getRisk(id).detail[f]=v;scheduleSave();}
+function cycleRiskTrend(id){const r=getRisk(id);r.trend=trendNext[r.trend];renderRegister();renderDashboard();scheduleSave();}
+function toggleRiskOpen(id,e){if(e&&e.target&&(e.target.closest('.ragbtn')||e.target.closest('input')||e.target.closest('.rc-move')))return;const r=getRisk(id);r.open=!r.open;const el=document.querySelector(`.rcard[data-id="${id}"]`);if(el)el.classList.toggle('open',r.open);scheduleSave();}
+function moveRisk(id,dir){const a=state.board.risks;const i=a.findIndex(r=>r.id===id);const j=i+dir;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];document.getElementById('sort-mode').value='manual';renderRegister();renderDashboard();scheduleSave();}
+function addRisk(){const r=R("New risk","amber","right","Description of the risk and its business impact.",[["amber",""],["amber",""],["amber",""],["amber",""]],["","","",""]);r.open=true;state.board.risks.push(r);renderRegister();renderDashboard();saveState();document.querySelector(`.rcard[data-id="${r.id}"]`)?.scrollIntoView({behavior:'smooth',block:'center'});}
+function delRisk(id){if(!confirm('Delete this risk?'))return;state.board.risks=state.board.risks.filter(r=>r.id!==id);renderRegister();renderDashboard();saveState();}
+function expandAll(open){state.board.risks.forEach(r=>r.open=open);renderRegister();scheduleSave();}
+function applySort(mode){const a=state.board.risks;if(mode==='severity')a.sort((x,y)=>ragWeight(y.rag)-ragWeight(x.rag)||x.name.localeCompare(y.name));else if(mode==='name')a.sort((x,y)=>x.name.localeCompare(y.name));renderRegister();renderDashboard();scheduleSave();}
+
+/* ===== TRENDS ===== */
+function captureSnapshot(){
+  const period=document.getElementById('snap-period').value;
+  const label=document.getElementById('snap-label').value.trim()||({weekly:'Week',quarterly:'Quarter',yearly:'Year'}[period]+' '+new Date().toLocaleDateString());
+  const risks=state.board.risks;
+  const snap={ts:Date.now(), period, label,
+    nistAvg:+nistAvg().toFixed(2), compliance:state.board.compliance.pct,
+    ragCounts:{red:risks.filter(r=>r.rag==='red').length,amber:risks.filter(r=>r.rag==='amber').length,green:risks.filter(r=>r.rag==='green').length},
+    residual:lastRun?Math.round(lastRun.residual.mean):null, p95:lastRun?Math.round(lastRun.residual.p95):null,
+    risks:risks.map(r=>({name:r.name,rag:r.rag}))};
+  state.board.snapshots.push(snap);document.getElementById('snap-label').value='';saveState();renderTrends();toast("Snapshot captured.");
+}
+function delSnapshot(ts){if(!confirm('Delete this snapshot?'))return;state.board.snapshots=state.board.snapshots.filter(s=>s.ts!==ts);saveState();renderTrends();}
+function renderTrends(){
+  const filter=document.getElementById('snap-filter').value;
+  let snaps=state.board.snapshots.slice().sort((a,b)=>a.ts-b.ts);
+  if(filter!=='all')snaps=snaps.filter(s=>s.period===filter);
+  document.getElementById('snap-count').textContent=`${snaps.length} snapshot${snaps.length===1?'':'s'}`;
+  const chartCard=document.getElementById('trend-chart-card');
+  if(snaps.length>=2){chartCard.hidden=false;document.getElementById('trend-chart').innerHTML=trendChartSVG(snaps);}
+  else chartCard.hidden=true;
+  const rows=snaps.slice().reverse().map(s=>`<tr>
+    <td>${escHtml(s.label)} <span class="period-pill">${s.period}</span></td>
+    <td>${new Date(s.ts).toLocaleDateString()}</td>
+    <td class="n">${s.nistAvg.toFixed(1)}</td>
+    <td class="n">${s.compliance}%</td>
+    <td class="n"><span style="color:var(--rag-red)">${s.ragCounts.red}</span> / <span style="color:var(--rag-amber)">${s.ragCounts.amber}</span> / <span style="color:var(--rag-green)">${s.ragCounts.green}</span></td>
+    <td class="n">${s.residual!=null?money(s.residual):'—'}</td>
+    <td class="n">${s.p95!=null?money(s.p95):'—'}</td>
+    <td class="no-print"><button class="btn sm ghost danger" onclick="delSnapshot(${s.ts})">×</button></td></tr>`).join('');
+  document.getElementById('snap-table-wrap').innerHTML=snaps.length?`<table class="snap-table">
+    <tr><th>Snapshot</th><th>Date</th><th style="text-align:right">NIST</th><th style="text-align:right">Comp.</th><th style="text-align:right">R / A / G</th><th style="text-align:right">Residual</th><th style="text-align:right">P95</th><th></th></tr>${rows}</table>`
+    :'<div class="empty">No snapshots yet. Capture one to start tracking posture over time.</div>';
+}
+function trendChartSVG(snaps){
+  const W=760,H=240,padL=44,padR=52,padT=16,padB=42,plotW=W-padL-padR,plotH=H-padT-padB;
+  const n=snaps.length;const X=i=>padL+(n===1?plotW/2:i/(n-1)*plotW);
+  const YN=v=>padT+(1-v/4)*plotH;
+  const maxRes=Math.max(1,...snaps.map(s=>s.p95||s.residual||0));
+  const YR=v=>padT+(1-(v||0)/maxRes)*plotH;
+  let grid="";for(let g=0;g<=4;g++){const y=YN(g);grid+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--line2)"/><text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="9" fill="var(--faint)">${g}</text>`;}
+  const nistPath=snaps.map((s,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+YN(s.nistAvg).toFixed(1)).join(' ');
+  const resPath=snaps.map((s,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+YR(s.residual||0).toFixed(1)).join(' ');
+  const p95Path=snaps.map((s,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+YR(s.p95||0).toFixed(1)).join(' ');
+  const dots=snaps.map((s,i)=>`<circle cx="${X(i)}" cy="${YN(s.nistAvg)}" r="3" fill="var(--primary)"/><circle cx="${X(i)}" cy="${YR(s.residual||0)}" r="3" fill="var(--exposure)"/>`).join('');
+  const labels=snaps.map((s,i)=>`<text x="${X(i)}" y="${H-padB+16}" text-anchor="middle" font-size="8.5" fill="var(--faint)">${escHtml(s.label.slice(0,10))}</text>`).join('');
+  const rTicks=[0,0.5,1].map(f=>`<text x="${W-padR+6}" y="${padT+(1-f)*plotH+3}" font-size="9" fill="var(--faint)">${money(maxRes*f)}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Posture over time">
+    ${grid}${rTicks}
+    <path d="${resPath}" fill="none" stroke="var(--exposure)" stroke-width="2"/>
+    <path d="${p95Path}" fill="none" stroke="var(--exposure)" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.7"/>
+    <path d="${nistPath}" fill="none" stroke="var(--primary)" stroke-width="2"/>
+    ${dots}${labels}
+    <text x="${padL-34}" y="${padT+plotH/2}" font-size="9" fill="var(--primary)" transform="rotate(-90 ${padL-34} ${padT+plotH/2})" text-anchor="middle">NIST 0–4</text>
+    <g font-size="9.5"><rect x="${padL}" y="${H-14}" width="10" height="3" fill="var(--primary)"/><text x="${padL+14}" y="${H-11}" fill="var(--muted)">NIST maturity</text>
+      <rect x="${padL+110}" y="${H-14}" width="10" height="3" fill="var(--exposure)"/><text x="${padL+124}" y="${H-11}" fill="var(--muted)">Residual RaR (— P95)</text></g>
+  </svg>`;
+}
+
+/* ===== BENCHMARKS ===== */
+function renderBenchmarks(){
+  const sector=document.getElementById('b-sector').value;
+  const rev=Math.max(1,parseFloat(document.getElementById('b-rev').value)||state.config.revenue);
+  state.config.revenue=rev;
+  const spend=state.config.spend;
+  const yourPctRev=spend/rev*100;
+  const peerBreach=BENCH.breach[sector]!=null?BENCH.breach[sector]:BENCH.breach.global;
+  const yourP95=lastRun?lastRun.residual.p95:null;
+  const avg=nistAvg();
+
+  function gap(cls,txt){return `<span class="bc-gap ${cls}">${txt}</span>`;}
+  const cards=[];
+
+  // 1. security spend % of revenue
+  let spendGap,spendTxt;
+  if(yourPctRev>=BENCH.spendPctRevenue.avg){spendGap='green';spendTxt='At or above cross-industry median';}
+  else if(yourPctRev>=BENCH.spendPctRevenue.healthcareHigh){spendGap='amber';spendTxt='Above healthcare norm, below all-industry median';}
+  else{spendGap='amber';spendTxt='Within typical healthcare range';}
+  cards.push(`<div class="bench-card"><h4>Security spend — % of revenue</h4>
+    <div class="bc-you num">${yourPctRev.toFixed(2)}%</div>
+    <div class="bc-peer">Cross-industry median <b>${BENCH.spendPctRevenue.avg}%</b> · healthcare typically <b>${BENCH.spendPctRevenue.healthcareLow}–${BENCH.spendPctRevenue.healthcareHigh}%</b></div>
+    <div class="bench-bar"><div class="fill" style="width:${Math.min(100,yourPctRev/1.2*100).toFixed(0)}%"></div><div class="mark" style="left:${Math.min(100,BENCH.spendPctRevenue.avg/1.2*100).toFixed(0)}%"></div></div>
+    ${gap(spendGap,spendTxt)}<div class="src">Spend ${money(spend)} ÷ revenue ${money(rev)}. Source: IANS/VikingCloud, Gartner 2025–26.</div></div>`);
+
+  // 2. NIST maturity
+  const nistGap=avg>=3?'green':avg>=2.3?'amber':'red';
+  cards.push(`<div class="bench-card"><h4>NIST CSF maturity</h4>
+    <div class="bc-you num">${avg.toFixed(1)}<span style="font-size:12px;color:var(--faint)"> / 4 · ${tierWord(avg)}</span></div>
+    <div class="bc-peer">Regulated-sector self-assessments typically cluster at <b>Risk-informed → Repeatable (≈2.0–3.0)</b></div>
+    <div class="bench-bar"><div class="fill" style="width:${(avg/4*100).toFixed(0)}%"></div><div class="mark" style="left:${(2.5/4*100).toFixed(0)}%"></div></div>
+    ${gap(nistGap,avg>=2.5?'At/above typical peer band':'Below typical peer band')}<div class="src">Peer band is indicative (CSF tiers 1–4); set from your own assessment.</div></div>`);
+
+  // 3. modeled tail vs breach cost
+  let breachGap='amber',breachTxt='Modeled tail near sector average';
+  if(yourP95!=null){if(yourP95<=peerBreach*1e6){breachGap='green';breachTxt='Modeled tail below sector avg breach';}else if(yourP95>peerBreach*1e6*2){breachGap='red';breachTxt='Modeled tail well above sector avg';}else{breachGap='amber';breachTxt='Modeled tail above sector avg';}}
+  cards.push(`<div class="bench-card"><h4>Modeled tail vs. avg breach cost</h4>
+    <div class="bc-you num">${yourP95!=null?money(yourP95):'—'}</div>
+    <div class="bc-peer">${sector[0].toUpperCase()+sector.slice(1)} avg breach <b>$${peerBreach}M</b> · US avg <b>$${BENCH.breach.us}M</b> · global <b>$${BENCH.breach.global}M</b></div>
+    <div class="bench-bar"><div class="fill" style="width:${yourP95!=null?Math.min(100,yourP95/(BENCH.breach.us*1e6*1.5)*100).toFixed(0):0}%"></div><div class="mark" style="left:${Math.min(100,peerBreach*1e6/(BENCH.breach.us*1e6*1.5)*100).toFixed(0)}%"></div></div>
+    ${gap(breachGap,breachTxt)}<div class="src">Your P95 residual Revenue-at-Risk vs. IBM per-breach average. Source: IBM 2025.</div></div>`);
+
+  // 4. device / OT exposure context
+  cards.push(`<div class="bench-card"><h4>Connected-device exposure (sector)</h4>
+    <div class="bc-you num">${BENCH.device.hospitalsExploitable}%</div>
+    <div class="bc-peer">of hospitals run devices with known exploitable vulnerabilities; <b>${BENCH.device.criticalFlaws}%</b> of networked devices carry critical flaws, <b>${BENCH.device.eolOS}%</b> run end-of-life OS</div>
+    <div class="bench-bar"><div class="fill" style="width:${BENCH.device.hospitalsExploitable}%"></div></div>
+    ${gap('amber','Sector-wide structural exposure')}<div class="src">Source: Claroty Team82. ${BENCH.ransomwareEncrypted}% of healthcare orgs suffered ransomware encryption (IBM 2025).</div></div>`);
+
+  document.getElementById('bench-grid').innerHTML=cards.join('');
+  document.getElementById('bench-context').innerHTML=`
+    <div class="note">Healthcare has been the costliest breach sector for 14+ consecutive years, averaging <b>$${BENCH.breach.healthcare}M</b> per breach with a <b>${BENCH.lifecycleDays.healthcare}-day</b> lifecycle (vs. ${BENCH.lifecycleDays.global} global). Intellectual property is the most expensive data type at <b>$${BENCH.ipPerRecord}/record</b>. A tested incident-response plan saves ~<b>$${BENCH.irPlanSaving}M</b> and extensive security AI ~<b>$${BENCH.aiSaving}M</b> per breach — both directly lower your modeled operational and reputational pathways.</div>
+    <div class="sources-list"><b>Sources:</b><br>${BENCH.sources.map(s=>'· '+escHtml(s)).join('<br>')}</div>
+    <div class="src" style="margin-top:8px">Figures are industry benchmarks for context; they are not a substitute for your own assessment. Peer NIST maturity bands are indicative.</div>`;
+  scheduleSave();
+}
+
+/* ===== BOARD BRIEF ===== */
+function renderResults(){
+  const R=lastRun;if(!R)return;const ce=R.ce,spend=state.config.spend,ins=state.config.ins;
+  const inh=R.inherent.mean,res=R.residual.mean,reduced=inh-res,roi=spend>0?reduced/spend:null;
+  const insAdequacy=R.residual.p95>0?ins/R.residual.p95:null,uninsured=Math.max(0,R.residual.p95-ins);
+  document.getElementById('kpis').innerHTML=`
+    <div class="kpi exposure wide"><div class="k-lab">Expected Revenue-at-Risk — inherent</div><div class="k-val num">${money(inh)}<span style="font-size:12px;color:var(--faint)"> /yr</span></div><div class="k-sub">before controls · E[RaR]</div></div>
+    <div class="kpi reduce"><div class="k-lab">Residual RaR</div><div class="k-val num">${money(res)}</div><div class="k-sub">after ${pct(ce)} controls</div></div>
+    <div class="kpi"><div class="k-lab">Risk reduced</div><div class="k-val num">${money(reduced)}</div><div class="k-sub">inherent − residual</div></div>
+    <div class="kpi exposure"><div class="k-lab">P95 tail — residual</div><div class="k-val num">${money(R.residual.p95)}</div><div class="k-sub">size insurance to this</div></div>
+    <div class="kpi"><div class="k-lab">Security ROI</div><div class="k-val num">${roi==null?"—":roi.toFixed(1)+"×"}</div><div class="k-sub">reduced ÷ ${money(spend)}</div></div>
+    <div class="kpi ${insAdequacy!=null&&insAdequacy>=1?'reduce':'exposure'}"><div class="k-lab">Insurance adequacy</div><div class="k-val num">${insAdequacy==null?"—":Math.round(insAdequacy*100)+"%"}</div><div class="k-sub">${uninsured>0?money(uninsured)+" uninsured":"tail covered"}</div></div>`;
+  const P=R.paths,ptot=P.op+P.ip+P.rep||1,pmax=Math.max(P.op,P.ip,P.rep)||1;
+  const prow=(lab,val,cls)=>`<div class="barrow"><div class="blab">${lab}</div><div class="btrack"><div class="bfill ${cls}" style="width:${(val/pmax*100).toFixed(1)}%"></div></div><div class="bval num">${money(val)} · ${pct(val/ptot)}</div></div>`;
+  document.getElementById('path-bars').innerHTML=prow("Operational → revenue",P.op,"path-op")+prow("IP → revenue",P.ip,"path-ip")+prow("Reputational → revenue",P.rep,"path-rep");
+  document.getElementById('path-card').hidden=false;
+  const smax=R.scnExp.length?R.scnExp[0].exp||1:1;
+  document.getElementById('scn-bars').innerHTML=R.scnExp.map(s=>{const cls=s.tier==='product'?'path-ip':'path-op';return `<div class="barrow"><div class="blab" title="${escapeAttr(s.name)}">${escHtml(s.name)}</div><div class="btrack"><div class="bfill ${cls}" style="width:${(s.exp/smax*100).toFixed(1)}%"></div></div><div class="bval num">${money(s.exp)}</div></div>`;}).join('');
+  document.getElementById('scn-card').hidden=false;
+  document.getElementById('lec').innerHTML=lecSVG(R);
+  document.getElementById('leg-inh').textContent=`E ${money(R.inherent.mean)} · P95 ${money(R.inherent.p95)}`;
+  document.getElementById('leg-res').textContent=`E ${money(R.residual.mean)} · P95 ${money(R.residual.p95)}`;
+  document.getElementById('lec-card').hidden=false;
+}
+function lecSVG(R){
+  const W=340,H=210,padL=44,padR=12,padT=12,padB=30,plotW=W-padL-padR,plotH=H-padT-padB;
+  const T=R.totalsSorted,N=T.length,xmax=Math.max(R.inherent.p995,R.inherent.max*0.6,1);
+  const pts=[];for(let i=0;i<=100;i++){const idx=Math.min(N-1,Math.floor(i/100*(N-1)));pts.push({loss:T[idx],exceed:1-i/100});}
+  const X=v=>padL+Math.min(1,v/xmax)*plotW,Y=p=>padT+(1-p)*plotH;
+  const path=scale=>{let d="";for(let i=0;i<pts.length;i++){const x=X(pts[i].loss*scale),y=Y(pts[i].exceed);d+=(i===0?"M":"L")+x.toFixed(1)+" "+y.toFixed(1)+" ";}return d.trim();};
+  let ticks="";for(let f=0;f<=1.0001;f+=0.25){const yy=padT+(1-f)*plotH;ticks+=`<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="var(--line2)"/><text x="${padL-6}" y="${yy+3}" text-anchor="end" font-size="9" fill="var(--faint)">${Math.round(f*100)}%</text>`;}
+  let xt="";for(let f=0;f<=1.0001;f+=0.25){const xx=padL+f*plotW;xt+=`<text x="${xx}" y="${H-padB+14}" text-anchor="middle" font-size="9" fill="var(--faint)">${money(xmax*f)}</text>`;}
+  const p95x=X(R.residual.p95);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Loss exceedance curve">${ticks}${xt}
+    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="var(--line)"/><line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="var(--line)"/>
+    <path d="${path(1)}" fill="none" stroke="var(--exposure)" stroke-width="2"/><path d="${path(1-R.ce)}" fill="none" stroke="var(--reduce)" stroke-width="2"/>
+    <line x1="${p95x}" y1="${padT}" x2="${p95x}" y2="${H-padB}" stroke="var(--reduce)" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>
+    <text x="${Math.min(p95x+4,W-padR-40)}" y="${padT+10}" font-size="9" fill="var(--reduce)" font-weight="700">P95</text></svg>`;
+}
+function renderBoard(){
+  const R=lastRun;const el=document.getElementById('board-content');
+  if(!R){el.innerHTML='<div class="empty">Run the simulation on the Calculator tab.</div>';return;}
+  const ce=R.ce,spend=state.config.spend,ins=state.config.ins,inh=R.inherent.mean,res=R.residual.mean,reduced=inh-res,roi=spend>0?reduced/spend:null;
+  const insAdeq=R.residual.p95>0?ins/R.residual.p95:null,uninsured=Math.max(0,R.residual.p95-ins),P=R.paths,ptot=P.op+P.ip+P.rep||1;
+  el.innerHTML=`<div class="stmt" style="margin-bottom:8px">Modeled annual <b>Revenue-at-Risk</b> is <span class="fig up">${money(inh)}</span> inherent, reduced to <span class="fig dn">${money(res)}</span> by the current control program (<span class="fig">${pct(ce)}</span> effectiveness) — a <span class="fig dn">${money(reduced)}</span> reduction on <span class="fig">${money(spend)}</span> of security spend, a <span class="fig">${roi==null?'—':roi.toFixed(1)+'×'}</span> return. The <span class="fig up">P95 tail</span> of residual exposure is <span class="fig up">${money(R.residual.p95)}</span>; insurance of <span class="fig">${money(ins)}</span> covers <span class="fig">${insAdeq==null?'—':Math.round(insAdeq*100)+'%'}</span>${uninsured>0?`, leaving <span class="fig up">${money(uninsured)}</span> uninsured`:''}.</div>
+  <h2 class="section">Headline figures</h2>
+  <div class="board-kpis">
+    <div class="kpi exposure"><div class="k-lab">Expected RaR (inherent)</div><div class="k-val num">${money(inh)}</div><div class="k-sub">annual · budgeting basis</div></div>
+    <div class="kpi reduce"><div class="k-lab">Residual RaR</div><div class="k-val num">${money(res)}</div><div class="k-sub">carried after controls</div></div>
+    <div class="kpi exposure"><div class="k-lab">P95 tail (residual)</div><div class="k-val num">${money(R.residual.p95)}</div><div class="k-sub">insurance sizing</div></div>
+    <div class="kpi"><div class="k-lab">Security ROI</div><div class="k-val num">${roi==null?'—':roi.toFixed(1)+'×'}</div><div class="k-sub">risk reduced per $</div></div>
+    <div class="kpi"><div class="k-lab">Insurance adequacy</div><div class="k-val num">${insAdeq==null?'—':Math.round(insAdeq*100)+'%'}</div><div class="k-sub">limit ÷ P95</div></div>
+    <div class="kpi"><div class="k-lab">Typical year (P50)</div><div class="k-val num">${money(R.residual.p50)}</div><div class="k-sub">residual median</div></div></div>
+  <h2 class="section">Revenue-risk pathways</h2>
+  <table class="brd"><tr><th>Pathway</th><th>Mechanism</th><th style="text-align:right">Expected RaR</th><th style="text-align:right">Share</th></tr>
+    <tr><td>Operational → revenue</td><td>Downtime, recovery, SLA penalties, field action</td><td class="n">${money(P.op)}</td><td class="n">${pct(P.op/ptot)}</td></tr>
+    <tr><td>IP → revenue</td><td>Discounted loss of protected future margin</td><td class="n">${money(P.ip)}</td><td class="n">${pct(P.ip/ptot)}</td></tr>
+    <tr><td>Reputational → revenue</td><td>Churn, pipeline slippage, higher acquisition cost</td><td class="n">${money(P.rep)}</td><td class="n">${pct(P.rep/ptot)}</td></tr>
+    <tr class="total"><td>Total (inherent)</td><td></td><td class="n">${money(inh)}</td><td class="n">100%</td></tr></table>
+  <h2 class="section">Scenario contribution</h2>
+  <table class="brd"><tr><th>Scenario</th><th>Class</th><th style="text-align:right">Expected annual loss</th><th style="text-align:right">Share</th></tr>
+    ${R.scnExp.map(s=>`<tr><td>${escHtml(s.name)}</td><td>${s.tier==='product'?'Product':'Enterprise'}</td><td class="n">${money(s.exp)}</td><td class="n">${pct(s.exp/(inh||1))}</td></tr>`).join('')}
+    <tr class="total"><td>Total</td><td></td><td class="n">${money(inh)}</td><td class="n">100%</td></tr></table>
+  <div class="note" style="margin-top:20px"><b>Method.</b> Revenue-at-Risk = Σ<sub>scenarios</sub> LEF × (LM<sub>op</sub>+LM<sub>IP</sub>+LM<sub>rep</sub>); LEF = threat event frequency × vulnerability. Losses aggregate at scenario level via ${R.N.toLocaleString()}-trial Monte Carlo. Residual = inherent × (1 − control effectiveness).</div>`;
+}
+function copyBoardSummary(){
+  const R=lastRun;if(!R){toast("Run the simulation first.");return;}
+  const ce=R.ce,spend=state.config.spend,ins=state.config.ins,inh=R.inherent.mean,res=R.residual.mean,reduced=inh-res;
+  const roi=spend>0?(reduced/spend).toFixed(1)+"×":"—",insAdeq=R.residual.p95>0?Math.round(ins/R.residual.p95*100)+"%":"—";
+  const lines=["REVENUE-AT-RISK — BOARD SUMMARY",`Expected RaR (inherent): ${money(inh)}/yr`,`Residual RaR (after ${pct(ce)} controls): ${money(res)}/yr`,`Risk reduced: ${money(reduced)}  |  Security ROI: ${roi} on ${money(spend)}`,`P95 tail (residual): ${money(R.residual.p95)}  |  Insurance adequacy: ${insAdeq}`,"","By pathway:",`  Operational: ${money(R.paths.op)}`,`  IP: ${money(R.paths.ip)}`,`  Reputational: ${money(R.paths.rep)}`];
+  navigator.clipboard.writeText(lines.join("\n")).then(()=>toast("Summary copied."),()=>toast("Copy failed."));
+}
+
+/* ===== OFFICE EXPORTS ===== */
+function downloadBytes(bytes,filename,mime){const blob=new Blob([bytes],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+const REG_COLS=['Risk','Board RAG','Trend','C-Suite RAG','C-Suite note','PM RAG','PM note','Eng RAG','Eng note','Dev RAG','Dev note','How','When','Where','Escalation'];
+function riskRow(r){const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);return [r.name,cap(r.rag),trendLabel(r.trend),cap(r.levels.csuite.rag),r.levels.csuite.note,cap(r.levels.pm.rag),r.levels.pm.note,cap(r.levels.eng.rag),r.levels.eng.note,cap(r.levels.dev.rag),r.levels.dev.note,r.detail.how,r.detail.when,r.detail.where,r.detail.escalation];}
+function cS(v,b){return {v:v==null?'':String(v),t:'s',b:!!b};}
+function cN(v,b){return {v:v,t:'n',b:!!b};}
+function exportExcel(){
+  const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+  const reg=[REG_COLS.map(h=>cS(h,true))].concat(state.board.risks.map(r=>riskRow(r).map(v=>cS(v))));
+  const avg=nistAvg();
+  const summary=[
+    [cS('Board Cybersecurity Summary',true)],[],
+    [cS('Overall NIST CSF',true),cN(+avg.toFixed(2)),cS(tierWord(avg))],
+    ...NIST_FN.map(([k,lab])=>[cS(lab),cN(state.board.nist[k])]),[],
+    [cS('Operational',true),cS(cap(state.board.operational.status)),cS(state.board.operational.note)],
+    [cS('Compliance %',true),cN(state.board.compliance.pct)],
+    [cS('Financial — residual E[RaR]',true),cN(lastRun?Math.round(lastRun.residual.mean):0)],
+    [cS('Financial — residual P95',true),cN(lastRun?Math.round(lastRun.residual.p95):0)],
+    [cS('Financial — inherent E[RaR]',true),cN(lastRun?Math.round(lastRun.inherent.mean):0)],[],
+    [cS('Benchmark: healthcare avg breach ($M)',true),cN(BENCH.breach.healthcare)],
+    [cS('Benchmark: US avg breach ($M)',true),cN(BENCH.breach.us)],
+    [cS('Your security spend ($)',true),cN(state.config.spend)],
+    [cS('Your revenue ($)',true),cN(state.config.revenue)],
+  ];
+  const snaps=[[cS('Label',true),cS('Date',true),cS('Cadence',true),cS('NIST',true),cS('Compliance %',true),cS('Red',true),cS('Amber',true),cS('Green',true),cS('Residual',true),cS('P95',true)]]
+    .concat(state.board.snapshots.map(s=>[cS(s.label),cS(new Date(s.ts).toLocaleDateString()),cS(s.period),cN(s.nistAvg),cN(s.compliance),cN(s.ragCounts.red),cN(s.ragCounts.amber),cN(s.ragCounts.green),cN(s.residual||0),cN(s.p95||0)]));
+  const bytes=buildXlsx([{name:'Risk Register',rows:reg},{name:'Board Summary',rows:summary},{name:'Trends',rows:snaps}]);
+  downloadBytes(bytes,'board-risk-register.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  toast("Excel exported.");
+}
+function exportWord(){
+  const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);const avg=nistAvg();
+  const blocks=[{type:'h1',text:'Cybersecurity Risk — Board Register'},
+    {type:'p',text:`Prepared ${new Date().toLocaleDateString()}. Overall NIST CSF maturity ${avg.toFixed(1)}/4 (${tierWord(avg)}); compliance ${state.board.compliance.pct}%.`+(lastRun?` Residual Revenue-at-Risk ${money(lastRun.residual.mean)}/yr, P95 ${money(lastRun.residual.p95)}.`:'')},
+    {type:'h2',text:'Summary'},
+    {type:'table',header:['Metric','Value'],rows:[['Overall NIST CSF',`${avg.toFixed(1)} / 4 (${tierWord(avg)})`],['Operational',cap(state.board.operational.status)],['Compliance',state.board.compliance.pct+'%'],['Residual E[RaR]',lastRun?money(lastRun.residual.mean):'—'],['P95 tail',lastRun?money(lastRun.residual.p95):'—']]},
+    {type:'h2',text:'Risk register'}];
+  const ragColor={red:'C0392B',amber:'C0870F',green:'1F7A4D'};
+  state.board.risks.forEach(r=>{
+    blocks.push({type:'h2',text:r.name+'  ['+cap(r.rag)+' · '+trendLabel(r.trend)+']'});
+    blocks.push({type:'p',text:r.desc});
+    blocks.push({type:'table',header:['Level','RAG','What it means'],rows:LEVELS.map(([k,label])=>[label,{text:cap(r.levels[k].rag),color:ragColor[r.levels[k].rag]},r.levels[k].note||'—'])});
+    blocks.push({type:'p',text:'How: '+(r.detail.how||'—')});
+    blocks.push({type:'p',text:'When: '+(r.detail.when||'—')});
+    blocks.push({type:'p',text:'Where: '+(r.detail.where||'—')});
+    blocks.push({type:'p',text:'Escalation: '+(r.detail.escalation||'—')});
+  });
+  blocks.push({type:'h2',text:'Peer benchmarks'});
+  blocks.push({type:'table',header:['Benchmark','Value','Source'],rows:[
+    ['Healthcare avg breach','$'+BENCH.breach.healthcare+'M','IBM 2025'],
+    ['US avg breach','$'+BENCH.breach.us+'M','IBM 2025'],
+    ['Security spend % revenue (median)',BENCH.spendPctRevenue.avg+'%','IANS/Gartner'],
+    ['Hospitals w/ exploitable devices',BENCH.device.hospitalsExploitable+'%','Claroty Team82']]});
+  const bytes=buildDocx(blocks,'Board Risk Register');
+  downloadBytes(bytes,'board-risk-register.docx','application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+  toast("Word exported.");
+}
+function exportPptx(){
+  const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);const avg=nistAvg();const ragColor={red:'C0392B',amber:'C0870F',green:'1F7A4D'};
+  const slides=[];
+  slides.push({title:'Cybersecurity Risk — Board Overview',bullets:[
+    {text:`Overall NIST CSF maturity: ${avg.toFixed(1)} / 4 (${tierWord(avg)})`,b:true},
+    lastRun?{text:`Residual Revenue-at-Risk: ${money(lastRun.residual.mean)}/yr · P95 ${money(lastRun.residual.p95)}`,color:'B4471F'}:{text:'Run calculator for financial exposure'},
+    {text:`Compliance posture: ${state.board.compliance.pct}%`},
+    {text:`Risks: ${state.board.risks.filter(r=>r.rag==='red').length} critical, ${state.board.risks.filter(r=>r.rag==='amber').length} elevated, ${state.board.risks.filter(r=>r.rag==='green').length} managed`},
+    {text:`Prepared ${new Date().toLocaleDateString()}`,color:'8A929E',sz:1200}]});
+  state.board.risks.forEach(r=>{
+    slides.push({title:r.name,bullets:[
+      {text:`Board: ${cap(r.rag)} · ${trendLabel(r.trend)}`,b:true,color:ragColor[r.rag]},
+      {text:r.desc},
+      ...LEVELS.map(([k,label])=>({text:`${label}: ${cap(r.levels[k].rag)} — ${r.levels[k].note||'—'}`,sz:1400})),
+      {text:`How: ${r.detail.how||'—'}`,sz:1200,color:'5B6472'},
+      {text:`Escalation: ${r.detail.escalation||'—'}`,sz:1200,color:'5B6472'}]});
+  });
+  slides.push({title:'Peer benchmarks',bullets:[
+    {text:`Healthcare avg breach: $${BENCH.breach.healthcare}M · US avg $${BENCH.breach.us}M (IBM 2025)`},
+    {text:`Security spend: cross-industry median ${BENCH.spendPctRevenue.avg}% of revenue; healthcare ${BENCH.spendPctRevenue.healthcareLow}–${BENCH.spendPctRevenue.healthcareHigh}%`},
+    {text:`${BENCH.device.hospitalsExploitable}% of hospitals run devices with known exploitable vulnerabilities (Claroty)`},
+    {text:`${BENCH.ransomwareEncrypted}% of healthcare orgs suffered ransomware encryption (IBM 2025)`}]});
+  const bytes=buildPptx(slides);
+  downloadBytes(bytes,'board-risk-overview.pptx','application/vnd.openxmlformats-officedocument.presentationml.presentation');
+  toast("PowerPoint exported.");
+}
+function downloadTemplate(){
+  const rows=[REG_COLS.join(',')].concat(state.board.risks.map(r=>riskRow(r).map(v=>{v=String(v==null?'':v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(',')));
+  const csv=rows.join('\n');downloadBytes(strToU8(csv),'risk-register-template.csv','text/csv');toast("Template downloaded.");
+}
+
+/* ===== IMPORT (CSV / XLSX) ===== */
+function normRag(s){s=(s||'').toString().trim().toLowerCase();if(s[0]==='r')return 'red';if(s[0]==='a'||s[0]==='y')return 'amber';if(s[0]==='g')return 'green';return 'amber';}
+function normTrend(s){s=(s||'').toString().trim().toLowerCase();if(s.includes('up')||s.includes('wors')||s.includes('↑'))return 'up';if(s.includes('down')||s.includes('impro')||s.includes('↓'))return 'down';return 'right';}
+function importRegister(ev){
+  const f=ev.target.files[0];if(!f)return;const rd=new FileReader();
+  const isXlsx=/\.xlsx$/i.test(f.name);
+  rd.onload=()=>{
+    try{
+      let rows;
+      if(isXlsx){rows=parseXlsx(new Uint8Array(rd.result));}
+      else{rows=parseCSV(new TextDecoder().decode(new Uint8Array(rd.result)));}
+      rows=rows.filter(r=>r.some(c=>String(c).trim()!==''));
+      if(rows.length<2)throw new Error('no data rows');
+      // map header
+      const header=rows[0].map(h=>String(h).trim().toLowerCase());
+      const col=name=>header.findIndex(h=>h===name.toLowerCase());
+      const ci={risk:col('Risk'),brag:col('Board RAG'),tr:col('Trend'),
+        csr:col('C-Suite RAG'),csn:col('C-Suite note'),pmr:col('PM RAG'),pmn:col('PM note'),
+        er:col('Eng RAG'),en:col('Eng note'),dr:col('Dev RAG'),dn:col('Dev note'),
+        how:col('How'),when:col('When'),where:col('Where'),esc:col('Escalation')};
+      if(ci.risk<0)throw new Error('missing Risk column');
+      let added=0,updated=0;
+      for(let i=1;i<rows.length;i++){
+        const row=rows[i];const name=String(row[ci.risk]||'').trim();if(!name)continue;
+        let r=state.board.risks.find(x=>x.name.trim().toLowerCase()===name.toLowerCase());
+        const g=(j,d='')=>j>=0&&row[j]!=null?String(row[j]):d;
+        if(!r){r=R(name,'amber','right','',[["amber",""],["amber",""],["amber",""],["amber",""]],["","","",""]);state.board.risks.push(r);added++;}else updated++;
+        if(ci.brag>=0)r.rag=normRag(g(ci.brag));
+        if(ci.tr>=0)r.trend=normTrend(g(ci.tr));
+        if(ci.csr>=0)r.levels.csuite.rag=normRag(g(ci.csr));if(ci.csn>=0)r.levels.csuite.note=g(ci.csn);
+        if(ci.pmr>=0)r.levels.pm.rag=normRag(g(ci.pmr));if(ci.pmn>=0)r.levels.pm.note=g(ci.pmn);
+        if(ci.er>=0)r.levels.eng.rag=normRag(g(ci.er));if(ci.en>=0)r.levels.eng.note=g(ci.en);
+        if(ci.dr>=0)r.levels.dev.rag=normRag(g(ci.dr));if(ci.dn>=0)r.levels.dev.note=g(ci.dn);
+        if(ci.how>=0)r.detail.how=g(ci.how);if(ci.when>=0)r.detail.when=g(ci.when);if(ci.where>=0)r.detail.where=g(ci.where);if(ci.esc>=0)r.detail.escalation=g(ci.esc);
+      }
+      renderRegister();renderDashboard();saveState();toast(`Imported: ${added} added, ${updated} updated.`);
+    }catch(e){toast('Import failed: '+e.message);}
+  };
+  if(isXlsx)rd.readAsArrayBuffer(f);else rd.readAsArrayBuffer(f);
+  ev.target.value='';
+}
+
+/* ===== Scenario editor (calculator) ===== */
+function vgroup(scId,path,vars){let rows=`<div class="vrow head"><span>Variable</span><span>Min</span><span>Likely</span><span>Max</span></div>`;for(const [key,label,desc,step] of vars){const obj=getPath(scId,path,key);rows+=`<div class="vrow"><div class="vlab">${label}${desc?`<span class="vd">${desc}</span>`:''}</div><input class="num" type="number" step="${step}" value="${obj.min}" oninput="setVar('${scId}','${path}','${key}','min',this.value)"><input class="num" type="number" step="${step}" value="${obj.ml}" oninput="setVar('${scId}','${path}','${key}','ml',this.value)"><input class="num" type="number" step="${step}" value="${obj.max}" oninput="setVar('${scId}','${path}','${key}','max',this.value)"></div>`;}return rows;}
+function renderScenarios(){
+  const host=document.getElementById('scenarios');document.getElementById('scn-count').textContent=`${state.scenarios.filter(s=>s.enabled).length} of ${state.scenarios.length} enabled`;
+  host.innerHTML=state.scenarios.map(sc=>{const lefLikely=(sc.tef.ml*sc.vuln.ml);return `<div class="scn ${sc.open?'open':''} ${sc.enabled?'':'disabled'}" data-id="${sc.id}"><div class="scn-h" onclick="toggleOpen('${sc.id}',event)"><span class="caret">▶</span><label class="toggle" onclick="event.stopPropagation()"><input class="swin" type="checkbox" ${sc.enabled?'checked':''} onchange="setEnabled('${sc.id}',this.checked)"><span class="sw"></span></label><span class="pill ${sc.tier==='product'?'prod':'ent'}">${sc.tier==='product'?'Product':'Enterprise'}</span><span class="nm">${escHtml(sc.name)}</span><span class="lef">LEF≈<b class="num">${lefLikely.toFixed(2)}</b>/yr</span></div>
+    <div class="scn-b"><div class="config" style="margin-top:11px"><div class="field"><label>Scenario name</label><input value="${escapeAttr(sc.name)}" oninput="setSName('${sc.id}',this.value)"></div><div class="field"><label>Class</label><select onchange="setTier('${sc.id}',this.value)"><option value="enterprise" ${sc.tier==='enterprise'?'selected':''}>Enterprise</option><option value="product" ${sc.tier==='product'?'selected':''}>Product</option></select></div><div class="field" style="justify-content:flex-end"><button class="btn sm danger" onclick="delScenario('${sc.id}')">Delete</button></div></div>
+      <div class="path"><div class="path-h"><h3>Event frequency</h3><span class="formula">LEF = TEF × Vuln</span></div><div class="path-b">${vgroup(sc.id,'',[['tef','Threat event frequency','attempts / yr','0.05'],['vuln','Vulnerability','P(success) 0–1','0.05']])}</div></div>
+      <div class="path ${sc.op.enabled?'':'off'}"><div class="path-h"><label class="toggle"><input class="swin" type="checkbox" ${sc.op.enabled?'checked':''} onchange="setPathEnabled('${sc.id}','op',this.checked)"><span class="sw"></span></label><h3>Operational → revenue</h3><span class="formula">D·R·(1−r)+C+P</span></div><div class="path-b">${vgroup(sc.id,'op',[['d','Downtime','hours','1'],['rhr','Revenue / hour','$','1000'],['r','Resilience','0–1','0.05'],['crec','Recovery cost','$','50000'],['psla','SLA penalties','$','50000']])}<div class="path" style="margin-top:9px"><div class="path-h"><label class="toggle"><input class="swin" type="checkbox" ${sc.op.recall.enabled?'checked':''} onchange="setRecallEnabled('${sc.id}',this.checked)"><span class="sw"></span></label><h3>Field action / recall</h3><span class="formula">+C+U·M</span></div><div class="path-b" ${sc.op.recall.enabled?'':'style="display:none"'}>${vgroup(sc.id,'op.recall',[['crecall','Recall cost','$','500000'],['ulost','Lost units','units','1000'],['munit','Margin / unit','$','100']])}</div></div></div></div>
+      <div class="path ${sc.ip.enabled?'':'off'}"><div class="path-h"><label class="toggle"><input class="swin" type="checkbox" ${sc.ip.enabled?'checked':''} onchange="setPathEnabled('${sc.id}','ip',this.checked)"><span class="sw"></span></label><h3>IP → revenue</h3><span class="formula">P·NPV·E</span></div><div class="path-b">${vgroup(sc.id,'ip',[['pcond','P(material exfil | event)','0–1','0.05'],['npv','NPV protected revenue','$','1000000'],['e','Erosion factor','0–1','0.05']])}</div></div>
+      <div class="path ${sc.rep.enabled?'':'off'}"><div class="path-h"><label class="toggle"><input class="swin" type="checkbox" ${sc.rep.enabled?'checked':''} onchange="setPathEnabled('${sc.id}','rep',this.checked)"><span class="sw"></span></label><h3>Reputational → revenue</h3><span class="formula">ARR·Δc·T+Pipe·Δw+ΔCAC·N</span></div><div class="path-b">${vgroup(sc.id,'rep',[['arr','ARR / at-risk revenue','$','1000000'],['dchurn','Δ churn','fraction','0.005'],['t','Recovery horizon','years','0.5'],['pipeline','Open pipeline','$','1000000'],['dwin','Δ win rate','fraction','0.01'],['dcac','Δ CAC','$','500'],['nnew','New logos','count/yr','50']])}</div></div>
+    </div></div>`;}).join('')||'<div class="empty">No scenarios.</div>';
+}
+function getScenario(id){return state.scenarios.find(s=>s.id===id);}
+function getPath(id,path,key){let o=getScenario(id);if(path)for(const p of path.split('.'))o=o[p];return o[key];}
+function setVar(id,path,key,which,val){let o=getScenario(id);if(path)for(const p of path.split('.'))o=o[p];o[key][which]=parseFloat(val);if(path===''&&(key==='tef'||key==='vuln')){const sc=getScenario(id);const badge=document.querySelector(`.scn[data-id="${id}"] .lef b`);if(badge)badge.textContent=(sc.tef.ml*sc.vuln.ml).toFixed(2);}scheduleSave();}
+function setSName(id,v){getScenario(id).name=v;const el=document.querySelector(`.scn[data-id="${id}"] .nm`);if(el)el.textContent=v;scheduleSave();}
+function setTier(id,v){getScenario(id).tier=v;renderScenarios();scheduleSave();}
+function setEnabled(id,v){getScenario(id).enabled=v;const scn=document.querySelector(`.scn[data-id="${id}"]`);if(scn)scn.classList.toggle('disabled',!v);document.getElementById('scn-count').textContent=`${state.scenarios.filter(s=>s.enabled).length} of ${state.scenarios.length} enabled`;scheduleSave();}
+function setPathEnabled(id,p,v){getScenario(id)[p].enabled=v;renderScenarios();scheduleSave();}
+function setRecallEnabled(id,v){getScenario(id).op.recall.enabled=v;renderScenarios();scheduleSave();}
+function toggleOpen(id,e){if(e&&e.target&&e.target.closest('.toggle'))return;const sc=getScenario(id);sc.open=!sc.open;const el=document.querySelector(`.scn[data-id="${id}"]`);if(el)el.classList.toggle('open',sc.open);scheduleSave();}
+function addScenario(){const s={id:uid(),name:"New scenario",tier:"enterprise",enabled:true,open:true,tef:V(0.2,0.5,1.0),vuln:V(0.2,0.4,0.6),op:{enabled:true,d:V(4,24,72),rhr:V(50000,100000,180000),r:V(0.3,0.5,0.7),crec:V(200000,750000,2000000),psla:V(0,200000,800000),recall:{enabled:false,crecall:V(0,0,0),ulost:V(0,0,0),munit:V(0,0,0)}},ip:{enabled:false,pcond:V(0.4,0.6,0.8),npv:V(20000000,60000000,150000000),e:V(0.2,0.4,0.6)},rep:{enabled:false,arr:V(100000000,100000000,100000000),dchurn:V(0.01,0.03,0.06),t:V(1,2,3),pipeline:V(30000000,30000000,30000000),dwin:V(0.03,0.08,0.15),dcac:V(2000,4000,8000),nnew:V(100,300,500)}};state.scenarios.push(s);renderScenarios();saveState();}
+function delScenario(id){if(!confirm('Delete this scenario?'))return;state.scenarios=state.scenarios.filter(s=>s.id!==id);renderScenarios();saveState();}
+
+/* ===== Config / persistence / theme / tabs ===== */
+function syncConfigFromInputs(){const g=id=>document.getElementById(id);if(!g('c-iter'))return;state.config.iterations=Math.max(1000,Math.min(200000,parseInt(g('c-iter').value)||20000));state.config.seed=Math.max(0,parseInt(g('c-seed').value)||0);state.config.ce=clamp01(parseFloat(g('c-ce').value)||0);state.config.spend=Math.max(0,parseFloat(g('c-spend').value)||0);state.config.ins=Math.max(0,parseFloat(g('c-ins').value)||0);}
+function fillConfigInputs(){document.getElementById('c-iter').value=state.config.iterations;document.getElementById('c-seed').value=state.config.seed;document.getElementById('c-ce').value=state.config.ce;document.getElementById('c-spend').value=state.config.spend;document.getElementById('c-ins').value=state.config.ins;const br=document.getElementById('b-rev');if(br)br.value=state.config.revenue;}
+const LS='rar_board_v3';let saveTimer=null;
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveState(true),400);}
+function saveState(silent){try{syncConfigFromInputs();}catch(e){}try{localStorage.setItem(LS,JSON.stringify(state));if(!silent)toast("Saved.");}catch(e){if(!silent)toast("Save failed.");}}
+function load(){try{const r=localStorage.getItem(LS);return r?JSON.parse(r):null;}catch(e){return null;}}
+function resetAll(){if(!confirm('Reset everything to defaults?'))return;state=defaultState();migrate();lastRun=null;editMode=false;document.body.classList.remove('editing');applyTheme();fillConfigInputs();renderScenarios();renderRegister();renderDashboard();renderTrends();renderBenchmarks();run({silent:true});saveState();toast("Reset to defaults.");}
+function exportJSON(){syncConfigFromInputs();const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='board-risk-model.json';a.click();URL.revokeObjectURL(a.href);toast("Exported.");}
+function importJSON(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const s=JSON.parse(rd.result);if(!s.scenarios||!s.config)throw 0;state=s;migrate();applyTheme();fillConfigInputs();renderScenarios();renderRegister();renderDashboard();renderTrends();renderBenchmarks();run({silent:true});saveState();toast("Model imported.");}catch(e){toast("Invalid model file.");}};rd.readAsText(f);ev.target.value='';}
+function applyTheme(){const dark=state.config.theme==='dark';document.body.classList.toggle('dark',dark);document.getElementById('theme-lab').textContent=dark?'Light slides':'Dark slides';}
+function toggleTheme(){state.config.theme=state.config.theme==='dark'?'light':'dark';applyTheme();if(lastRun)renderResults();renderTrends();scheduleSave();}
+function showTab(t){['overview','register','trends','benchmarks','brief','calc'].forEach(x=>{document.getElementById(x+'-pane').classList.toggle('active',x===t);document.getElementById('tab-'+x).classList.toggle('active',x===t);});if(t==='brief')renderBoard();if(t==='overview')renderDashboard();if(t==='register')renderRegister();if(t==='trends')renderTrends();if(t==='benchmarks')renderBenchmarks();}
+let toastTimer=null;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1900);}
+
+/* ===== Init ===== */
+applyTheme();fillConfigInputs();renderScenarios();renderRegister();run({silent:true});renderDashboard();renderTrends();renderBenchmarks();
+
 </script>
 </body>
 </html>
