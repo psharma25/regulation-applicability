@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -275,6 +275,111 @@ a.btn:hover{text-decoration:none}
 .pdf-frame{flex:1; width:100%; border:0; background:#525659}
 @media (max-width:640px){ .pdf-actions .btn{padding:7px 9px; font-size:12px} .pdf-title{font-size:11px} }
 
+/* ===================== theme toggle (light / dark) ===================== */
+.theme-seg{display:inline-flex; background:var(--surface); border:1px solid var(--line-2); border-radius:999px; padding:3px; gap:2px}
+.theme-seg button{border:0; background:transparent; color:var(--muted); border-radius:999px; padding:9px 13px;
+  font-size:13px; font-weight:600; cursor:pointer; font-family:var(--body); display:inline-flex; align-items:center; gap:5px}
+.theme-seg button.on{background:#fff; color:var(--ink); box-shadow:var(--shadow)}
+
+/* ===================== DARK THEME ===================== */
+[data-theme="dark"]{
+  --bg:#0d1014; --surface:#161b22; --surface-2:#1c222c; --line:#28303b; --line-2:#3a4453;
+  --ink:#e7ebf1; --muted:#a6afbd; --faint:#79828f;
+  --periwinkle-bg:#1d2442; --mint-bg:#123028; --sky-bg:#122834; --blush-bg:#341c25;
+  --butter-bg:#332c18; --lavender-bg:#241c39; --sage-bg:#1a2b1a;
+  --shadow:0 1px 2px rgba(0,0,0,.45), 0 8px 24px rgba(0,0,0,.5);
+}
+[data-theme="dark"] body{
+  background-image:radial-gradient(1100px 460px at 90% -8%, #161f38 0%, transparent 60%),
+                   radial-gradient(900px 420px at 0% -6%, #10251d 0%, transparent 55%);}
+[data-theme="dark"] a{color:#8ea2ff}
+[data-theme="dark"] .tracker-pill,
+[data-theme="dark"] .search,
+[data-theme="dark"] .tab,
+[data-theme="dark"] .fchip,
+[data-theme="dark"] .card,
+[data-theme="dark"] .btn,
+[data-theme="dark"] .panel,
+[data-theme="dark"] .seg-btn.on,
+[data-theme="dark"] .exb-card,
+[data-theme="dark"] .modal-card,
+[data-theme="dark"] .iconbtn,
+[data-theme="dark"] .ed-field select,
+[data-theme="dark"] .sr-table,
+[data-theme="dark"] .tpl-row,
+[data-theme="dark"] .pdf-box,
+[data-theme="dark"] .cmp-row,
+[data-theme="dark"] .ctable{background:var(--surface); color:var(--ink); border-color:var(--line)}
+[data-theme="dark"] .theme-seg button.on{background:var(--surface-2); color:var(--ink)}
+[data-theme="dark"] .search input{color:var(--ink)}
+[data-theme="dark"] .tab.active{background:var(--surface-2)}
+[data-theme="dark"] .card.tl:before{background:var(--surface)}
+[data-theme="dark"] .sr-table tbody tr:nth-child(even),
+[data-theme="dark"] .ctable tbody tr:nth-child(even){background:var(--surface-2)}
+[data-theme="dark"] .trow .nb{background:var(--surface-2); color:var(--ink); border-color:var(--line-2)}
+[data-theme="dark"] .lchip{background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.12); color:var(--ink)}
+[data-theme="dark"] .lchip:hover{background:rgba(255,255,255,.12)}
+[data-theme="dark"] .lchip.on{background:var(--surface); color:#c3ccff; box-shadow:inset 0 0 0 1.5px var(--periwinkle)}
+[data-theme="dark"] .cia{background:var(--surface-2); color:var(--muted); border-color:var(--line-2)}
+[data-theme="dark"] .ed-right textarea{background:var(--surface-2); color:var(--ink); border-color:var(--line-2)}
+[data-theme="dark"] .exb-foot code{background:var(--surface-2); border-color:var(--line)}
+[data-theme="dark"] .btn.primary{background:#12302a; border-color:#1f5a48; color:#7fd8bd}
+[data-theme="dark"] .dl{background:#1a2b1a; border-color:#31552a; color:#9fd08c}
+[data-theme="dark"] .b-sub{color:#7fd8bd} [data-theme="dark"] .b-req,[data-theme="dark"] .b-tech{color:#8fd0e6}
+[data-theme="dark"] .b-inc{color:#f0a0b4} [data-theme="dark"] .b-rta{color:#e7c66b}
+[data-theme="dark"] .b-ai{color:#c3aef0} [data-theme="dark"] .b-reg{color:#aab9f2}
+[data-theme="dark"] .b-pdf,[data-theme="dark"] .badge.b-cve{color:#f0a0b4}
+[data-theme="dark"] .modeb.m-auto{background:#12302a;color:#7fd8bd}
+[data-theme="dark"] .modeb.m-manual{background:#332c18;color:#e7c66b}
+[data-theme="dark"] .modeb.m-both{background:#122834;color:#8fd0e6}
+[data-theme="dark"] .cmp-head:hover{background:var(--surface-2)}
+[data-theme="dark"] .vbtn.on{background:var(--surface-2); color:var(--ink)}
+[data-theme="dark"] .guide,[data-theme="dark"] .why,[data-theme="dark"] .ifnot{color:var(--ink)}
+
+/* ===================== view-mode bar ===================== */
+.viewbar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:2px 0 14px}
+.viewbar .vlabel{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); font-weight:600}
+.vseg{display:inline-flex; background:var(--surface); border:1px solid var(--line-2); border-radius:10px; padding:3px; gap:2px}
+.vbtn{border:0; background:transparent; color:var(--muted); border-radius:8px; padding:7px 13px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:var(--body)}
+.vbtn.on{background:#fff; color:var(--ink); box-shadow:var(--shadow)}
+.vexpand{margin-left:auto; display:flex; gap:10px}
+.vlink{font-size:12px; color:var(--muted); background:transparent; border:0; cursor:pointer; font-weight:600; font-family:var(--body)}
+.vlink:hover{color:var(--ink); text-decoration:underline}
+
+/* ===================== compact collapsible rows ===================== */
+.cmp-list{display:flex; flex-direction:column; gap:8px; padding-bottom:40px}
+.cmp-row{border:1px solid var(--line); border-radius:12px; background:#fff; box-shadow:var(--shadow); overflow:hidden; border-left:3px solid var(--line)}
+.cmp-row.c-sub{border-left-color:var(--mint)} .cmp-row.c-reg{border-left-color:var(--periwinkle)}
+.cmp-row.c-req{border-left-color:var(--sky)} .cmp-row.c-inc{border-left-color:var(--blush)}
+.cmp-row.c-rta{border-left-color:var(--butter)} .cmp-row.c-ai{border-left-color:var(--lavender)}
+.cmp-row.c-risk{border-left-color:#e89aae} .cmp-row.c-sec{border-left-color:#5fb6c9}
+.cmp-head{display:flex; align-items:center; gap:10px; padding:11px 14px; cursor:pointer}
+.cmp-head:hover{background:var(--surface)}
+.cmp-title{font-family:var(--display); font-weight:550; font-size:14.5px; color:var(--ink); flex:none; max-width:52%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cmp-meta{font-size:12px; color:var(--muted); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cmp-car{color:var(--faint); transition:transform .15s; flex:none}
+.cmp-row.open .cmp-car{transform:rotate(90deg)}
+.cmp-body{display:none; padding:0 14px 13px; border-top:1px solid var(--line)}
+.cmp-row.open .cmp-body{display:block; padding-top:11px}
+.cmp-body .card{border:0!important; border-top:0!important; box-shadow:none!important; padding:0!important; transform:none!important; background:transparent!important}
+.cmp-body .card:hover{transform:none!important; box-shadow:none!important}
+.cmp-body .card .tldate{display:none}
+.cmp-body .card.tl:before{display:none}
+
+/* ===================== generic sortable table ===================== */
+.ctable-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); margin-bottom:40px}
+.ctable{border-collapse:collapse; width:100%; font-size:13px; background:#fff; min-width:640px}
+.ctable thead th{position:sticky; top:0; background:#5f7e9e; color:#fff; text-align:left; font-weight:600; font-size:11.5px; letter-spacing:.02em; padding:11px 13px; white-space:nowrap}
+.ctable tbody tr:nth-child(even){background:#F6F9FC}
+.ctable td{padding:10px 13px; border-top:1px solid var(--line); vertical-align:top; line-height:1.5; color:var(--ink)}
+.ctable td.num{text-align:center; font-variant-numeric:tabular-nums; white-space:nowrap}
+.ctable td.c1{font-weight:600; color:var(--ink)}
+.sorth{cursor:pointer; user-select:none}
+.sr-table thead th.sorth:hover,.ctable thead th.sorth:hover{background:#54718f}
+.sar{display:inline-block; width:0; height:0; margin-left:6px; vertical-align:middle; opacity:.85}
+.sorth.asc .sar{border-left:4px solid transparent; border-right:4px solid transparent; border-bottom:5px solid #fff}
+.sorth.desc .sar{border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid #fff}
+
 </style>
 </head>
 <body>
@@ -295,6 +400,10 @@ a.btn:hover{text-decoration:none}
           <span>Run tracker</span>
           <span class="delta-chip" id="pillDelta">openFDA · live</span>
         </button>
+        <div class="theme-seg" id="themeSeg" role="group" aria-label="Background theme">
+          <button data-theme="light" title="White background">☀ Light</button>
+          <button data-theme="dark" title="Black background">☾ Dark</button>
+        </div>
       </div>
     </div>
   </header>
@@ -330,7 +439,6 @@ a.btn:hover{text-decoration:none}
     <p class="lead">Watches <b>every regulation</b> in the register for version/date changes and pulls live <b>device cybersecurity incidents</b> from the FDA's openFDA API — showing the <b>delta</b> since your last run. Runs in your browser; no key needed.</p>
     <div class="trk-actions">
       <button class="btn primary" id="runTracker">Run tracker now</button>
-      <button class="btn" id="clearSnap">Reset delta baseline</button>
       <span class="trk-status" id="trkStatus">Not run yet.</span>
     </div>
     <h3 class="trk-sub">Regulation register <span id="regStatus" class="trk-status"></span></h3>
@@ -426,10 +534,6 @@ function templatesBanner() {
 }
 
 const TABS = [
-  { id: "submissions", label: "Submissions", c: "c-sub", b: "b-sub", pip: "var(--mint)",
-    facets: [{ f: "region", label: "Region" }] },
-  { id: "templates", label: "Templates", c: "c-tpl", b: "b-tpl", pip: "var(--sage)",
-    facets: [{ f: "category", label: "Category" }] },
   { id: "regulations", label: "Regulations", c: "c-reg", b: "b-reg", pip: "var(--periwinkle)",
     facets: [{ f: "region", label: "Region" }, { f: "type", label: "Type" }] },
   { id: "requirements", label: "Submission Requirements", c: "c-req", b: "b-req", pip: "var(--sky)",
@@ -437,11 +541,15 @@ const TABS = [
   { id: "secreqs", label: "Security Requirements & V&V Tests", c: "c-sec", b: "b-req", pip: "#5fb6c9", facets: [] },
   { id: "ai", label: "AI requirements", c: "c-ai", b: "b-ai", pip: "var(--lavender)", facets: [] },
   { id: "risk", label: "Risk Assessment", c: "c-risk", b: "b-rta", pip: "#e89aae", facets: [] },
-  { id: "incidents", label: "FDA & agency cyber incidents", c: "c-inc", b: "b-inc", pip: "var(--blush)",
+  { id: "incidents", label: "Cyber Incidents", c: "c-inc", b: "b-inc", pip: "var(--blush)",
     facets: [{ f: "agency", label: "Agency" }] },
   { id: "rta", label: "RTA & fines", c: "c-rta", b: "b-rta", pip: "var(--butter)", facets: [] },
+  { id: "submissions", label: "Submissions", c: "c-sub", b: "b-sub", pip: "var(--mint)",
+    facets: [{ f: "region", label: "Region" }] },
+  { id: "templates", label: "Templates", c: "c-tpl", b: "b-tpl", pip: "var(--sage)",
+    facets: [{ f: "category", label: "Category" }] },
 ];
-let active = "submissions", query = "", facetVals = {};
+let active = "regulations", query = "", facetVals = {};
 let lensJuris = "All", lensTech = "All";
 const TECH_PROFILES = ["All", "AI", "SaMD", "SiMD", "Software", "Hardware", "Firmware", "Connected", "Cloud", "AWS", "Azure", "GCP", "Mobile-iOS", "Mobile-Android"];
 
@@ -540,17 +648,8 @@ function render() {
     if (v && v !== "All") rows = rows.filter(r => fc.arr ? (r[fc.f] || []).includes(v) : r[fc.f] === v);
   });
   $("#count").textContent = rows.length + (rows.length === 1 ? " entry" : " entries");
-  if (active === "secreqs") {
-    $("#view").innerHTML = renderSecReqs(rows);
-    const dx = $("#srDlXlsx"); if (dx) dx.onclick = () => downloadFile("security-requirements-vv.xlsx");
-    const dc = $("#srDlCsv"); if (dc) dc.onclick = () => downloadSecreqCSV(rows);
-    return;
-  }
-  if (active === "risk") {
-    $("#view").innerHTML = renderRisk(rows);
-    const rx = $("#riskDlXlsx"); if (rx) rx.onclick = () => downloadFile("risk-assessment-medical-device.xlsx");
-    return;
-  }
+
+  // Templates keeps its own bespoke collapsible list + editor wiring
   if (active === "templates") {
     $("#view").innerHTML = templatesBanner() + renderTemplates(rows);
     $("#view").querySelectorAll(".tpl-head").forEach(h => h.addEventListener("click", () => h.parentElement.classList.toggle("open")));
@@ -558,9 +657,37 @@ function render() {
     $("#view").querySelectorAll(".pdfbtn").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); openPdf(b.dataset.pdf); }));
     return;
   }
-  $("#view").innerHTML =
-    `<div class="grid ${active === "incidents" || active === "rta" ? "timeline" : ""}">${rows.map(r => CARD[active](r, tab)).join("") || empty()}</div>`;
-  $("#view").querySelectorAll(".reglink").forEach(a => a.addEventListener("click", e => { e.preventDefault(); goToReg(a.dataset.reg); }));
+
+  const mode = curMode(active);
+  const disp = sortRows(rows, active);
+  const vb = viewBar(active);
+
+  // Tabs backed by rich bespoke tables (with download bars): risk & security requirements
+  if (active === "secreqs") {
+    if (mode === "compact") { $("#view").innerHTML = vb + renderCompactView(disp, tab); }
+    else {
+      $("#view").innerHTML = vb + renderSecReqs(disp);
+      const dx = $("#srDlXlsx"); if (dx) dx.onclick = () => downloadFile("security-requirements-vv.xlsx");
+      const dc = $("#srDlCsv"); if (dc) dc.onclick = () => downloadSecreqCSV(disp);
+    }
+    wireViewControls(active); return;
+  }
+  if (active === "risk") {
+    if (mode === "compact") { $("#view").innerHTML = vb + renderCompactView(disp, tab); }
+    else {
+      $("#view").innerHTML = vb + renderRisk(disp);
+      const rx = $("#riskDlXlsx"); if (rx) rx.onclick = () => downloadFile("risk-assessment-medical-device.xlsx");
+    }
+    wireViewControls(active); return;
+  }
+
+  // Card-backed tabs: cards / compact (collapsible) / table (sortable)
+  let html;
+  if (mode === "table") html = renderTableView(disp, active);
+  else if (mode === "compact") html = renderCompactView(disp, tab);
+  else html = `<div class="grid ${active === "incidents" || active === "rta" ? "timeline" : ""}">${disp.map(r => CARD[active](r, tab)).join("") || empty()}</div>`;
+  $("#view").innerHTML = vb + html;
+  wireViewControls(active);
 }
 const empty = () => `<div class="card" style="cursor:default"><p class="desc">No matches. Clear the search or pick another filter.</p></div>`;
 function modeBadge(m) {
@@ -581,7 +708,7 @@ function renderSecReqs(rows) {
       <td class="sr-mode">${modeBadge(r.mode)}</td>
       <td class="sr-vv">${esc(r.vv)}</td></tr>`).join("");
   return bar + `<div class="sr-wrap"><table class="sr-table">
-      <thead><tr><th>Security requirement</th><th>Description</th><th>Automatable / Manual</th><th>V&amp;V test to validate</th></tr></thead>
+      <thead><tr>${thHead("secreqs", COLS.secreqs)}</tr></thead>
       <tbody>${body}</tbody></table></div>`;
 }
 function riskColor(sxl) { return sxl >= 12 ? "rk-high" : sxl >= 6 ? "rk-med" : "rk-low"; }
@@ -601,8 +728,7 @@ function renderRisk(rows) {
       <td class="sr-desc">${esc(r.rec)}</td>
       <td class="sr-vv">${esc(r.std)}</td></tr>`).join("");
   return bar + `<div class="sr-wrap"><table class="sr-table risk">
-      <thead><tr><th>Cyber issue</th><th>C/I/A</th><th>Inherent risk</th><th>Mitigating control</th><th>Hazardous situation</th>
-        <th>Patient-safety impact</th><th>Residual risk</th><th>Recommendation to remediate</th><th>Standards</th></tr></thead>
+      <thead><tr>${thHead("risk", COLS.risk)}</tr></thead>
       <tbody>${body}</tbody></table></div>
     <div class="sr-note" style="margin-top:14px">C = Confidentiality, I = Integrity, A = Availability. Risk band: Low (1–5) · Medium (6–11) · High (12–25). References: ISO 14971 · ISO/TR 24971 · AAMI TIR57 · ANSI/AAMI SW96 · FDA Premarket (2025) &amp; Postmarket (2016) · IEC 81001-5-1 · NIST 800-30 / AI RMF. The Excel has Risk Register (live formulas), Scoring Key, and References sheets.</div>`;
 }
@@ -730,6 +856,172 @@ const CARD = {
     <div class="kv"><b>Takeaway:</b> ${esc(r.lesson)}</div>
     <div class="links">${link(r.source, "Source")}</div></div>`,
 };
+
+/* ===================== view modes: cards / compact (collapsible) / table (sortable) ===================== */
+const VIEW_MODES = {
+  regulations:  { modes: ["cards", "compact", "table"], def: "cards" },
+  requirements: { modes: ["cards", "compact", "table"], def: "cards" },
+  secreqs:      { modes: ["table", "compact"], def: "table" },
+  ai:           { modes: ["cards", "compact", "table"], def: "cards" },
+  risk:         { modes: ["table", "compact"], def: "table" },
+  incidents:    { modes: ["cards", "compact", "table"], def: "compact" },
+  rta:          { modes: ["cards", "compact", "table"], def: "compact" },
+  submissions:  { modes: ["cards", "compact", "table"], def: "cards" },
+};
+const MODE_LABEL = { cards: "Cards", compact: "Compact", table: "Table" };
+let viewByTab = {};
+let sortState = { tab: null, key: null, dir: 1 };
+function curMode(id) { const c = VIEW_MODES[id]; if (!c) return null; return viewByTab[id] || c.def; }
+
+/* column definitions: get(r) -> display string; num => numeric sort */
+const COLS = {
+  regulations: [
+    { k: "name", label: "Regulation", get: r => r.name, cls: "c1" },
+    { k: "region", label: "Region", get: r => r.region },
+    { k: "type", label: "Type", get: r => r.type },
+    { k: "cyber", label: "Cyber", get: r => r.cyber ? "Yes" : "—" },
+    { k: "ai", label: "AI", get: r => r.ai ? "Yes" : "—" },
+    { k: "last_updated", label: "Updated", get: r => r.last_updated || "—" },
+  ],
+  requirements: [
+    { k: "name", label: "Requirement", get: r => r.name, cls: "c1" },
+    { k: "cat", label: "Category", get: r => r.cat },
+    { k: "tech", label: "Technology", get: r => (r.tech || []).join(", ") || "—" },
+    { k: "applies", label: "Applies to", get: r => (r.applies || []).map(subName).join(", ") || "—" },
+  ],
+  secreqs: [
+    { k: "req", label: "Security requirement", get: r => r.req, cls: "c1" },
+    { k: "desc", label: "Description", get: r => r.desc },
+    { k: "mode", label: "Automatable / Manual", get: r => r.mode },
+    { k: "vv", label: "V&V test to validate", get: r => r.vv },
+  ],
+  ai: [
+    { k: "name", label: "AI requirement", get: r => r.name, cls: "c1" },
+    { k: "detail", label: "Detail", get: r => r.detail },
+    { k: "cite", label: "Citation", get: r => r.cite || "—" },
+  ],
+  risk: [
+    { k: "cyber_issue", label: "Cyber issue", get: r => r.cyber_issue, cls: "c1" },
+    { k: "cia", label: "C/I/A", get: r => r.cia },
+    { k: "inh", label: "Inherent", num: true, get: r => r.inh_sev * r.inh_lik },
+    { k: "control", label: "Mitigating control", get: r => r.control },
+    { k: "hazard", label: "Hazardous situation", get: r => r.hazard },
+    { k: "patient", label: "Patient-safety impact", get: r => r.patient },
+    { k: "res", label: "Residual", num: true, get: r => r.res_sev * r.res_lik },
+    { k: "rec", label: "Recommendation", get: r => r.rec },
+    { k: "std", label: "Standards", get: r => r.std },
+  ],
+  incidents: [
+    { k: "date", label: "Date", get: r => r.date },
+    { k: "device", label: "Device", get: r => r.device, cls: "c1" },
+    { k: "agency", label: "Agency", get: r => r.agency },
+    { k: "maker", label: "Maker", get: r => r.maker },
+    { k: "kind", label: "Kind", get: r => r.kind },
+    { k: "cve", label: "CVE", get: r => (r.cve && r.cve !== "—") ? r.cve : "—" },
+  ],
+  rta: [
+    { k: "date", label: "Date", get: r => r.date },
+    { k: "trigger", label: "Trigger", get: r => r.trigger, cls: "c1" },
+    { k: "since", label: "Since", get: r => r.since },
+    { k: "lesson", label: "Takeaway", get: r => r.lesson },
+  ],
+  submissions: [
+    { k: "name", label: "Submission", get: r => r.name, cls: "c1" },
+    { k: "region", label: "Region", get: r => r.region },
+    { k: "pathway", label: "Pathway", get: r => r.pathway },
+    { k: "cyber", label: "Cyber", get: r => /Required/i.test(r.cyber || "") ? "Required" : (r.cyber || "—") },
+    { k: "ai", label: "AI", get: r => r.ai || "—" },
+  ],
+};
+
+function sortRows(rows, id) {
+  if (sortState.tab !== id || !sortState.key) return rows;
+  const col = (COLS[id] || []).find(c => c.k === sortState.key);
+  if (!col) return rows;
+  const dir = sortState.dir, out = rows.slice();
+  out.sort((a, b) => {
+    let va = col.get(a), vb = col.get(b);
+    if (col.num) { va = +va || 0; vb = +vb || 0; return (va - vb) * dir; }
+    va = String(va == null ? "" : va).toLowerCase(); vb = String(vb == null ? "" : vb).toLowerCase();
+    return va < vb ? -dir : va > vb ? dir : 0;
+  });
+  return out;
+}
+function thHead(id, cols) {
+  return cols.map(c => {
+    const on = sortState.tab === id && sortState.key === c.k;
+    const dir = on ? (sortState.dir > 0 ? "asc" : "desc") : "";
+    return `<th class="sorth ${dir}" data-key="${c.k}">${esc(c.label)}<span class="sar"></span></th>`;
+  }).join("");
+}
+function viewBar(id) {
+  const cfg = VIEW_MODES[id]; if (!cfg) return "";
+  const cur = curMode(id);
+  const seg = cfg.modes.map(m => `<button class="vbtn ${m === cur ? "on" : ""}" data-mode="${m}">${MODE_LABEL[m]}</button>`).join("");
+  const expand = (cur === "compact")
+    ? `<span class="vexpand"><button class="vlink" data-all="open">Expand all</button><button class="vlink" data-all="close">Collapse all</button></span>` : "";
+  return `<div class="viewbar"><span class="vlabel">View</span><div class="vseg">${seg}</div>${expand}</div>`;
+}
+function wireViewControls(id) {
+  $("#view").querySelectorAll(".vbtn").forEach(b => b.addEventListener("click", () => { viewByTab[id] = b.dataset.mode; render(); }));
+  $("#view").querySelectorAll(".vlink").forEach(b => b.addEventListener("click", () => {
+    const open = b.dataset.all === "open";
+    $("#view").querySelectorAll(".cmp-row").forEach(r => r.classList.toggle("open", open));
+  }));
+  $("#view").querySelectorAll(".cmp-head").forEach(h => h.addEventListener("click", () => h.parentElement.classList.toggle("open")));
+  $("#view").querySelectorAll(".sorth").forEach(th => th.addEventListener("click", () => {
+    const k = th.dataset.key;
+    if (sortState.tab === id && sortState.key === k) sortState.dir *= -1;
+    else { sortState.tab = id; sortState.key = k; sortState.dir = 1; }
+    render();
+  }));
+  $("#view").querySelectorAll(".reglink").forEach(a => a.addEventListener("click", e => { e.preventDefault(); goToReg(a.dataset.reg); }));
+}
+function renderTableView(rows, id) {
+  const cols = COLS[id] || [];
+  if (!rows.length) return `<div class="card" style="cursor:default"><p class="desc">No matches. Clear the search or pick another filter.</p></div>`;
+  const body = rows.map(r => `<tr>${cols.map(c => `<td class="${c.cls || ""} ${c.num ? "num" : ""}">${esc(c.get(r))}</td>`).join("")}</tr>`).join("");
+  return `<div class="ctable-wrap"><table class="ctable"><thead><tr>${thHead(id, cols)}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+function compactTitle(id, r) { return esc(r.name || r.device || r.trigger || r.cyber_issue || r.req || ""); }
+function compactMeta(id, r) {
+  switch (id) {
+    case "submissions": return `${esc(r.region)} · ${esc(r.pathway)}${/Required/i.test(r.cyber || "") ? " · Cyber required" : ""}`;
+    case "regulations": return `${esc(r.region)} · ${esc(r.type)} · updated ${esc(r.last_updated || "—")}`;
+    case "requirements": return `${esc(r.cat)}${(r.tech && r.tech.length) ? " · " + esc(r.tech.join(", ")) : ""}`;
+    case "ai": return esc(r.cite || "");
+    case "incidents": return `${esc(r.date)} · ${esc(r.agency)} · ${esc(r.maker)}`;
+    case "rta": return `${esc(r.date)} · since ${esc(r.since)}`;
+    case "risk": return `${esc(r.cia)} · inherent ${r.inh_sev * r.inh_lik} · residual ${r.res_sev * r.res_lik}`;
+    case "secreqs": return esc(r.mode || "");
+  }
+  return "";
+}
+function riskDetail(r) {
+  return `<div class="meta"><span class="cia">${esc(r.cia)}</span> ${riskBadge(r.inh_sev, r.inh_lik)} <span style="font-size:11px;color:var(--faint)">inherent</span> ${riskBadge(r.res_sev, r.res_lik)} <span style="font-size:11px;color:var(--faint)">residual</span></div>
+    <div class="guide"><b>Mitigating control.</b> ${esc(r.control)}</div>
+    <div class="why"><b>Hazardous situation.</b> ${esc(r.hazard)}</div>
+    <div class="kv"><b>Patient-safety impact:</b> ${esc(r.patient)}</div>
+    <div class="ifnot"><b>Recommendation.</b> ${esc(r.rec)}</div>
+    <div class="cite">Standards: ${esc(r.std)}</div>`;
+}
+function secreqDetail(r) {
+  return `<div class="meta">${modeBadge(r.mode)}${(r.tech || []).map(x => `<span class="badge b-tech">${esc(x)}</span>`).join("")}</div>
+    <p class="desc">${esc(r.desc)}</p>
+    <div class="guide"><b>V&amp;V test.</b> ${esc(r.vv)}</div>`;
+}
+function compactBody(id, r, tab) {
+  if (id === "risk") return riskDetail(r);
+  if (id === "secreqs") return secreqDetail(r);
+  return CARD[id](r, tab);
+}
+function renderCompactView(rows, tab) {
+  const id = tab.id;
+  if (!rows.length) return `<div class="card" style="cursor:default"><p class="desc">No matches. Clear the search or pick another filter.</p></div>`;
+  return `<div class="cmp-list">` + rows.map(r => `<div class="cmp-row ${tab.c}">
+      <div class="cmp-head"><span class="cmp-title">${compactTitle(id, r)}</span><span class="cmp-meta">${compactMeta(id, r)}</span><span class="cmp-car">▸</span></div>
+      <div class="cmp-body">${compactBody(id, r, tab)}</div></div>`).join("") + `</div>`;
+}
 
 // ---------- template editor (live, submission-aware, Word/PDF/MD) ----------
 let edTpl = null, edMode = "blank";
@@ -913,11 +1205,22 @@ async function runTracker() {
   }
 }
 $("#runTracker").addEventListener("click", runTracker);
-$("#clearSnap").addEventListener("click", () => {
-  try { localStorage.removeItem(SNAP_KEY); localStorage.removeItem(REG_SNAP_KEY); } catch (e) {}
-  $("#pillDelta").textContent = "baseline cleared"; $("#pillDelta").className = "delta-chip";
-  $("#trkStatus").textContent = "Baselines reset — next run sets fresh baselines."; $("#regStatus").textContent = "";
-});
+
+// ---------- theme (white / black background) ----------
+const THEME_KEY = "medreg_theme_v1";
+function applyTheme(t) {
+  const theme = t === "dark" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", theme);
+  document.querySelectorAll("#themeSeg button").forEach(b => b.classList.toggle("on", b.dataset.theme === theme));
+}
+(function initTheme() {
+  let t = "light"; try { t = localStorage.getItem(THEME_KEY) || "light"; } catch (e) {}
+  applyTheme(t);
+  document.querySelectorAll("#themeSeg button").forEach(b => b.addEventListener("click", () => {
+    const nt = b.dataset.theme; try { localStorage.setItem(THEME_KEY, nt); } catch (e) {}
+    applyTheme(nt);
+  }));
+})();
 
 renderLens();
 render();
