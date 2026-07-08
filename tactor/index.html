@@ -4,103 +4,192 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Threat Actor Reputation Tracker</title>
-<meta name="description" content="Defensive threat-intelligence scoring of ransomware and extortion actors on two axes: how dangerous they are, and whether they honor a payment." />
+<meta name="description" content="Defensive threat-intelligence scoring of ransomware and extortion actors on two axes: how dangerous they are, and whether they honor a payment. Live agent enrichment via Anthropic Claude." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bg:#F7F6FB; --panel:#FFFFFF; --panel2:#F2EFF7; --line:#E9E4F1; --line2:#DBD4E7;
-    --ink:#4B4E61; --ink2:#6B6E80; --mute:#9D9BB0; --accent:#7E84C4;
-    --sev:#D98A6E; --sev-fill:#E8A48C; --sev-fill2:#F2C7B4; --sev-soft:#FBEEE7;
-    --rel:#5FA585; --rel-fill:#9FD0B6; --rel-fill2:#C8E6D6; --rel-soft:#E9F4EE;
-    --dir:#B074A0; --dir-soft:#F4E9F1;
+    --bg:#FFFFFF; --panel:#FFFFFF; --panel2:#F6F5FA; --line:#E5E2EE; --line2:#D3CEE1;
+    --ink:#23263A; --ink2:#474C61; --mute:#7C7F94; --accent:#5E66B8; --accent-soft:#EEEFFA;
+    --sev:#C1653F; --sev-fill:#E09B77; --sev-fill2:#F0C4A9; --sev-soft:#FBF0E9;
+    --rel:#2F7D58; --rel-fill:#84C4A0; --rel-fill2:#BEE2CE; --rel-soft:#EAF5EF;
+    --dir:#9A4E87; --dir-soft:#F5E9F2;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
-  body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Mono",ui-monospace,monospace;line-height:1.5;min-height:100vh}
-  .wrap{max-width:1180px;margin:0 auto;padding:32px 22px 80px}
-  header.hero{border:1px solid var(--line);border-radius:8px;background:linear-gradient(180deg,#FFFFFF,var(--panel2));padding:26px 28px;box-shadow:0 2px 14px -8px rgba(126,132,196,.35)}
+  body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13.5px;line-height:1.55;min-height:100vh}
+  .wrap{max-width:1220px;margin:0 auto;padding:32px 22px 80px}
+  header.hero{border:1px solid var(--line);border-radius:8px;background:#FFFFFF;padding:26px 28px;box-shadow:0 2px 14px -10px rgba(94,102,184,.4)}
   .eyebrow{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;font-weight:600}
   h1{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:clamp(26px,4vw,40px);line-height:1.04;margin:0;color:var(--ink);letter-spacing:-.01em}
   h1 .slash{color:var(--accent)}
-  .sub{color:var(--ink2);margin:12px 0 0;max-width:64ch;font-size:13px}
-  .controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:22px}
-  button.run{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:15px;letter-spacing:.02em;cursor:pointer;border:none;border-radius:6px;padding:13px 24px;color:#FFFFFF;background:var(--accent);transition:transform .08s ease, box-shadow .2s}
+  .sub{color:var(--ink2);margin:12px 0 0;max-width:66ch;font-size:13.5px}
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:22px}
+  button.run{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:15px;letter-spacing:.02em;cursor:pointer;border:none;border-radius:6px;padding:12px 22px;color:#FFFFFF;background:var(--accent);transition:transform .08s ease, box-shadow .2s}
   button.run:hover{transform:translateY(-1px);box-shadow:0 6px 20px -8px var(--accent)}
   button.run:disabled{opacity:.45;cursor:wait;transform:none;box-shadow:none}
-  a.dl{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:14px;text-decoration:none;color:var(--rel);border:1px solid var(--rel);border-radius:6px;padding:12px 18px;transition:background .2s}
-  a.dl:hover{background:var(--rel-soft)}
-  a.dl.off{opacity:.4;pointer-events:none;color:var(--mute);border-color:var(--line2)}
-  .status{font-size:12px;color:var(--mute)}
+  button.ghost{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:13.5px;cursor:pointer;color:var(--rel);border:1px solid var(--rel);background:none;border-radius:6px;padding:11px 16px;transition:background .2s}
+  button.ghost:hover{background:var(--rel-soft)}
+  button.ghost.warn{color:var(--dir);border-color:var(--dir)}
+  button.ghost.warn:hover{background:var(--dir-soft)}
+  .status{font-size:12.5px;color:var(--ink2)}
+  .status code{font-size:11.5px;background:var(--panel2);padding:1px 5px;border-radius:3px}
   .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mute);margin-right:7px;vertical-align:middle}
   .dot.run{background:var(--accent);animation:pulse 1s infinite}
   .dot.ok{background:var(--rel)}
   .dot.err{background:var(--dir)}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .nextrun{font-size:12px;color:var(--mute)}
+  .nextrun b{color:var(--accent);font-weight:600}
+
+  /* Agent settings */
+  details.agent{margin-top:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+  details.agent summary{cursor:pointer;padding:12px 16px;font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:13px;color:var(--ink2);letter-spacing:.04em;user-select:none}
+  details.agent summary:hover{color:var(--accent)}
+  .agentbody{padding:4px 16px 16px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+  .agentnote{flex-basis:100%;font-size:11.5px;color:var(--mute);margin:6px 0 0;max-width:90ch}
+  input[type=password],input[type=text]{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink);background:#FFFFFF;border:1px solid var(--line2);border-radius:6px;padding:9px 11px;min-width:280px}
+  input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(94,102,184,.15)}
+
   .filters{margin-top:22px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
   .field{display:flex;flex-direction:column;gap:5px}
-  .field label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:600}
-  select{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);border-radius:6px;padding:9px 11px;min-width:142px;cursor:pointer;transition:border-color .15s, box-shadow .15s}
+  .field label{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:600}
+  select{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink);background:#FFFFFF;border:1px solid var(--line2);border-radius:6px;padding:9px 11px;min-width:142px;cursor:pointer;transition:border-color .15s, box-shadow .15s}
   select:hover{border-color:var(--accent)}
-  select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(126,132,196,.16)}
-  .filtermeta{display:flex;align-items:center;gap:14px;margin:18px 2px 4px;font-size:12px;color:var(--ink2)}
+  select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(94,102,184,.15)}
+  .filtermeta{display:flex;align-items:center;gap:14px;margin:18px 2px 4px;font-size:12.5px;color:var(--ink2);flex-wrap:wrap}
   .count b{color:var(--ink)}
   button.clear{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);background:none;border:1px solid var(--line2);border-radius:6px;padding:7px 13px;cursor:pointer;transition:background .15s}
-  button.clear:hover{background:#EFF0FA}
-  .legend{display:flex;gap:26px;flex-wrap:wrap;margin:18px 2px 6px;font-size:11.5px;color:var(--mute)}
+  button.clear:hover{background:var(--accent-soft)}
+
+  /* View switcher */
+  .viewswitch{display:inline-flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden;margin-left:auto}
+  .viewswitch button{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:12.5px;color:var(--ink2);background:#FFFFFF;border:none;padding:8px 16px;cursor:pointer;transition:background .15s}
+  .viewswitch button + button{border-left:1px solid var(--line2)}
+  .viewswitch button.on{background:var(--accent);color:#FFFFFF}
+  .viewswitch button:not(.on):hover{background:var(--accent-soft)}
+
+  .legend{display:flex;gap:26px;flex-wrap:wrap;margin:18px 2px 6px;font-size:12px;color:var(--mute)}
   .legend b{color:var(--ink);font-weight:600}
   .chip{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle}
+
+  /* Card view */
   .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px;margin-top:12px}
-  .card{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:18px 18px 16px;position:relative;animation:rise .35s ease both;box-shadow:0 2px 12px -9px rgba(75,78,97,.4)}
+  .card{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:18px 18px 16px;position:relative;animation:rise .35s ease both;box-shadow:0 2px 12px -9px rgba(35,38,58,.35)}
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){.card{animation:none}.fill{transition:none}}
   .rank{position:absolute;top:14px;right:16px;font-size:11px;color:var(--mute);font-weight:600;letter-spacing:.1em}
   .name{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:21px;margin:0;color:var(--ink);padding-right:34px}
-  .badge-new{display:inline-block;margin-left:8px;font-size:9px;font-weight:600;letter-spacing:.14em;vertical-align:middle;color:var(--rel);background:var(--rel-soft);border:1px solid #BCE0CD;border-radius:3px;padding:2px 6px}
+  .badge-new{display:inline-block;margin-left:8px;font-size:9px;font-weight:600;letter-spacing:.14em;vertical-align:middle;color:var(--rel);background:var(--rel-soft);border:1px solid #A9D8BE;border-radius:3px;padding:2px 6px}
   .card.defunct{opacity:.74}
   .card.defunct .name{color:var(--mute)}
   .badge-defunct{display:inline-block;margin-left:8px;font-size:9px;font-weight:600;letter-spacing:.14em;vertical-align:middle;color:var(--mute);border:1px solid var(--line2);border-radius:3px;padding:2px 6px}
-  .meta{font-size:11.5px;color:var(--mute);margin:3px 0 0}
+  .meta{font-size:12px;color:var(--ink2);margin:3px 0 0}
   .stamp{display:inline-block;margin-top:10px;font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;padding:3px 8px;border-radius:3px}
   .stamp.directed{color:var(--dir);border:1px solid #D9B6CE;background:var(--dir-soft)}
   .stamp.tolerated{color:var(--sev);border:1px solid #EDC9B9;background:var(--sev-soft)}
-  .stamp.criminal{color:var(--mute);border:1px solid var(--line2);background:var(--panel2)}
+  .stamp.criminal{color:var(--ink2);border:1px solid var(--line2);background:var(--panel2)}
   .gauges{margin-top:16px;display:flex;flex-direction:column;gap:13px}
-  .gauge .glabel{display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px}
-  .gauge .glabel .gk{color:var(--mute);letter-spacing:.04em}
+  .gauge .glabel{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:5px}
+  .gauge .glabel .gk{color:var(--ink2);letter-spacing:.04em}
   .gauge .glabel .gv{font-weight:600;color:var(--ink)}
   .track{height:8px;border-radius:6px;background:var(--panel2);overflow:hidden;border:1px solid var(--line)}
   .fill{height:100%;border-radius:6px;width:0;transition:width .8s cubic-bezier(.2,.8,.2,1)}
   .fill.sev{background:linear-gradient(90deg,var(--sev-fill2),var(--sev-fill))}
   .fill.rel{background:linear-gradient(90deg,var(--rel-fill2),var(--rel-fill))}
-  .band{font-size:10.5px;color:var(--mute);margin-top:4px}
+  .band{font-size:11px;color:var(--mute);margin-top:4px}
   .tags{margin-top:12px;display:flex;flex-wrap:wrap;gap:5px}
-  .tag{font-size:10px;color:var(--ink2);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:2px 9px}
+  .tag{font-size:10.5px;color:var(--ink2);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:2px 9px}
   .tag.vic{background:var(--sev-soft);border-color:#EDD7CC}
-  .foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:11px;color:var(--mute)}
+  .foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:11.5px;color:var(--mute)}
   .foot b{color:var(--ink);font-weight:600}
-  .notes{font-size:11.5px;color:var(--ink2);margin-top:10px;line-height:1.45}
+  .notes{font-size:12.5px;color:var(--ink2);margin-top:10px;line-height:1.5}
+  .evd{margin-top:8px;font-size:11px}
+  .evd a{color:var(--accent);text-decoration:none;word-break:break-all}
+  .evd a:hover{text-decoration:underline}
   .none,.empty{grid-column:1/-1;text-align:center;color:var(--mute);font-size:13px;padding:48px 4px}
+
+  /* Compact view */
+  .compact{margin-top:12px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .crow{display:grid;grid-template-columns:44px minmax(180px,1.5fr) 130px 1fr 1fr 90px;gap:14px;align-items:center;padding:11px 16px;border-bottom:1px solid var(--line);background:#FFFFFF}
+  .crow:last-child{border-bottom:none}
+  .crow:nth-child(even){background:var(--panel2)}
+  .crow.defunct .cname{color:var(--mute)}
+  .crow .crank{font-size:11px;color:var(--mute);font-weight:600}
+  .cname{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:14.5px;color:var(--ink)}
+  .csub{font-size:11px;color:var(--mute)}
+  .cbar{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2)}
+  .cbar .track{flex:1;height:6px}
+  .cbar .cv{font-weight:600;color:var(--ink);min-width:32px;text-align:right}
+  .cstamp{justify-self:start}
+  .crow .stamp{margin-top:0}
+  @media (max-width:860px){.crow{grid-template-columns:34px 1fr;row-gap:6px}.crow .cstamp,.crow .cbar{grid-column:2}}
+
+  /* Table view */
+  .tablewrap{margin-top:12px;border:1px solid var(--line);border-radius:8px;overflow:auto;max-height:72vh}
+  table.tab{border-collapse:collapse;width:100%;min-width:980px;font-size:12.5px}
+  table.tab thead th{position:sticky;top:0;background:var(--panel2);color:var(--ink2);font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:11px 12px;border-bottom:1px solid var(--line2);cursor:pointer;user-select:none;white-space:nowrap;z-index:2}
+  table.tab thead th:hover{color:var(--accent)}
+  table.tab thead th .arr{color:var(--accent);font-size:10px;margin-left:4px}
+  table.tab tbody td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink2)}
+  table.tab tbody tr:hover{background:var(--accent-soft)}
+  table.tab tbody tr.defunct td{color:var(--mute)}
+  td.tname{font-family:"Space Grotesk",sans-serif;font-weight:700;color:var(--ink);white-space:nowrap;font-size:13.5px}
+  td.num{font-weight:600;color:var(--ink);text-align:right;white-space:nowrap}
+  td .minitrack{display:inline-block;width:64px;height:6px;border-radius:4px;background:var(--panel2);border:1px solid var(--line);overflow:hidden;vertical-align:middle;margin-left:8px}
+  td .minitrack i{display:block;height:100%}
+  td .minitrack i.sev{background:var(--sev-fill)}
+  td .minitrack i.rel{background:var(--rel-fill)}
+
   .logwrap{margin-top:30px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
   .logwrap h3{font-family:"Space Grotesk",sans-serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin:0;padding:13px 16px;border-bottom:1px solid var(--line)}
-  pre.log{margin:0;padding:14px 16px;max-height:230px;overflow:auto;font-size:11.5px;color:var(--ink2)}
+  pre.log{margin:0;padding:14px 16px;max-height:230px;overflow:auto;font-size:12px;color:var(--ink2);white-space:pre-wrap}
   pre.log .be{color:var(--accent);font-weight:600}
-  .caveat{margin-top:26px;font-size:11.5px;color:var(--mute);border-left:2px solid var(--accent);padding-left:14px;max-width:80ch}
-  footer{margin-top:26px;font-size:11px;color:var(--mute);border-top:1px solid var(--line);padding-top:16px}
+  .caveat{margin-top:26px;font-size:12px;color:var(--mute);border-left:2px solid var(--accent);padding-left:14px;max-width:82ch}
+  footer{margin-top:26px;font-size:11.5px;color:var(--mute);border-top:1px solid var(--line);padding-top:16px}
   footer a{color:var(--rel);text-decoration:none}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="hero">
-    <p class="eyebrow">Defensive threat intelligence &middot; scoring workbook + live tracker</p>
+    <p class="eyebrow">Defensive threat intelligence &middot; live agent tracker</p>
     <h1>Threat actor reputation<span class="slash">/</span>board</h1>
-    <p class="sub">Ranks ransomware &amp; extortion actors on two axes &mdash; how dangerous they are, and whether they honor a payment &mdash; from analyst priors enriched with live public reporting.</p>
+    <p class="sub">Ranks ransomware &amp; extortion actors on two axes &mdash; how dangerous they are, and whether they honor a payment &mdash; from analyst priors enriched on a schedule by a research agent calling Anthropic Claude with web search.</p>
+
     <div class="controls">
-      <button class="run" id="runBtn">Run tracker</button>
-      <a class="dl off" id="dlBtn" href="#">Download workbook (.xlsx)</a>
+      <button class="run" id="runBtn">Run tracker now</button>
+      <button class="ghost" id="csvBtn">Export CSV</button>
+      <button class="ghost warn" id="resetBtn">Reset to seed roster</button>
       <span class="status" id="status"><span class="dot ok" id="dot"></span><span id="statusText">Preloaded roster</span></span>
+      <span class="nextrun" id="nextRun"></span>
     </div>
+
+    <details class="agent" id="agentPanel">
+      <summary>Agent settings &mdash; API key, model, schedule</summary>
+      <div class="agentbody">
+        <div class="field"><label for="apiKey">Anthropic API key</label><input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off" /></div>
+        <div class="field"><label for="modelSel">Model</label><select id="modelSel">
+          <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+          <option value="claude-opus-4-8">Claude Opus 4.8</option>
+        </select></div>
+        <div class="field"><label for="schedSel">Auto-run schedule</label><select id="schedSel">
+          <option value="0">Manual only</option>
+          <option value="15">Every 15 min</option>
+          <option value="30">Every 30 min</option>
+          <option value="60">Every hour</option>
+          <option value="180">Every 3 hours</option>
+          <option value="360">Every 6 hours</option>
+          <option value="720">Every 12 hours</option>
+          <option value="1440">Daily</option>
+        </select></div>
+        <button class="ghost" id="saveAgent">Save settings</button>
+        <p class="agentnote">The key is stored only in this browser (localStorage) and sent only to <code>api.anthropic.com</code>. The agent asks Claude to web-search recent public reporting and return structured evidence; a deterministic merge engine on this page gates all numbers &mdash; score changes are clamped to &plusmn;1.0 per run and confidence is recomputed from evidence count, so scores stay reproducible. Auto-runs fire while this tab is open; an overdue run fires on page load.</p>
+      </div>
+    </details>
+
     <div class="filters" id="filters">
       <div class="field"><label for="f-name">Threat actor</label><select id="f-name"></select></div>
       <div class="field"><label for="f-year">First seen</label><select id="f-year"></select></div>
@@ -116,7 +205,15 @@
         <option value="all">All</option><option value="directed">State-directed</option><option value="tolerated">State-tolerated</option><option value="criminal">Criminal</option>
       </select></div>
     </div>
-    <div class="filtermeta"><span class="count" id="count"></span><button class="clear" id="clearBtn">Clear filters</button></div>
+    <div class="filtermeta">
+      <span class="count" id="count"></span>
+      <button class="clear" id="clearBtn">Clear filters</button>
+      <div class="viewswitch" role="tablist" aria-label="View mode">
+        <button id="v-card" role="tab">Card</button>
+        <button id="v-compact" role="tab">Compact</button>
+        <button id="v-table" role="tab">Table</button>
+      </div>
+    </div>
   </header>
 
   <div class="legend">
@@ -125,20 +222,34 @@
     <span><span class="chip" style="background:var(--dir)"></span><b>State-directed</b> &mdash; sanctions risk on payment</span>
   </div>
 
-  <div class="board" id="board"></div>
-  <div class="logwrap" id="logwrap" style="display:none"><h3>Scan log</h3><pre class="log" id="log"></pre></div>
+  <div id="viewhost"></div>
+  <div class="logwrap" id="logwrap" style="display:none"><h3>Agent log</h3><pre class="log" id="log"></pre></div>
 
-  <p class="caveat">Scores are a planning aid, not an endorsement &mdash; every listed actor is a criminal operation. "First seen" is the year the group was first publicly observed; reported victims show the incident year and are well-known public attributions, illustrative not exhaustive. Ransoms actually paid and payer identities are mostly undisclosed; reliability reflects reputation and incentive structure, not a verified success rate.</p>
-  <footer>Threat Actor Reputation Tracker &mdash; defensive tooling, MIT licensed. Roster seeded from <a href="config/actors.yaml">config/actors.yaml</a>.</footer>
+  <p class="caveat">Scores are a planning aid, not an endorsement &mdash; every listed actor is a criminal operation. "First seen" is the year the group was first publicly observed; reported victims show the incident year and are well-known public attributions, illustrative not exhaustive. Ransoms actually paid and payer identities are mostly undisclosed; reliability reflects reputation and incentive structure, not a verified success rate. Agent-sourced updates carry linked evidence and should be analyst-reviewed before use in decisions.</p>
+  <footer>Threat Actor Reputation Tracker &mdash; defensive tooling, MIT licensed. Roster persists locally; live enrichment via Anthropic Claude runs entirely in your browser.</footer>
 </div>
 
 <script>
 const SEED = {"actors": [{"name": "Qilin", "origin": "Russia-nexus", "model": "RaaS", "status": "active", "first_seen": 2022, "nation_state_class": "tolerated", "discovered": false, "notes": "Most active group for multiple consecutive quarters. Double extortion; threatens leak even if paid.", "sectors": ["Healthcare", "Manufacturing", "Professional Services"], "notable_victims": ["Synnovis (NHS pathology) (2024)", "CES Imaging (2026)"], "threat_severity": 8.4, "deal_reliability": 5.1, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Lazarus Group", "origin": "North Korea", "model": "State-directed", "status": "active", "first_seen": 2009, "nation_state_class": "directed", "discovered": false, "notes": "True nation-state actor. Ransomware + crypto theft as state revenue. OFAC sanctions risk on payment.", "sectors": ["Financial Services", "Cryptocurrency"], "notable_victims": ["Upbit (2025)", "Bybit (2025)"], "threat_severity": 8.2, "deal_reliability": 4.0, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Cl0p", "origin": "Russia-nexus", "model": "Closed / mass-exploitation", "status": "active", "first_seen": 2019, "nation_state_class": "tolerated", "discovered": false, "notes": "Supply-chain mass exploitation (file-transfer software). Often data-theft-only extortion.", "sectors": ["Financial Services", "Government", "Technology"], "notable_victims": ["MOVEit campaign (600+ orgs) (2023)", "GoAnywhere campaign (2023)"], "threat_severity": 7.5, "deal_reliability": 4.7, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "LockBit", "origin": "Russia-nexus", "model": "RaaS", "status": "active", "first_seen": 2019, "nation_state_class": "tolerated", "discovered": false, "notes": "Reputation eroded after Operation Cronos (Feb 2024). LockBit 5.0 resurgence late 2025.", "sectors": ["Financial Services", "Manufacturing", "Government"], "notable_victims": ["Boeing (2023)", "ICBC (2023)", "Royal Mail (2023)"], "threat_severity": 7.1, "deal_reliability": 4.2, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Akira", "origin": "Russia-nexus", "model": "RaaS", "status": "active", "first_seen": 2023, "nation_state_class": "tolerated", "discovered": false, "notes": "Consistent, stable operator since 2023. ~$42M estimated lifetime take. ESXi/Nutanix focus.", "sectors": ["Manufacturing", "Professional Services", "Education"], "notable_victims": ["Nissan Oceania (2023)", "Stanford University (2023)"], "threat_severity": 7.0, "deal_reliability": 6.2, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Play", "origin": "Russia-nexus", "model": "Closed", "status": "active", "first_seen": 2022, "nation_state_class": "tolerated", "discovered": false, "notes": "Government, police, critical infrastructure focus. Email-based negotiation, no countdown site.", "sectors": ["Government", "Critical Infrastructure", "IT Services"], "notable_victims": ["City of Oakland (2023)", "Rackspace (2022)"], "threat_severity": 7.0, "deal_reliability": 5.5, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "The Gentlemen", "origin": "Ex-Qilin affiliate", "model": "RaaS", "status": "active", "first_seen": 2025, "nation_state_class": "tolerated", "discovered": false, "notes": "Emerged late 2025, scaled fast on pre-staged FortiGate access. Reliability not yet established.", "sectors": ["Manufacturing", "Professional Services"], "notable_victims": ["Undisclosed (emerging)"], "threat_severity": 6.7, "deal_reliability": 5.0, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Black Basta", "origin": "Russia-nexus", "model": "RaaS", "status": "active", "first_seen": 2022, "nation_state_class": "tolerated", "discovered": false, "notes": "Conti-lineage. Leaked internal chats in 2025 exposed operations; activity since fragmented.", "sectors": ["Healthcare", "Manufacturing"], "notable_victims": ["Ascension Health (2024)", "Capita (2023)"], "threat_severity": 6.2, "deal_reliability": 4.7, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "DragonForce", "origin": "RaaS", "model": "RaaS", "status": "active", "first_seen": 2023, "nation_state_class": "criminal", "discovered": false, "notes": "Collaborates with Scattered Spider. Retail-sector campaigns.", "sectors": ["Retail", "Consumer Goods"], "notable_victims": ["Marks & Spencer (2025)", "Co-op (2025)", "Harrods (2025)"], "threat_severity": 6.1, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Medusa", "origin": "Unknown", "model": "RaaS", "status": "active", "first_seen": 2021, "nation_state_class": "criminal", "discovered": false, "notes": "Double extortion; has targeted healthcare and education. Subject of FBI/CISA advisory.", "sectors": ["Healthcare", "Education"], "notable_victims": ["Minneapolis Public Schools (2023)", "Toyota Financial Services (2023)"], "threat_severity": 5.8, "deal_reliability": 4.2, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "BlackSuit", "origin": "Russia-nexus", "model": "Closed", "status": "defunct", "first_seen": 2023, "nation_state_class": "tolerated", "discovered": false, "notes": "Royal rebrand. Infrastructure disrupted in 2025 (Operation Checkmate). Critical-infra history.", "sectors": ["Critical Infrastructure", "Government", "Automotive"], "notable_victims": ["CDK Global (2024)", "City of Dallas (2023)"], "threat_severity": 5.8, "deal_reliability": 4.7, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "ALPHV/BlackCat", "origin": "Russia-nexus", "model": "RaaS", "status": "defunct", "first_seen": 2021, "nation_state_class": "tolerated", "discovered": false, "notes": "Collapsed early 2024 after an exit-scam against an affiliate (Change Healthcare). Cautionary reliability case.", "sectors": ["Healthcare", "Hospitality"], "notable_victims": ["Change Healthcare (2024)", "MGM Resorts (2023)", "Caesars (2023)"], "threat_severity": 5.8, "deal_reliability": 3.0, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Rhysida", "origin": "Unknown", "model": "RaaS", "status": "active", "first_seen": 2023, "nation_state_class": "criminal", "discovered": false, "notes": "Healthcare and public-sector focus. Decryptor weakness was briefly exploitable by researchers.", "sectors": ["Public Sector", "Healthcare", "Media"], "notable_victims": ["British Library (2023)", "Insomniac Games (2023)"], "threat_severity": 5.7, "deal_reliability": 5.1, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "INC Ransom", "origin": "Unknown", "model": "RaaS", "status": "active", "first_seen": 2023, "nation_state_class": "criminal", "discovered": false, "notes": "Steady mid-tier operator. Linked by tradecraft overlap to Lynx.", "sectors": ["Healthcare", "Government"], "notable_victims": ["NHS Dumfries & Galloway (2024)", "Yamaha Motor Philippines (2024)"], "threat_severity": 5.5, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "SafePay", "origin": "Unknown", "model": "Closed", "status": "active", "first_seen": 2024, "nation_state_class": "criminal", "discovered": false, "notes": "Fast-rising 2025 operator. LockBit/ALPHV builder lineage suspected.", "sectors": ["Manufacturing", "Professional Services"], "notable_victims": ["Ingram Micro (2025)"], "threat_severity": 5.5, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "RansomHub", "origin": "Russia-nexus", "model": "RaaS", "status": "defunct", "first_seen": 2024, "nation_state_class": "tolerated", "discovered": false, "notes": "Ceased April 2025; affiliates migrated to Qilin/DragonForce. Low historical payment rate, 90% affiliate split.", "sectors": ["Healthcare", "Financial Services"], "notable_victims": ["Halliburton (2024)", "Christie's (2024)"], "threat_severity": 5.2, "deal_reliability": 4.7, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Hunters International", "origin": "Unknown", "model": "RaaS", "status": "defunct", "first_seen": 2023, "nation_state_class": "criminal", "discovered": false, "notes": "Hive-lineage tooling. Announced shutdown/rebrand toward extortion-only (World Leaks) in 2025.", "sectors": ["Technology", "Manufacturing"], "notable_victims": ["Tata Technologies (2025)"], "threat_severity": 5.0, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "NightSpire", "origin": "Unknown", "model": "In-house (not RaaS)", "status": "active", "first_seen": 2025, "nation_state_class": "criminal", "discovered": false, "notes": "Exfil-first, evolved to double extortion. In-house ops limit scale but tighten control.", "sectors": ["Manufacturing", "Electronics"], "notable_victims": ["Nippon Ceramic (2025)"], "threat_severity": 4.9, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}, {"name": "Lynx", "origin": "Unknown", "model": "RaaS", "status": "active", "first_seen": 2024, "nation_state_class": "criminal", "discovered": false, "notes": "INC-lineage. Affiliate program with curated targeting rules.", "sectors": ["Manufacturing", "Retail"], "notable_victims": ["Undisclosed (SMB focus)"], "threat_severity": 4.9, "deal_reliability": 4.6, "confidence": 0.5, "recent_victims": 0, "evidence": []}]};
-const $ = (id) => document.getElementById(id);
-const uniqSorted = (arr) => [...new Set(arr)].sort((a,b)=>String(a).localeCompare(String(b)));
-let ACTORS = SEED.actors.slice();   // current dataset (seed until a live scan returns)
-let pollTimer = null;
 
+/* ---------- state, persistence ---------- */
+const $ = (id) => document.getElementById(id);
+const LS = { roster:"tart_roster_v2", log:"tart_log_v2", settings:"tart_settings_v2", key:"tart_api_key", next:"tart_next_run", last:"tart_last_scan" };
+const uniqSorted = (arr) => [...new Set(arr)].sort((a,b)=>String(a).localeCompare(String(b)));
+const esc = (s) => String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+let ACTORS = loadJSON(LS.roster) || SEED.actors.map(a=>({...a}));
+let LOGLINES = loadJSON(LS.log) || [];
+let SETTINGS = loadJSON(LS.settings) || { model:"claude-sonnet-4-6", schedule:0 };
+let VIEW = localStorage.getItem("tart_view") || "card";
+let SORT = { key:"threat_severity", dir:-1 };
+let running = false;
+
+function loadJSON(k){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(e){ return null; } }
+function saveJSON(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function persist(){ saveJSON(LS.roster,ACTORS); saveJSON(LS.log,LOGLINES.slice(-300)); }
+
+/* ---------- shared helpers ---------- */
 function setStatus(state, text){ $("dot").className="dot "+(state||""); $("statusText").innerHTML=text; }
 function sevBand(s){ return s>=8.5?"Critical":s>=7?"High":s>=5?"Elevated":s>=3?"Moderate":"Low"; }
 function relBand(s){ return s>=7?"Often honors payment":s>=5?"Mixed / inconsistent":s>=3?"Frequently cheats":"Assume no recovery"; }
@@ -146,12 +257,8 @@ function stampClass(ns){ return ns==="directed"?"directed":ns==="tolerated"?"tol
 function stampText(ns){ return ns==="directed"?"State-directed":ns==="tolerated"?"State-tolerated":"Criminal"; }
 function fillSelect(sel, values, allLabel){
   const cur=sel.value;
-  sel.innerHTML=`<option value="">${allLabel}</option>`+values.map(v=>`<option value="${String(v).replace(/"/g,'&quot;')}">${v}</option>`).join("");
+  sel.innerHTML=`<option value="">${allLabel}</option>`+values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
   if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
-}
-function gauge(label,value,cls,band){
-  const pct=Math.max(0,Math.min(100,(value/10)*100));
-  return `<div class="gauge"><div class="glabel"><span class="gk">${label}</span><span class="gv">${value.toFixed(1)}/10</span></div><div class="track"><div class="fill ${cls}" data-w="${pct}"></div></div><div class="band">${band}</div></div>`;
 }
 function passesReliability(v,mode){ if(mode==="all")return true; if(mode==="honor")return v>=7; if(mode==="mixed")return v>=5&&v<7; if(mode==="cheat")return v>=3&&v<5; if(mode==="none")return v<3; return true; }
 function buildOptions(){
@@ -160,87 +267,343 @@ function buildOptions(){
   fillSelect($("f-sector"), uniqSorted(ACTORS.flatMap(a=>a.sectors||[])), "All sectors");
   fillSelect($("f-company"), uniqSorted(ACTORS.flatMap(a=>a.notable_victims||[])), "All companies");
 }
-function applyFilters(){
+function filteredRows(){
   const f={name:$("f-name").value,year:$("f-year").value,sector:$("f-sector").value,company:$("f-company").value,sevMin:parseFloat($("f-sev").value)||0,rel:$("f-rel").value,state:$("f-state").value};
-  const rows=ACTORS.filter(a =>
+  return ACTORS.filter(a =>
     (!f.name||a.name===f.name) && (!f.year||String(a.first_seen)===f.year) &&
     (!f.sector||(a.sectors||[]).includes(f.sector)) && (!f.company||(a.notable_victims||[]).includes(f.company)) &&
     (a.threat_severity>=f.sevMin) && passesReliability(a.deal_reliability,f.rel) &&
     (f.state==="all"||a.nation_state_class===f.state));
-  render(rows);
+}
+function applyFilters(){
+  const rows=sortRows(filteredRows());
+  renderView(rows);
   $("count").innerHTML=`Showing <b>${rows.length}</b> of ${ACTORS.length} actors`;
 }
-function render(actors){
-  const board=$("board");
-  if(!actors.length){ board.innerHTML=`<div class="none">No actors match these filters. Try clearing one.</div>`; return; }
-  board.innerHTML=actors.map((a,i)=>`
+
+/* ---------- sorting ---------- */
+const COLS = [
+  {key:"name", label:"Actor", str:true},
+  {key:"nation_state_class", label:"Class", str:true},
+  {key:"status", label:"Status", str:true},
+  {key:"first_seen", label:"First seen"},
+  {key:"origin", label:"Origin", str:true},
+  {key:"model", label:"Model", str:true},
+  {key:"threat_severity", label:"Severity"},
+  {key:"deal_reliability", label:"Reliability"},
+  {key:"recent_victims", label:"Recent"},
+  {key:"confidence", label:"Confidence"},
+  {key:"evidence_n", label:"Sources"},
+];
+function sortVal(a,key){ if(key==="evidence_n") return (a.evidence||[]).length; return a[key]; }
+function sortRows(rows){
+  const {key,dir}=SORT; const col=COLS.find(c=>c.key===key);
+  return rows.slice().sort((a,b)=>{
+    let va=sortVal(a,key), vb=sortVal(b,key);
+    if(col&&col.str){ return String(va??"").localeCompare(String(vb??""))*dir; }
+    va=Number(va)||0; vb=Number(vb)||0;
+    return (va-vb)*dir || String(a.name).localeCompare(String(b.name));
+  });
+}
+function setSort(key){ if(SORT.key===key){SORT.dir*=-1;} else {const col=COLS.find(c=>c.key===key); SORT={key,dir:col&&col.str?1:-1};} applyFilters(); }
+
+/* ---------- rendering: card / compact / table ---------- */
+function gauge(label,value,cls,band){
+  const pct=Math.max(0,Math.min(100,(value/10)*100));
+  return `<div class="gauge"><div class="glabel"><span class="gk">${label}</span><span class="gv">${value.toFixed(1)}/10</span></div><div class="track"><div class="fill ${cls}" data-w="${pct}"></div></div><div class="band">${band}</div></div>`;
+}
+function evidenceHTML(a){
+  const ev=(a.evidence||[]).slice(0,3);
+  if(!ev.length) return "";
+  return `<div class="evd">`+ev.map(e=>`&rsaquo; <a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${esc(e.title||e.url)}</a>`).join("<br>")+`</div>`;
+}
+function renderView(rows){
+  document.querySelectorAll(".viewswitch button").forEach(b=>b.classList.toggle("on", b.id==="v-"+VIEW));
+  const host=$("viewhost");
+  if(!rows.length){ host.innerHTML=`<div class="board"><div class="none">No actors match these filters. Try clearing one.</div></div>`; return; }
+  if(VIEW==="card") host.innerHTML=renderCards(rows);
+  else if(VIEW==="compact") host.innerHTML=renderCompact(rows);
+  else host.innerHTML=renderTable(rows);
+  requestAnimationFrame(()=>{document.querySelectorAll(".fill").forEach(f=>f.style.width=f.dataset.w+"%");});
+  if(VIEW==="table"){ document.querySelectorAll("th[data-key]").forEach(th=>th.addEventListener("click",()=>setSort(th.dataset.key))); }
+}
+function badges(a){ return `${a.discovered?'<span class="badge-new">NEW</span>':''}${a.status==='defunct'?'<span class="badge-defunct">DEFUNCT</span>':''}`; }
+function renderCards(rows){
+  return `<div class="board">`+rows.map((a,i)=>`
     <div class="card${a.status==='defunct'?' defunct':''}" style="animation-delay:${i*28}ms">
       <span class="rank">#${String(i+1).padStart(2,"0")}</span>
-      <p class="name">${a.name}${a.discovered?'<span class="badge-new">NEW</span>':''}${a.status==='defunct'?'<span class="badge-defunct">DEFUNCT</span>':''}</p>
-      <p class="meta">${a.origin} &middot; ${a.model}${a.first_seen?" &middot; since "+a.first_seen:""}${a.recent_victims?" &middot; "+a.recent_victims+" recent":""}</p>
+      <p class="name">${esc(a.name)}${badges(a)}</p>
+      <p class="meta">${esc(a.origin)} &middot; ${esc(a.model)}${a.first_seen?" &middot; since "+a.first_seen:""}${a.recent_victims?" &middot; "+a.recent_victims+" recent":""}</p>
       <span class="stamp ${stampClass(a.nation_state_class)}">${stampText(a.nation_state_class)}</span>
       <div class="gauges">
         ${gauge("Threat severity",a.threat_severity,"sev",sevBand(a.threat_severity))}
         ${gauge("Deal reliability",a.deal_reliability,"rel",relBand(a.deal_reliability))}
       </div>
       ${(a.sectors&&a.sectors.length)||(a.notable_victims&&a.notable_victims.length)?`<div class="tags">
-        ${(a.sectors||[]).map(s=>`<span class="tag">${s}</span>`).join("")}
-        ${(a.notable_victims||[]).map(v=>`<span class="tag vic">${v}</span>`).join("")}
+        ${(a.sectors||[]).map(s=>`<span class="tag">${esc(s)}</span>`).join("")}
+        ${(a.notable_victims||[]).map(v=>`<span class="tag vic">${esc(v)}</span>`).join("")}
       </div>`:""}
-      ${a.notes?`<p class="notes">${a.notes}</p>`:""}
+      ${a.notes?`<p class="notes">${esc(a.notes)}</p>`:""}
+      ${evidenceHTML(a)}
       <div class="foot"><span>confidence <b>${(a.confidence*100|0)}%</b></span><span>${a.evidence&&a.evidence.length?a.evidence.length+" sources":"analyst prior"}</span></div>
-    </div>`).join("");
-  requestAnimationFrame(()=>{document.querySelectorAll(".fill").forEach(f=>f.style.width=f.dataset.w+"%");});
+    </div>`).join("")+`</div>`;
 }
-function renderLog(scan){
+function renderCompact(rows){
+  return `<div class="compact">`+rows.map((a,i)=>`
+    <div class="crow${a.status==='defunct'?' defunct':''}">
+      <span class="crank">#${String(i+1).padStart(2,"0")}</span>
+      <div><div class="cname">${esc(a.name)}${badges(a)}</div><div class="csub">${esc(a.origin)} &middot; ${esc(a.model)}${a.first_seen?" &middot; since "+a.first_seen:""}</div></div>
+      <span class="cstamp"><span class="stamp ${stampClass(a.nation_state_class)}">${stampText(a.nation_state_class)}</span></span>
+      <div class="cbar"><span>SEV</span><div class="track"><div class="fill sev" data-w="${a.threat_severity*10}"></div></div><span class="cv">${a.threat_severity.toFixed(1)}</span></div>
+      <div class="cbar"><span>REL</span><div class="track"><div class="fill rel" data-w="${a.deal_reliability*10}"></div></div><span class="cv">${a.deal_reliability.toFixed(1)}</span></div>
+      <span class="csub">${(a.confidence*100|0)}% &middot; ${(a.evidence||[]).length||"&mdash;"} src</span>
+    </div>`).join("")+`</div>`;
+}
+function renderTable(rows){
+  const head=COLS.map(c=>`<th data-key="${c.key}">${c.label}${SORT.key===c.key?`<span class="arr">${SORT.dir===1?"&#9650;":"&#9660;"}</span>`:""}</th>`).join("");
+  const body=rows.map(a=>`
+    <tr class="${a.status==='defunct'?'defunct':''}">
+      <td class="tname">${esc(a.name)}${badges(a)}</td>
+      <td><span class="stamp ${stampClass(a.nation_state_class)}" style="margin-top:0">${stampText(a.nation_state_class)}</span></td>
+      <td>${esc(a.status)}</td>
+      <td class="num">${a.first_seen||""}</td>
+      <td>${esc(a.origin)}</td>
+      <td>${esc(a.model)}</td>
+      <td class="num">${a.threat_severity.toFixed(1)}<span class="minitrack"><i class="sev" style="width:${a.threat_severity*10}%"></i></span></td>
+      <td class="num">${a.deal_reliability.toFixed(1)}<span class="minitrack"><i class="rel" style="width:${a.deal_reliability*10}%"></i></span></td>
+      <td class="num">${a.recent_victims||0}</td>
+      <td class="num">${(a.confidence*100|0)}%</td>
+      <td class="num">${(a.evidence||[]).length}</td>
+    </tr>`).join("");
+  return `<div class="tablewrap"><table class="tab"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+/* ---------- agent log ---------- */
+function logLine(msg){
+  const t=new Date().toISOString().replace("T"," ").slice(0,19);
+  LOGLINES.push(`[${t}] ${msg}`);
+  renderLog();
+  persist();
+}
+function renderLog(){
+  if(!LOGLINES.length) return;
   $("logwrap").style.display="block";
   const log=$("log");
-  log.innerHTML=(scan.log||[]).map(l=>l.replace(/(backend:.*)/,'<span class="be">$1</span>')).join("\n")||"&hellip;";
+  log.innerHTML=LOGLINES.slice(-120).map(l=>esc(l).replace(/(agent:.*)/,'<span class="be">$1</span>')).join("\n");
   log.scrollTop=log.scrollHeight;
 }
-function ingest(scan){ if(scan.actors&&scan.actors.length){ ACTORS=scan.actors; buildOptions(); } applyFilters(); if(scan.log)renderLog(scan); }
 
-async function poll(id){
-  try{
-    const r=await fetch(`/api/scan/${id}`); const scan=await r.json();
-    ingest(scan);
-    if(scan.status==="running"){ setStatus("run","Scanning&hellip; backend: "+(scan.llm_backend||"detecting")); }
-    else if(scan.status==="complete"){
-      const disc=scan.discovered_count?` &middot; ${scan.discovered_count} new`:"";
-      setStatus("ok",`Live scan complete &mdash; ${scan.actors.length} actors${disc} &middot; backend ${scan.llm_backend}`);
-      const dl=$("dlBtn"); dl.href=`/api/scan/${id}/xlsx`; dl.classList.remove("off");
-      $("runBtn").disabled=false; clearInterval(pollTimer);
-    } else if(scan.status==="error"){ setStatus("err","Error &mdash; "+(scan.error||"see log")); $("runBtn").disabled=false; clearInterval(pollTimer); }
-  }catch(e){ /* keep polling */ }
-}
-$("runBtn").addEventListener("click", async () => {
-  $("runBtn").disabled=true; $("dlBtn").classList.add("off");
-  setStatus("run","Starting tracker&hellip;");
-  try{
-    const r=await fetch("/api/scan",{method:"POST"});
-    if(!r.ok) throw new Error("no backend");
-    const {scan_id}=await r.json();
-    if(pollTimer)clearInterval(pollTimer); poll(scan_id); pollTimer=setInterval(()=>poll(scan_id),1200);
-  }catch(e){
-    setStatus("err","No backend detected &mdash; showing preloaded roster. Start the app (<code>uvicorn app.main:app</code>) to run a live scan.");
-    $("runBtn").disabled=false;
+/* ---------- deterministic merge engine (gates all numbers) ---------- */
+const MAX_DELTA = 1.0;                      // max score movement per run
+const clamp10 = (v) => Math.max(0, Math.min(10, Number(v)||0));
+const confFromEvidence = (n) => Math.min(0.95, 0.5 + 0.08*n);   // reproducible confidence
+function mergeScan(result){
+  let updated=0, discovered=0;
+  const byName={}; ACTORS.forEach(a=>byName[a.name.toLowerCase()]=a);
+  const now=new Date().toISOString().slice(0,10);
+  for(const u of (result.updates||[])){
+    const a=byName[String(u.name||"").toLowerCase()];
+    if(!a) continue;
+    if(u.threat_severity!=null){
+      const t=clamp10(u.threat_severity);
+      a.threat_severity=Number(Math.max(a.threat_severity-MAX_DELTA, Math.min(a.threat_severity+MAX_DELTA, t)).toFixed(1));
+    }
+    if(u.deal_reliability!=null){
+      const t=clamp10(u.deal_reliability);
+      a.deal_reliability=Number(Math.max(a.deal_reliability-MAX_DELTA, Math.min(a.deal_reliability+MAX_DELTA, t)).toFixed(1));
+    }
+    if(u.status==="active"||u.status==="defunct") a.status=u.status;
+    if(Number.isFinite(Number(u.recent_victims))) a.recent_victims=Math.max(0, Math.round(Number(u.recent_victims)));
+    if(typeof u.notes==="string" && u.notes.trim()) a.notes=u.notes.trim().slice(0,400);
+    if(Array.isArray(u.new_victims)) u.new_victims.slice(0,5).forEach(v=>{ v=String(v).slice(0,120); if(!(a.notable_victims||[]).includes(v)) (a.notable_victims=a.notable_victims||[]).push(v); });
+    if(Array.isArray(u.evidence)){
+      a.evidence=a.evidence||[];
+      const seen=new Set(a.evidence.map(e=>e.url));
+      u.evidence.slice(0,6).forEach(e=>{ if(e&&e.url&&!seen.has(e.url)){ a.evidence.push({title:String(e.title||"").slice(0,140), url:String(e.url).slice(0,300), date:String(e.date||now).slice(0,10)}); seen.add(e.url); } });
+    }
+    a.confidence=confFromEvidence((a.evidence||[]).length);
+    a.last_scanned=now;
+    updated++;
   }
+  for(const d of (result.discovered||[])){
+    const nm=String(d.name||"").trim();
+    if(!nm || byName[nm.toLowerCase()]) continue;
+    const ev=Array.isArray(d.evidence)?d.evidence.slice(0,6).filter(e=>e&&e.url).map(e=>({title:String(e.title||"").slice(0,140),url:String(e.url).slice(0,300),date:String(e.date||now).slice(0,10)})):[];
+    const actor={
+      name:nm.slice(0,80), origin:String(d.origin||"Unknown").slice(0,60), model:String(d.model||"Unknown").slice(0,60),
+      status:d.status==="defunct"?"defunct":"active", first_seen:Number(d.first_seen)||new Date().getFullYear(),
+      nation_state_class:["directed","tolerated","criminal"].includes(d.nation_state_class)?d.nation_state_class:"criminal",
+      discovered:true, notes:String(d.notes||"").slice(0,400),
+      sectors:Array.isArray(d.sectors)?d.sectors.slice(0,5).map(s=>String(s).slice(0,40)):[],
+      notable_victims:Array.isArray(d.notable_victims)?d.notable_victims.slice(0,5).map(v=>String(v).slice(0,120)):[],
+      threat_severity:clamp10(d.threat_severity??5), deal_reliability:clamp10(d.deal_reliability??5),
+      confidence:confFromEvidence(ev.length), recent_victims:Math.max(0,Math.round(Number(d.recent_victims)||0)),
+      evidence:ev, last_scanned:now
+    };
+    ACTORS.push(actor); byName[nm.toLowerCase()]=actor; discovered++;
+  }
+  ACTORS.sort((a,b)=>b.threat_severity-a.threat_severity);
+  persist();
+  return {updated, discovered};
+}
+
+/* ---------- Anthropic Claude research agent ---------- */
+function agentPrompt(){
+  const roster=ACTORS.map(a=>({name:a.name,status:a.status,threat_severity:a.threat_severity,deal_reliability:a.deal_reliability,first_seen:a.first_seen,last_scanned:a.last_scanned||null}));
+  return `You are a defensive threat-intelligence research agent for a CISO's ransomware actor reputation tracker.
+
+Current roster (name, status, current scores):
+${JSON.stringify(roster)}
+
+Task: use web search to find the most recent PUBLIC reporting (vendor blogs, CISA/FBI advisories, reputable security press) on ransomware and extortion group activity. Then:
+1. For roster actors with meaningful new developments (takedowns, rebrands, major campaigns, exit scams, leadership arrests, notable victims), propose score updates and a refreshed one-to-two-sentence note.
+2. Identify at most 3 significant NEW groups not on the roster (emerging or newly prominent), with estimated scores.
+
+Scoring rubric (0-10): threat_severity = capability + volume + criticality of targets; deal_reliability = likelihood a payment yields decryption/deletion (exit scams and re-extortion lower it; sanctions/state direction lower it).
+
+Respond with ONLY a JSON object, no markdown fences, no prose, in exactly this shape:
+{"updates":[{"name":"...","threat_severity":0.0,"deal_reliability":0.0,"status":"active|defunct","recent_victims":0,"notes":"...","new_victims":["Company (2026)"],"evidence":[{"title":"...","url":"https://...","date":"YYYY-MM-DD"}]}],
+"discovered":[{"name":"...","origin":"...","model":"RaaS|Closed|State-directed","status":"active","first_seen":2026,"nation_state_class":"directed|tolerated|criminal","notes":"...","sectors":["..."],"notable_victims":["..."],"threat_severity":0.0,"deal_reliability":0.0,"recent_victims":0,"evidence":[{"title":"...","url":"https://...","date":"YYYY-MM-DD"}]}],
+"summary":"one line"}
+
+Only include actors where you found genuine recent reporting; every entry must carry at least one evidence URL. Omit "updates" entries for actors with nothing new.`;
+}
+function extractJSON(text){
+  const cleaned=text.replace(/```json/gi,"").replace(/```/g,"").trim();
+  const s=cleaned.indexOf("{"), e=cleaned.lastIndexOf("}");
+  if(s===-1||e===-1||e<=s) throw new Error("no JSON object in model output");
+  return JSON.parse(cleaned.slice(s,e+1));
+}
+async function runAgent(trigger){
+  if(running) return;
+  const key=(localStorage.getItem(LS.key)||"").trim();
+  if(!key){
+    setStatus("err",'No API key &mdash; open <b>Agent settings</b> above and add your Anthropic key to run live.');
+    $("agentPanel").open=true;
+    return;
+  }
+  running=true; $("runBtn").disabled=true;
+  setStatus("run",`Agent running (${trigger}) &mdash; model ${esc(SETTINGS.model)}`);
+  logLine(`agent: run started (${trigger}) &middot; model=${SETTINGS.model} &middot; roster=${ACTORS.length}`);
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "content-type":"application/json",
+        "x-api-key":key,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      },
+      body:JSON.stringify({
+        model:SETTINGS.model,
+        max_tokens:4000,
+        messages:[{role:"user",content:agentPrompt()}],
+        tools:[{type:"web_search_20250305",name:"web_search",max_uses:6}]
+      })
+    });
+    if(!r.ok){
+      const err=await r.text();
+      throw new Error(`API ${r.status}: ${err.slice(0,200)}`);
+    }
+    const data=await r.json();
+    const searches=(data.content||[]).filter(b=>b.type==="server_tool_use").length;
+    logLine(`agent: response received &middot; ${searches} web searches &middot; stop=${data.stop_reason}`);
+    const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+    const result=extractJSON(text);
+    const {updated,discovered}=mergeScan(result);
+    logLine(`agent: merge complete &middot; ${updated} updated &middot; ${discovered} discovered ${result.summary?("&middot; "+String(result.summary).slice(0,140)):""}`);
+    localStorage.setItem(LS.last, String(Date.now()));
+    buildOptions(); applyFilters();
+    setStatus("ok",`Live scan complete &mdash; ${updated} updated, ${discovered} new &middot; ${ACTORS.length} actors &middot; ${SETTINGS.model}`);
+  }catch(e){
+    logLine(`agent: ERROR &middot; ${e.message}`);
+    setStatus("err","Agent error &mdash; "+esc(e.message.slice(0,160)));
+  }finally{
+    running=false; $("runBtn").disabled=false;
+    scheduleNext(true);
+  }
+}
+
+/* ---------- scheduler ---------- */
+function scheduleNext(afterRun){
+  const mins=Number(SETTINGS.schedule)||0;
+  if(!mins){ localStorage.removeItem(LS.next); renderCountdown(); return; }
+  let next=Number(localStorage.getItem(LS.next))||0;
+  if(afterRun || !next || next<Date.now()) next=Date.now()+mins*60000;
+  localStorage.setItem(LS.next,String(next));
+  renderCountdown();
+}
+function renderCountdown(){
+  const mins=Number(SETTINGS.schedule)||0;
+  const el=$("nextRun");
+  if(!mins){ el.innerHTML=""; return; }
+  const next=Number(localStorage.getItem(LS.next))||0;
+  if(!next){ el.innerHTML=""; return; }
+  const ms=next-Date.now();
+  if(ms<=0){ el.innerHTML="Next auto-run: <b>due</b>"; return; }
+  const h=Math.floor(ms/3600000), m=Math.floor(ms%3600000/60000), s=Math.floor(ms%60000/1000);
+  el.innerHTML=`Next auto-run in <b>${h?h+"h ":""}${String(m).padStart(2,"0")}m ${String(s).padStart(2,"0")}s</b>`;
+}
+setInterval(()=>{
+  renderCountdown();
+  const mins=Number(SETTINGS.schedule)||0;
+  if(!mins||running) return;
+  const next=Number(localStorage.getItem(LS.next))||0;
+  if(next && Date.now()>=next && (localStorage.getItem(LS.key)||"").trim()){
+    runAgent("scheduled");
+  }
+},1000);
+
+/* ---------- CSV export (deterministic, client-side) ---------- */
+function csvCell(v){ v=String(v==null?"":v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function exportCSV(){
+  const cols=["name","origin","model","status","first_seen","nation_state_class","threat_severity","deal_reliability","confidence","recent_victims","sectors","notable_victims","notes","evidence_urls","last_scanned"];
+  const rows=ACTORS.map(a=>[a.name,a.origin,a.model,a.status,a.first_seen,a.nation_state_class,a.threat_severity,a.deal_reliability,a.confidence,a.recent_victims,(a.sectors||[]).join("; "),(a.notable_victims||[]).join("; "),a.notes||"",(a.evidence||[]).map(e=>e.url).join(" "),a.last_scanned||""]);
+  const csv=[cols.join(",")].concat(rows.map(r=>r.map(csvCell).join(","))).join("\r\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="threat-actor-reputation-"+new Date().toISOString().slice(0,10)+".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  logLine(`export: CSV &middot; ${ACTORS.length} actors`);
+}
+
+/* ---------- wiring ---------- */
+$("runBtn").addEventListener("click",()=>runAgent("manual"));
+$("csvBtn").addEventListener("click",exportCSV);
+$("resetBtn").addEventListener("click",()=>{
+  if(!confirm("Reset roster to the seed data? Agent-sourced updates will be discarded (settings and API key are kept).")) return;
+  ACTORS=SEED.actors.map(a=>({...a})); LOGLINES=[]; persist();
+  localStorage.removeItem(LS.last);
+  $("logwrap").style.display="none";
+  buildOptions(); applyFilters();
+  setStatus("ok","Roster reset to seed");
 });
+$("saveAgent").addEventListener("click",()=>{
+  const k=$("apiKey").value.trim();
+  if(k) localStorage.setItem(LS.key,k); else localStorage.removeItem(LS.key);
+  SETTINGS.model=$("modelSel").value;
+  SETTINGS.schedule=Number($("schedSel").value)||0;
+  saveJSON(LS.settings,SETTINGS);
+  localStorage.removeItem(LS.next);
+  scheduleNext(false);
+  setStatus("ok",`Settings saved &mdash; ${k?"key stored locally":"no key"} &middot; ${SETTINGS.model} &middot; ${SETTINGS.schedule?("auto every "+SETTINGS.schedule+" min"):"manual only"}`);
+});
+["v-card","v-compact","v-table"].forEach(id=>$(id).addEventListener("click",()=>{ VIEW=id.slice(2); localStorage.setItem("tart_view",VIEW); applyFilters(); }));
 ["f-name","f-year","f-sector","f-company","f-sev","f-rel","f-state"].forEach(id=>$(id).addEventListener("change",applyFilters));
 $("clearBtn").addEventListener("click",()=>{ ["f-name","f-year","f-sector","f-company"].forEach(id=>$(id).value=""); $("f-sev").value="0";$("f-rel").value="all";$("f-state").value="all"; applyFilters(); });
 
-// Initial render from preloaded roster; if a backend has a prior scan, fold it in.
-buildOptions(); applyFilters();
-(async () => {
-  try{
-    const r=await fetch("/api/latest"); if(!r.ok) return; const scan=await r.json();
-    if(scan && scan.status==="complete"){
-      ingest(scan);
-      const disc=scan.discovered_count?` &middot; ${scan.discovered_count} new`:"";
-      setStatus("ok",`Last live scan &mdash; ${scan.actors.length} actors${disc} &middot; backend ${scan.llm_backend}`);
-      const dl=$("dlBtn"); dl.href=`/api/scan/${scan.scan_id}/xlsx`; dl.classList.remove("off");
-    }
-  }catch(e){ /* static hosting: stay on preloaded roster */ }
+/* ---------- init ---------- */
+$("apiKey").value=localStorage.getItem(LS.key)||"";
+$("modelSel").value=SETTINGS.model;
+$("schedSel").value=String(SETTINGS.schedule);
+buildOptions(); applyFilters(); renderLog();
+const last=Number(localStorage.getItem(LS.last))||0;
+if(last) setStatus("ok",`Roster with live data &mdash; last scan ${new Date(last).toLocaleString()} &middot; ${ACTORS.length} actors`);
+scheduleNext(false);
+// If an auto-run came due while the tab was closed, fire it now.
+(()=>{ const mins=Number(SETTINGS.schedule)||0; const next=Number(localStorage.getItem(LS.next))||0;
+  if(mins && next && Date.now()>=next && (localStorage.getItem(LS.key)||"").trim()) runAgent("overdue on load");
 })();
 </script>
 </body>
