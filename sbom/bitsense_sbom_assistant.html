@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BitSense SBOM Orchestrator — Automated SBOM Generation for FDA Submission</title>
+<style>
+:root{
+  --ink:#12151C; --panel:#191E28; --raised:#1F2634; --line:#2A3140; --line-soft:#232A38;
+  --text:#DCE3EE; --text-dim:#8B95A7; --text-faint:#5C6577;
+  --agent:#46C2B2; --gate:#E7A93C; --crit:#E25A5A; --ok:#57B47C; --info:#7FA6D9; --fda:#B48EDE;
+  --agent-dim:rgba(70,194,178,.14); --gate-dim:rgba(231,169,60,.14); --crit-dim:rgba(226,90,90,.14);
+  --ok-dim:rgba(87,180,124,.14); --info-dim:rgba(127,166,217,.14); --fda-dim:rgba(180,142,222,.14);
+  --mono:"Cascadia Code","SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;
+  --sans:"Segoe UI","Avenir Next","Helvetica Neue",Arial,sans-serif;
+  --r:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--ink);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:13px;background:var(--ink);border:1px solid var(--line);color:var(--text);border-radius:var(--r);padding:7px 10px;width:100%}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--agent);outline-offset:1px}
+textarea{resize:vertical;min-height:70px;font-family:var(--mono);font-size:12px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* Top bar */
+.topbar{display:flex;align-items:center;gap:14px;padding:10px 18px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:40}
+.brand{display:flex;align-items:baseline;gap:9px;white-space:nowrap}
+.brand .mark{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--agent);letter-spacing:.5px}
+.brand .name{font-weight:600;font-size:15px}
+.brand .sub{font-size:11px;color:var(--text-faint);letter-spacing:.8px;text-transform:uppercase}
+.topbar .spacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:4px 10px;border:1px solid var(--line);border-radius:20px;color:var(--text-dim);background:var(--ink)}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--text-faint)}
+.pill.on .dot{background:var(--ok);box-shadow:0 0 6px var(--ok)}
+select.provider{width:auto;font-family:var(--mono);font-size:11px;padding:4px 8px}
+.btn{border:1px solid var(--line);background:var(--raised);color:var(--text);border-radius:var(--r);padding:7px 13px;font-size:13px;font-weight:500}
+.btn:hover{border-color:var(--text-faint)}
+.btn.primary{background:var(--agent);border-color:var(--agent);color:#0B1613;font-weight:600}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.gatey{background:var(--gate);border-color:var(--gate);color:#211703;font-weight:600}
+.btn.fda{background:var(--fda);border-color:var(--fda);color:#1B0F2B;font-weight:600}
+.btn.danger{background:var(--crit-dim);border-color:var(--crit);color:var(--crit)}
+.btn.ghost{background:transparent}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* Layout */
+.shell{display:grid;grid-template-columns:250px 1fr;min-height:calc(100vh - 54px)}
+.side{border-right:1px solid var(--line);background:var(--panel);padding:16px 14px;display:flex;flex-direction:column;gap:16px}
+.main{padding:16px 20px;min-width:0}
+.side h3{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);margin-bottom:8px;font-weight:600}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--ink);border:1px solid var(--line-soft);border-radius:var(--r);padding:9px 10px}
+.stat .n{font-family:var(--mono);font-size:20px;font-weight:700}
+.stat .l{font-size:10.5px;color:var(--text-dim);margin-top:2px;line-height:1.3}
+.stat.gatey .n{color:var(--gate)} .stat.crity .n{color:var(--crit)} .stat.oky .n{color:var(--ok)} .stat.agenty .n{color:var(--agent)}
+.srcrow{display:flex;justify-content:space-between;font-size:12px;padding:5px 2px;border-bottom:1px solid var(--line-soft);color:var(--text-dim)}
+.srcrow b{color:var(--text);font-family:var(--mono);font-weight:600}
+.side .gatealert{background:var(--gate-dim);border:1px solid var(--gate);border-radius:var(--r);padding:10px;font-size:12px;color:var(--text)}
+.side .gatealert .t{color:var(--gate);font-weight:600;margin-bottom:4px;display:flex;gap:6px;align-items:center}
+
+/* View header */
+.viewhead{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.viewtabs{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.viewtabs button{background:var(--panel);border:none;color:var(--text-dim);padding:7px 14px;font-size:12.5px;border-right:1px solid var(--line)}
+.viewtabs button:last-child{border-right:none}
+.viewtabs button.active{background:var(--raised);color:var(--text);font-weight:600}
+.viewhead input.search{width:230px}
+.viewhead .fsel{width:auto}
+
+/* Readiness / stage chips */
+.sev{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:2px 8px;border-radius:3px;display:inline-block}
+.sev.READY{background:var(--ok);color:#08130C}
+.sev.REVIEW{background:var(--gate-dim);color:var(--gate);border:1px solid var(--gate)}
+.sev.GAPS{background:var(--crit-dim);color:var(--crit);border:1px solid var(--crit)}
+.sev.DRAFT{background:var(--raised);color:var(--text-dim);border:1px solid var(--line)}
+.chip{font-size:11px;padding:2px 9px;border-radius:12px;border:1px solid var(--line);color:var(--text-dim);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.chip.gate{border-color:var(--gate);color:var(--gate);background:var(--gate-dim)}
+.chip.agent{border-color:var(--agent);color:var(--agent);background:var(--agent-dim)}
+.chip.ok{border-color:var(--ok);color:var(--ok);background:var(--ok-dim)}
+.chip.crit{border-color:var(--crit);color:var(--crit);background:var(--crit-dim)}
+.chip.fda{border-color:var(--fda);color:var(--fda);background:var(--fda-dim)}
+@keyframes gpulse{0%,100%{box-shadow:0 0 0 0 rgba(231,169,60,.5)}50%{box-shadow:0 0 0 5px rgba(231,169,60,0)}}
+.chip.gate.live{animation:gpulse 1.8s infinite}
+@media (prefers-reduced-motion: reduce){.chip.gate.live{animation:none}}
+
+/* Gate rail */
+.rail{display:flex;align-items:center;gap:0;margin-top:8px}
+.rail .node{width:11px;height:11px;border-radius:50%;border:2px solid var(--line);background:var(--ink);flex:none;position:relative}
+.rail .node.gate{border-radius:2px;transform:rotate(45deg)}
+.rail .node.done{border-color:var(--ok);background:var(--ok)}
+.rail .node.active{border-color:var(--agent);background:var(--agent-dim)}
+.rail .node.waiting{border-color:var(--gate);background:var(--gate)}
+.rail .node.waiting.gate{animation:gpulse 1.8s infinite}
+.rail .node.skipped{border-color:var(--line);background:var(--line-soft)}
+.rail .seg{height:2px;background:var(--line);flex:1;min-width:6px}
+.rail .seg.done{background:var(--ok)}
+.raillabels{display:flex;justify-content:space-between;font-size:9.5px;color:var(--text-faint);margin-top:3px;font-family:var(--mono)}
+
+/* Table */
+table.grid{width:100%;border-collapse:collapse;font-size:13px}
+table.grid th{font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-faint);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;white-space:nowrap}
+table.grid th:hover{color:var(--text)}
+table.grid td{padding:9px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+table.grid tr.row:hover td{background:var(--panel);cursor:pointer}
+.mono{font-family:var(--mono);font-size:12px}
+.dim{color:var(--text-dim)} .faint{color:var(--text-faint)}
+
+/* Compact */
+.compact .crow{display:grid;grid-template-columns:120px 84px 1fr 120px 150px 26px;gap:10px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line-soft);font-size:12.5px;cursor:pointer}
+.compact .crow:hover{background:var(--panel)}
+.compact .head{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-faint);cursor:default;border-bottom:1px solid var(--line)}
+.compact .head:hover{background:transparent}
+.ellip{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.vcard{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:border-color .15s}
+.vcard:hover{border-color:var(--text-faint)}
+.vcard .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.vcard .cve{font-family:var(--mono);font-size:12px;color:var(--agent)}
+.vcard h4{font-size:14px;font-weight:600;line-height:1.35}
+.vcard .desc{font-size:12px;color:var(--text-dim);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vcard .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+
+/* Problem map */
+.probwrap{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:16px}
+.probwrap .ph{display:flex;align-items:center;gap:8px;font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-faint);margin-bottom:10px;font-weight:600}
+.probwrap .ph .x{margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-faint);font-size:11.5px}
+.probgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.prob{background:var(--ink);border:1px solid var(--line-soft);border-radius:var(--r);padding:11px 13px}
+.prob .t{font-weight:600;font-size:12.5px;display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.prob .t .x{color:var(--crit);font-family:var(--mono);font-weight:700}
+.prob .body{color:var(--text-dim);font-size:11.5px}
+.prob .fix{margin-top:7px;padding-top:7px;border-top:1px dashed var(--line);font-size:11.5px}
+.prob .fix b{color:var(--ok)} .prob .fix .st{color:var(--agent);font-family:var(--mono);font-size:10px}
+
+/* Drawer */
+.overlay{position:fixed;inset:0;background:rgba(6,9,15,.6);z-index:50;display:none}
+.overlay.open{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(820px,96vw);background:var(--panel);border-left:1px solid var(--line);z-index:60;transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+@media (prefers-reduced-motion: reduce){.drawer{transition:none}}
+.drawer .dhead{padding:16px 20px 12px;border-bottom:1px solid var(--line)}
+.drawer .dhead .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.drawer .dhead h2{font-size:17px;font-weight:600;line-height:1.3;margin:6px 0 8px}
+.dtabs{display:flex;gap:2px;padding:0 20px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+.dtabs button{background:none;border:none;color:var(--text-dim);padding:10px 13px;font-size:12.5px;border-bottom:2px solid transparent}
+.dtabs button.active{color:var(--text);border-bottom-color:var(--agent);font-weight:600}
+.dbody{flex:1;overflow-y:auto;padding:18px 20px 40px}
+.close-x{background:none;border:none;color:var(--text-dim);font-size:20px;line-height:1;padding:2px 6px}
+.close-x:hover{color:var(--text)}
+
+/* Detail blocks */
+.kv{display:grid;grid-template-columns:170px 1fr;gap:7px 14px;font-size:13px;margin-bottom:16px}
+.kv .k{color:var(--text-faint);font-size:11px;text-transform:uppercase;letter-spacing:.6px;padding-top:2px}
+.block{background:var(--ink);border:1px solid var(--line-soft);border-radius:var(--r);padding:13px 14px;margin-bottom:12px}
+.block h5{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--text-faint);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.block h5 .src{margin-left:auto;font-size:10px;letter-spacing:.4px;text-transform:none;padding:1px 7px;border-radius:10px}
+.src.det{background:var(--info-dim);color:var(--info);border:1px solid var(--info)}
+.src.llm{background:var(--fda-dim);color:var(--fda);border:1px solid var(--fda)}
+.block p{font-size:13px;color:var(--text);line-height:1.55}
+.block ul{margin-left:18px;font-size:13px} .block li{margin-bottom:4px}
+.riskbar{display:flex;gap:6px;align-items:center;font-family:var(--mono);font-size:12px}
+.meter{flex:1;height:8px;background:var(--raised);border-radius:4px;overflow:hidden}
+.meter i{display:block;height:100%;border-radius:4px;transition:width .3s}
+
+/* Inventory grid */
+.invwrap{overflow-x:auto;border:1px solid var(--line-soft);border-radius:var(--r)}
+table.inv{border-collapse:collapse;width:100%;font-size:11.5px}
+table.inv th{position:sticky;top:0;background:var(--raised);text-align:left;padding:6px 8px;font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-faint);border-bottom:1px solid var(--line);white-space:nowrap}
+table.inv td{padding:2px 5px;border-bottom:1px solid var(--line-soft)}
+table.inv input,table.inv select{border:1px solid transparent;background:transparent;padding:3px 5px;font-size:11.5px}
+table.inv input:focus,table.inv select:focus{background:var(--ink);border-color:var(--agent)}
+table.inv td.miss input{background:var(--crit-dim)}
+.itag{font-family:var(--mono);font-size:9px;border-radius:3px;padding:1px 5px;border:1px solid}
+.itag.direct{background:var(--fda-dim);color:var(--fda);border-color:var(--fda)}
+.itag.transitive{background:var(--info-dim);color:var(--info);border-color:var(--info)}
+.rowdel{color:var(--crit);border:0;background:transparent;padding:1px 5px;font-size:14px;cursor:pointer}
+
+/* Checklist */
+.checklist{list-style:none;margin:6px 0 0;padding:0}
+.checklist li{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line-soft);font-size:12.5px}
+.checklist li:first-child{border-top:0}
+.ck{width:17px;height:17px;border-radius:4px;flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
+.ck.pass{background:var(--ok-dim);color:var(--ok);border:1px solid var(--ok)}
+.ck.warn{background:var(--gate-dim);color:var(--gate);border:1px solid var(--gate)}
+.ck.fail{background:var(--crit-dim);color:var(--crit);border:1px solid var(--crit)}
+.ck.info{background:var(--fda-dim);color:var(--fda);border:1px solid var(--fda)}
+.ck-t{font-weight:600} .ck-d{color:var(--text-dim);font-size:11.5px}
+.gaplist{margin:6px 0 0 18px;color:var(--gate);font-size:12px}
+
+/* Agent console */
+.agentlog{background:#0C0F16;border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;font-family:var(--mono);font-size:11.5px;max-height:320px;overflow-y:auto;line-height:1.7}
+.agentlog .ln{display:flex;gap:8px}
+.agentlog .ts{color:var(--text-faint);flex:none}
+.agentlog .who{flex:none;width:64px}
+.agentlog .who.AGENT{color:var(--agent)} .agentlog .who.ENGINE{color:var(--info)}
+.agentlog .who.GATE{color:var(--gate)} .agentlog .who.HUMAN{color:var(--ok)}
+.agentlog .who.SYSTEM{color:var(--text-faint)} .agentlog .who.LLM{color:var(--fda)}
+
+/* Approvals */
+.approver{display:flex;align-items:center;gap:12px;background:var(--ink);border:1px solid var(--line-soft);border-radius:var(--r);padding:10px 13px;margin-bottom:8px}
+.approver .role{font-weight:600;font-size:13px;min-width:160px}
+.approver .who{font-size:11.5px;color:var(--text-dim)}
+.approver .st{margin-left:auto;display:flex;gap:6px;align-items:center}
+.gatebanner{background:var(--gate-dim);border:1px solid var(--gate);border-radius:var(--r);padding:12px 14px;margin-bottom:14px}
+.gatebanner .t{color:var(--gate);font-weight:600;font-size:13px;display:flex;gap:8px;align-items:center;margin-bottom:4px}
+.gatebanner p{font-size:12.5px;color:var(--text)}
+.gatebanner .acts{display:flex;gap:8px;margin-top:10px}
+
+/* Package doc + code */
+pre.code{background:#0C0F16;border:1px solid var(--line);border-radius:var(--r);padding:12px;font-family:var(--mono);font-size:10.5px;overflow:auto;max-height:340px;white-space:pre;color:var(--text);line-height:1.5}
+.doc{background:#F5F2EA;color:#20242B;border-radius:var(--r);padding:26px 30px;font-size:13.5px;line-height:1.6}
+.doc h1{font-size:19px;margin-bottom:2px}
+.doc .docmeta{font-family:var(--mono);font-size:11px;color:#6B7280;margin-bottom:14px}
+.doc h2{font-size:14px;margin:16px 0 6px;border-bottom:1px solid #D6D0C2;padding-bottom:3px}
+.doc ul{margin-left:20px}
+.doc table{border-collapse:collapse;width:100%;font-size:12.5px;margin:6px 0}
+.doc td,.doc th{border:1px solid #C9C3B4;padding:4px 8px;text-align:left}
+.doc .stamp{display:inline-block;border:2px solid #4B7BB4;color:#3A6299;font-weight:700;font-size:11px;letter-spacing:1.5px;padding:2px 10px;transform:rotate(-2deg);margin-bottom:10px}
+.doc .stamp.filed{border-color:#3E8E5E;color:#2F7A4C}
+.diffrow{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:4px;margin-bottom:3px}
+.diff-add{background:var(--ok-dim);color:var(--ok)} .diff-rem{background:var(--crit-dim);color:var(--crit)} .diff-chg{background:var(--gate-dim);color:var(--gate)}
+
+/* Modal */
+.modal{position:fixed;inset:0;z-index:70;display:none;align-items:flex-start;justify-content:center;background:rgba(6,9,15,.65);overflow-y:auto;padding:40px 16px}
+.modal.open{display:flex}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;width:min(660px,100%);padding:20px 22px}
+.mbox h3{font-size:15px;margin-bottom:14px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.frow.one{grid-template-columns:1fr}
+.frow label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-dim);margin-bottom:4px}
+.macts{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+.drop{border:1.5px dashed var(--line);border-radius:var(--r);padding:16px;text-align:center;color:var(--text-dim);font-size:12.5px;cursor:pointer;transition:.15s}
+.drop.over{border-color:var(--agent);background:var(--agent-dim)}
+.filetags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.filetag{font-family:var(--mono);font-size:10.5px;background:var(--info-dim);color:var(--info);border:1px solid var(--info);border-radius:4px;padding:2px 7px;display:inline-flex;gap:6px;align-items:center}
+.filetag button{border:0;background:transparent;color:var(--info);padding:0 2px;font-size:12px;cursor:pointer}
+.samplebtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+
+/* Sections */
+.mainnav{display:flex;gap:2px;padding:0 18px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:54px;z-index:35}
+.mainnav button{background:none;border:none;color:var(--text-dim);padding:10px 16px;font-size:13px;border-bottom:2px solid transparent;display:flex;gap:7px;align-items:center}
+.mainnav button.active{color:var(--text);border-bottom-color:var(--agent);font-weight:600}
+.navbadge{font-family:var(--mono);font-size:10px;background:var(--raised);border:1px solid var(--line);border-radius:9px;padding:0 6px;color:var(--text-dim)}
+.navbadge.hot{background:var(--gate-dim);border-color:var(--gate);color:var(--gate)}
+.shell.full{grid-template-columns:1fr}
+.shell.full .side{display:none}
+.regwrap{max-width:960px;margin:0 auto}
+.regnote{font-size:11.5px;color:var(--text-faint);text-align:center;margin-bottom:10px;font-family:var(--mono)}
+.reg{background:#F5F2EA;color:#20242B;border-radius:10px;padding:30px 36px;min-height:50vh}
+.reg .rhead{border-bottom:3px solid #20242B;padding-bottom:14px;margin-bottom:6px}
+.reg .rhead .org{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:#3A6299;text-transform:uppercase}
+.reg .rhead h1{font-size:24px;margin-top:4px}
+.reg .rhead p{color:#5B6472;font-size:13.5px;margin-top:6px;max-width:640px}
+.regrow{display:grid;grid-template-columns:150px 90px 1fr 130px 110px;gap:14px;align-items:center;padding:13px 4px;border-bottom:1px solid #E2DCCE;cursor:pointer;font-size:13.5px}
+.regrow:hover{background:#EEE9DC}
+.regrow .aid{font-family:var(--mono);font-size:12px;color:#3A6299;font-weight:700}
+.regrow .tt{font-weight:600} .regrow .tt .sub{display:block;font-weight:400;color:#5B6472;font-size:12px}
+.reg .rempty{text-align:center;color:#8A8F98;padding:70px 0;font-size:14px}
+.reg .backlink{background:none;border:none;color:#3A6299;font-size:13px;padding:6px 0;font-weight:600;cursor:pointer}
+.reg .docwrap{margin:14px 0 6px;border:1px solid #D6D0C2;border-radius:8px;overflow:hidden}
+.artitem{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;display:flex;gap:14px;align-items:center}
+.artitem .ai{flex:1;min-width:0}
+.artitem .fn{font-family:var(--mono);font-size:12.5px;color:var(--agent)}
+.artitem .meta2{font-size:11px;color:var(--text-dim);margin-top:2px}
+.artitem .fmt{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;background:var(--fda-dim);color:var(--fda);border:1px solid var(--fda)}
+
+/* Toast / misc */
+#toasts{position:fixed;bottom:18px;right:18px;z-index:90;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--raised);border:1px solid var(--line);border-left:3px solid var(--agent);border-radius:var(--r);padding:10px 14px;font-size:12.5px;max-width:340px;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+.toast.gate{border-left-color:var(--gate)} .toast.crit{border-left-color:var(--crit)} .toast.ok{border-left-color:var(--ok)}
+.empty{text-align:center;color:var(--text-faint);padding:60px 20px;font-size:13px}
+.empty b{display:block;color:var(--text-dim);font-size:15px;margin-bottom:6px}
+.tag{font-family:var(--mono);font-size:10px;background:var(--raised);border:1px solid var(--line);border-radius:3px;padding:1px 6px;color:var(--text-dim)}
+.kpiline{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:8px}
+.kpiline div b{font-family:var(--mono);font-size:18px;display:block;color:var(--text)}
+.kpiline div span{font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .side{flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--line)}
+  .compact .crow{grid-template-columns:110px 1fr 24px}
+  .compact .crow .hidesm{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark">◈ BitSense</span>
+    <span class="name">SBOM Orchestrator</span>
+    <span class="sub">Automated SBOM → FDA §524B Submission · Agentic Pipeline</span>
+  </div>
+  <div class="spacer"></div>
+  <span class="pill" id="providerPill"><span class="dot"></span><span id="providerLabel">ENGINE: DETERMINISTIC</span></span>
+  <select class="provider" id="providerSel" title="Narrative provider — the deterministic engine always owns parsing, scoring and gate decisions">
+    <option value="anthropic">LLM: Anthropic API</option>
+    <option value="ollama">LLM: Ollama (localhost)</option>
+    <option value="deterministic" selected>Deterministic only</option>
+  </select>
+  <button class="btn sm ghost" id="auditBtn">Audit Log</button>
+  <button class="btn sm ghost" id="exportBtn">Export state</button>
+  <button class="btn primary" id="newBuildBtn">+ New SBOM Build</button>
+</div>
+
+<div class="mainnav">
+  <button data-section="pipeline" class="active">Pipeline Console</button>
+  <button data-section="register">Submission Register <span class="navbadge" id="regBadge">0</span></button>
+  <button data-section="artifacts">Artifact Outbox <span class="navbadge" id="artBadge">0</span></button>
+</div>
+
+<div class="shell" id="shell">
+  <aside class="side">
+    <div><h3>Pipeline Status</h3><div class="statgrid" id="stats"></div></div>
+    <div id="gateAlertBox"></div>
+    <div><h3>Intake Sources</h3><div id="srcBreakdown"></div></div>
+    <div>
+      <h3>Autonomy</h3>
+      <label style="display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--text-dim);cursor:pointer">
+        <input type="checkbox" id="autoRun" checked style="width:auto"> Agent auto-advances between human gates
+      </label>
+      <p style="font-size:11px;color:var(--text-faint);margin-top:6px;line-height:1.5">
+        The deterministic engine parses every build input, derives identifiers, scores NTIA completeness &amp;
+        FDA §524B readiness, and owns all gate decisions. The LLM writes narrative prose only. Nothing is filed
+        without human sign-off.
+      </p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="viewhead">
+      <div class="viewtabs" role="tablist">
+        <button data-view="compact" class="active">Compact</button>
+        <button data-view="table">Table</button>
+        <button data-view="cards">Cards</button>
+      </div>
+      <input class="search" id="search" type="search" placeholder="Search product, build id, manufacturer…">
+      <select class="fsel" id="fSev" style="width:auto">
+        <option value="">All readiness</option><option>READY</option><option>REVIEW</option><option>GAPS</option><option>DRAFT</option>
+      </select>
+      <select class="fsel" id="fStage" style="width:auto"><option value="">All stages</option></select>
+      <span class="dim" id="countLabel" style="font-size:12px;margin-left:auto"></span>
+    </div>
+    <div id="viewRoot"></div>
+    <div id="sectionRoot" style="display:none"></div>
+  </main>
+</div>
+
+<!-- Drawer -->
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer" role="dialog" aria-modal="true">
+  <div class="dhead" id="drawerHead"></div>
+  <div class="dtabs" id="drawerTabs"></div>
+  <div class="dbody" id="drawerBody"></div>
+</div>
+
+<!-- New build modal -->
+<div class="modal" id="buildModal">
+  <div class="mbox">
+    <h3>New SBOM Build <span class="dim" style="font-weight:400;font-size:12px">— drop build inputs, the pipeline does the rest</span></h3>
+    <div class="frow">
+      <div><label>Device / product name</label><input id="f_device" placeholder="e.g. Infusion Pump Controller fw"></div>
+      <div><label>Manufacturer</label><input id="f_mfr" placeholder="Legal manufacturer name"></div>
+    </div>
+    <div class="frow">
+      <div><label>Version / model</label><input id="f_ver" placeholder="e.g. 4.2.0"></div>
+      <div><label>Build / commit ref</label><input id="f_build" placeholder="git sha or build id"></div>
+    </div>
+    <div class="frow">
+      <div><label>Asset class</label>
+        <select id="f_asset">
+          <option value="medical-device">Medical device / SaMD (§524B)</option>
+          <option value="enterprise-app">Enterprise application</option>
+          <option value="infrastructure">Infrastructure / firmware</option>
+        </select></div>
+      <div><label>SBOM author</label><input id="f_author" placeholder="Team / tool of record"></div>
+    </div>
+    <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-dim);margin-bottom:4px">Build inputs</label>
+    <div class="drop" id="modalDrop">Drop lockfiles / manifests / existing SBOMs here, or click to choose<br>
+      <span class="faint" style="font-size:11px">package-lock.json · requirements.txt · go.mod · Cargo.lock · pom.xml · Gemfile.lock · composer.lock · Dockerfile · CycloneDX/SPDX JSON · CSV</span></div>
+    <input type="file" id="modalFiles" multiple style="display:none">
+    <div class="samplebtns" id="sampleBtns"></div>
+    <div class="filetags" id="fileTags"></div>
+    <div class="macts">
+      <button class="btn ghost" id="buildCancel">Cancel</button>
+      <button class="btn primary" id="buildSave">Submit to pipeline</button>
+    </div>
+  </div>
+</div>
+
+<!-- Approval modal -->
+<div class="modal" id="approveModal"><div class="mbox" id="approveBox"></div></div>
+
+<!-- Audit modal -->
+<div class="modal" id="auditModal">
+  <div class="mbox" style="width:min(840px,100%)">
+    <h3>Audit Log <span class="dim" style="font-weight:400;font-size:12px">— every engine decision, agent action and human sign-off</span></h3>
+    <div class="agentlog" id="auditLog" style="max-height:60vh"></div>
+    <div class="macts"><button class="btn" id="auditClose">Close</button></div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<script>
+'use strict';
+/* =====================================================================
+   BitSense SBOM Orchestrator
+   Same architecture as the CVD Orchestrator: a deterministic engine
+   parses build inputs, derives identifiers, and owns every score, NTIA /
+   §524B readiness decision and gate. The LLM layer writes narrative prose
+   only. The agent auto-advances between human gates; nothing is filed to
+   an FDA package without human sign-off. Everything is logged.
+   ===================================================================== */
+
+/* ---------------- Stage machine ---------------- */
+const STAGES = [
+  { id:'INTAKE',       label:'Intake',              kind:'agent'  },
+  { id:'GENERATE',     label:'Generate inventory',  kind:'agent'  },
+  { id:'IDENTIFY',     label:'Derive identifiers',  kind:'agent'  },
+  { id:'NORMALIZE',    label:'Normalize & dedup',   kind:'agent'  },
+  { id:'VALIDATE',     label:'NTIA / 524B validation', kind:'engine' },
+  { id:'REVIEW_GATE',  label:'Completeness review', kind:'gate', roles:['Product Security'] },
+  { id:'VEX_LINK',     label:'VEX linkage',         kind:'agent'  },
+  { id:'PACKAGE',      label:'Assemble package',    kind:'agent'  },
+  { id:'SUBMIT_GATE',  label:'Submission sign-off', kind:'gate', roles:['Regulatory Affairs','Quality Assurance'] },
+  { id:'FILED',        label:'Filed',               kind:'end'    },
+];
+const STAGE_IDX = Object.fromEntries(STAGES.map((s,i)=>[s.id,i]));
+const TERMINALS = { EMPTY:'No components — needs inputs', REJECTED:'Rejected at gate', FILED:'Filed — submission-ready' };
+
+/* ---------------- Storage ---------------- */
+const store = (()=>{
+  let mem = {};
+  const ok = (()=>{ try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return true; }catch(e){ return false; } })();
+  return {
+    get(k){ try{ return ok ? JSON.parse(localStorage.getItem(k)) : (mem[k]??null); }catch(e){ return mem[k]??null; } },
+    set(k,v){ mem[k]=v; if(ok){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} } },
+    persistent: ok
+  };
+})();
+
+/* ---------------- State ---------------- */
+let builds = store.get('bs_sbom_builds') || null;
+let audit = store.get('bs_sbom_audit') || [];
+let artifacts = store.get('bs_sbom_artifacts') || [];
+let ui = { section:'pipeline', view:'compact', search:'', fSev:'', fStage:'', selected:null, tab:'overview', sortKey:'created', sortDir:-1, regOpen:null };
+const save = ()=>{ store.set('bs_sbom_builds', builds); store.set('bs_sbom_audit', audit.slice(-800)); store.set('bs_sbom_artifacts', artifacts); };
+
+const now = ()=> new Date().toISOString();
+const fmtD = iso => iso ? new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+const fmtT = iso => new Date(iso).toLocaleTimeString('en-US',{hour12:false});
+const uid = ()=> 'b'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id);
+
+function log(buildId, who, msg){
+  const e = { ts: now(), buildId, who, msg };
+  audit.push(e);
+  const b = builds.find(x=>x.id===buildId);
+  if (b){ b.log = b.log||[]; b.log.push(e); }
+  save();
+  if (ui.selected===buildId) renderDrawer();
+  renderAuditIfOpen();
+}
+
+/* =====================================================================
+   PARSERS — deterministic, ecosystem-aware
+   ===================================================================== */
+function newComp(o){ return Object.assign({name:'',version:'',type:'library',ecosystem:'generic',supplier:'',purl:'',cpe:'',license:'',scope:'direct',source:''},o||{}); }
+function slug(s){return (s||'').toLowerCase().replace(/[^a-z0-9._-]+/g,'-').replace(/^-+|-+$/g,'');}
+const PURL_TYPE = {npm:'npm',pypi:'pypi',maven:'maven',golang:'golang',cargo:'cargo',gem:'gem',composer:'composer',docker:'docker',nuget:'nuget',generic:'generic'};
+function derivePurl(c){
+  if(!c.name) return '';
+  const t = PURL_TYPE[c.ecosystem]||'generic';
+  const v = c.version?('@'+encodeURIComponent(c.version)):'';
+  let n=c.name;
+  if(t==='maven'||t==='composer'||t==='golang') n=n.replace(/:/g,'/');
+  else if(t==='npm') n=n.replace(/^@/,'%40');
+  else n=encodeURIComponent(n);
+  return `pkg:${t}/${n}${v}`;
+}
+function deriveCpe(c){
+  if(!c.name) return '';
+  const vendor=slug(c.supplier)||slug(c.name.split(/[\/:]/)[0])||'*';
+  const product=slug(c.name.split(/[\/:]/).pop())||'*';
+  const ver=c.version? c.version.replace(/[:]/g,'_'):'*';
+  return `cpe:2.3:a:${vendor}:${product}:${ver}:*:*:*:*:*:*:*`;
+}
+function parseInput(name, text){
+  const ln=(name||'').toLowerCase(); let out=[];
+  try{
+    // filename-specific matches first (several JSON files must not fall into the generic sniffer)
+    if(ln==='package.json') out=fromPackageJson(text);
+    else if(ln.includes('package-lock')||ln.includes('shrinkwrap')) out=fromNpmLock(JSON.parse(text));
+    else if(ln.endsWith('composer.lock')) out=fromComposerLock(JSON.parse(text));
+    else if(ln==='go.mod') out=fromGoMod(text);
+    else if(ln.endsWith('cargo.lock')) out=fromCargoLock(text);
+    else if(ln.endsWith('pom.xml')) out=fromPom(text);
+    else if(ln.endsWith('gemfile.lock')) out=fromGemfileLock(text);
+    else if(ln.includes('dockerfile')) out=fromDockerfile(text);
+    else if(ln.endsWith('.csv')) out=fromCsv(text);
+    else if(ln.endsWith('.json')){
+      const j=JSON.parse(text);
+      if(j.bomFormat==='CycloneDX'||j.components) out=fromCycloneDX(j);
+      else if(j.spdxVersion||(Array.isArray(j.packages))) out=fromSpdx(j);
+      else if(j.dependencies||j.packages) out=fromNpmLock(j);
+      else if(Array.isArray(j)) out=j.map(r=>newComp(r));
+    }
+    else if(ln.includes('requirements')||ln.endsWith('.txt')) out=fromRequirements(text);
+    else { const t=text.trim(); if(t[0]==='{'||t[0]==='[') return parseInput(name+'.json',text); out=fromRequirements(text); }
+  }catch(e){ console.warn('parse fail',name,e); out=[]; }
+  out.forEach(c=>c.source=name);
+  return out;
+}
+function licFromCdx(l){ if(!Array.isArray(l))return ''; return l.map(x=>(x.license&&(x.license.id||x.license.name))||x.expression||'').filter(Boolean).join(', '); }
+function fromCycloneDX(j){
+  return (j.components||[]).map(c=>{
+    const eco=c.purl?(c.purl.match(/^pkg:([^\/]+)/)||[])[1]:undefined;
+    return newComp({name:c.name,version:c.version,type:c.type||'library',
+      ecosystem:(eco&&PURL_TYPE[eco])?eco:'generic',
+      supplier:(c.supplier&&c.supplier.name)||c.publisher||'',
+      purl:c.purl||'',cpe:c.cpe||'',license:licFromCdx(c.licenses),scope:'direct'});
+  });
+}
+function fromSpdx(j){
+  return (j.packages||[]).filter(p=>p.SPDXID!=='SPDXRef-Product').map(p=>{
+    let purl='',cpe=''; (p.externalRefs||[]).forEach(r=>{ if(r.referenceType==='purl')purl=r.referenceLocator; if((r.referenceType||'').startsWith('cpe'))cpe=r.referenceLocator; });
+    const eco=purl?(purl.match(/^pkg:([^\/]+)/)||[])[1]:undefined;
+    return newComp({name:p.name,version:p.versionInfo||'',supplier:(p.supplier||'').replace(/^Organization:\s*/,'').replace(/^NOASSERTION$/,''),
+      purl,cpe,license:p.licenseConcluded&&p.licenseConcluded!=='NOASSERTION'?p.licenseConcluded:'',ecosystem:(eco&&PURL_TYPE[eco])?eco:'generic'});
+  });
+}
+function fromPackageJson(t){ const j=JSON.parse(t); const out=[];
+  const add=(d,sc)=>Object.entries(d||{}).forEach(([n,v])=>out.push(newComp({name:n,version:String(v).replace(/^[\^~>=<\s]+/,''),ecosystem:'npm',scope:sc})));
+  add(j.dependencies,'direct'); add(j.devDependencies,'direct'); return out; }
+function fromNpmLock(j){ const out=[],seen=new Set();
+  const push=(n,v,sc)=>{ if(!n)return; const k=n+'@'+v; if(seen.has(k))return; seen.add(k); out.push(newComp({name:n,version:v||'',ecosystem:'npm',scope:sc})); };
+  if(j.packages){ Object.entries(j.packages).forEach(([p,info])=>{ if(!p)return; push(p.split('node_modules/').pop(),info.version,info.dev?'transitive':'direct'); }); }
+  else if(j.dependencies){ const walk=(d,sc)=>Object.entries(d).forEach(([n,info])=>{ push(n,info.version,sc); if(info.dependencies)walk(info.dependencies,'transitive'); }); walk(j.dependencies,'direct'); }
+  return out; }
+function fromRequirements(t){ return t.split(/\r?\n/).map(l=>l.replace(/#.*/,'').trim()).filter(l=>l&&!l.startsWith('-')).map(l=>{
+  const m=l.match(/^([A-Za-z0-9._-]+)\s*(?:\[[^\]]*\])?\s*(?:==|>=|<=|~=|!=|===)?\s*([0-9][\w.\-+]*)?/); if(!m)return null;
+  return newComp({name:m[1],version:m[2]||'',ecosystem:'pypi'}); }).filter(Boolean); }
+function fromGoMod(t){ const out=[]; let inb=false;
+  t.split(/\r?\n/).forEach(l=>{ l=l.replace(/\/\/.*/,'').trim();
+    if(l.startsWith('require (')){inb=true;return;} if(inb&&l===')'){inb=false;return;}
+    let m=l.match(/^require\s+(\S+)\s+(\S+)/)||(inb&&l.match(/^(\S+)\s+(\S+)/));
+    if(m)out.push(newComp({name:m[1],version:m[2],ecosystem:'golang',scope:inb?'transitive':'direct'})); }); return out; }
+function fromCargoLock(t){ const out=[]; t.split(/\[\[package\]\]/).slice(1).forEach(b=>{
+  const n=(b.match(/name\s*=\s*"([^"]+)"/)||[])[1],v=(b.match(/version\s*=\s*"([^"]+)"/)||[])[1];
+  if(n)out.push(newComp({name:n,version:v||'',ecosystem:'cargo'})); }); return out; }
+function fromPom(t){ const out=[]; const dre=/<dependency>([\s\S]*?)<\/dependency>/g; let m;
+  const g=(b,k)=>((b.match(new RegExp('<'+k+'>([^<]*)</'+k+'>')))||[])[1]||'';
+  while((m=dre.exec(t))){ const b=m[1],gid=g(b,'groupId'),aid=g(b,'artifactId'),v=g(b,'version'); if(aid)out.push(newComp({name:(gid?gid+':':'')+aid,version:v,ecosystem:'maven'})); } return out; }
+function fromGemfileLock(t){ const out=[]; let insp=false;
+  t.split(/\r?\n/).forEach(l=>{ if(/^\s{2}specs:/.test(l)){insp=true;return;} if(insp&&/^\S/.test(l))insp=false;
+    const m=l.match(/^\s{4}([A-Za-z0-9._-]+)\s+\(([^)]+)\)/); if(insp&&m)out.push(newComp({name:m[1],version:m[2],ecosystem:'gem'})); }); return out; }
+function fromComposerLock(j){ const out=[]; (j.packages||[]).concat(j['packages-dev']||[]).forEach(p=>out.push(newComp({name:p.name,version:(p.version||'').replace(/^v/,''),ecosystem:'composer',license:(p.license||[]).join(', ')}))); return out; }
+function fromDockerfile(t){ const out=[]; t.split(/\r?\n/).forEach(l=>{ const m=l.match(/^\s*FROM\s+([^\s]+)/i);
+  if(m){ let img=m[1].replace(/\s+AS\s+.*/i,''); const at=img.split('@')[0]; const [name,tag]=at.split(':'); out.push(newComp({name,version:tag||'latest',ecosystem:'docker',type:'container',scope:'direct'})); } }); return out; }
+function fromCsv(t){ const rows=t.split(/\r?\n/).filter(r=>r.trim()); if(!rows.length)return [];
+  const split=r=>{const o=[];let cur='',q=false;for(const ch of r){if(ch==='"')q=!q;else if(ch===','&&!q){o.push(cur);cur='';}else cur+=ch;}o.push(cur);return o.map(x=>x.trim().replace(/^"|"$/g,''));};
+  const hdr=split(rows[0]).map(h=>h.toLowerCase());
+  const idx=(...ks)=>{for(const k of ks){const i=hdr.findIndex(h=>h.includes(k));if(i>=0)return i;}return -1;};
+  const iN=idx('component','name','package'),iV=idx('version'),iS=idx('supplier','vendor'),iP=idx('purl'),iC=idx('cpe'),iL=idx('license'),iE=idx('ecosystem');
+  return rows.slice(1).map(r=>{const c=split(r); if(!c[iN])return null; return newComp({name:c[iN],version:iV>=0?c[iV]:'',supplier:iS>=0?c[iS]:'',purl:iP>=0?c[iP]:'',cpe:iC>=0?c[iC]:'',license:iL>=0?c[iL]:'',ecosystem:(iE>=0&&PURL_TYPE[slug(c[iE])])?slug(c[iE]):'generic'}); }).filter(Boolean); }
+
+/* =====================================================================
+   DETERMINISTIC ENGINE — parsing orchestration, IDs, NTIA/524B scoring
+   ===================================================================== */
+function fnv(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193);}
+  return ('00000000'+(h>>>0).toString(16)).slice(-8)+('00000000'+((str.length*2654435761)>>>0).toString(16)).slice(-8); }
+
+const Engine = {
+  generate(b){ // parse all raw sources into a merged component list
+    const comps=[]; const srcCounts={};
+    (b.sources||[]).forEach(s=>{ const c=parseInput(s.name, s.text); srcCounts[s.name]=c.length; comps.push(...c); });
+    b.components=comps; b.srcCounts=srcCounts; return srcCounts;
+  },
+  identify(b){ let filled=0;
+    (b.components||[]).forEach(c=>{ if(!c.purl){c.purl=derivePurl(c); if(c.purl)filled++;} if(!c.cpe)c.cpe=deriveCpe(c);
+      if(!c.supplier&&c.ecosystem!=='generic')c.supplier=this.guessSupplier(c); });
+    return filled;
+  },
+  guessSupplier(c){ const m={npm:'npm registry',pypi:'PyPI',maven:(c.name.split(':')[0]||'Maven Central'),golang:(c.name.split('/')[0]||''),cargo:'crates.io',gem:'RubyGems',composer:(c.name.split('/')[0]||''),docker:'Docker Hub'}; return m[c.ecosystem]||''; },
+  normalize(b){ const seen=new Map(),out=[];
+    (b.components||[]).forEach(c=>{ const k=(c.name||'').toLowerCase()+'@'+(c.version||'');
+      if(seen.has(k)){ const e=out[seen.get(k)]; ['supplier','purl','cpe','license'].forEach(f=>{if(!e[f]&&c[f])e[f]=c[f];}); if(c.scope==='direct')e.scope='direct'; if(e.source&&c.source&&!e.source.split(', ').includes(c.source))e.source=e.source+', '+c.source; }
+      else { seen.set(k,out.length); out.push(c); } });
+    const removed=(b.components||[]).length-out.length; b.components=out; return removed;
+  },
+  serial(b){ const basis=JSON.stringify((b.components||[]).map(c=>[c.name,c.version,c.purl]))+(b.device||'')+(b.version||''); return 'urn:bitsense:sbom:'+fnv(basis); },
+  validate(b){ const comps=b.components||[]; const n=comps.length||1;
+    const withName=comps.filter(c=>c.name).length, withVer=comps.filter(c=>c.version).length,
+          withId=comps.filter(c=>c.purl||c.cpe).length, withSup=comps.filter(c=>c.supplier).length;
+    const perComp=(withName+withVer+withId+withSup)/(4*n);
+    const authorOk=!!b.author, tsOk=true, relOk=comps.length>0;
+    const ntia=comps.length? Math.round((perComp*0.7 + (authorOk+ (tsOk?1:0) + (relOk?1:0))/3*0.3)*100) : 0;
+    const idPct=Math.round(withId/n*100), supPct=Math.round(withSup/n*100);
+    const items=[];
+    items.push(['Machine-readable format (CycloneDX 1.5 & SPDX 2.3)','pass','Generated deterministically from the component model.',null]);
+    items.push(['Primary device / product identified', b.device?'pass':'fail','§524B ties the SBOM to the cyber device under review.', b.device?null:'Set the device / product name for this build.']);
+    items.push(['Manufacturer named', b.mfr?'pass':'warn','NTIA supplier of the top-level device.', b.mfr?null:'Add the legal manufacturer name.']);
+    const idBand=idPct>=100?'pass':idPct>=80?'warn':'fail';
+    items.push(['All components carry a unique identifier', idBand, `${comps.filter(c=>c.purl||c.cpe).length}/${comps.length} have a PURL or CPE — required to map to CVEs.`, idBand==='pass'?null:`${comps.length-comps.filter(c=>c.purl||c.cpe).length} component(s) still missing an identifier.`]);
+    const supBand=supPct>=90?'pass':supPct>=60?'warn':'fail';
+    items.push(['Supplier coverage (commercial / OSS / off-the-shelf)', supBand, `${comps.filter(c=>c.supplier).length}/${comps.length} components name a supplier.`, supBand==='pass'?null:`${comps.length-comps.filter(c=>c.supplier).length} component(s) missing a supplier.`]);
+    items.push(['SBOM author recorded', b.author?'pass':'warn','NTIA author-of-SBOM element.', b.author?null:'Name the author / tool of record.']);
+    items.push(['Timestamp & serial number','pass','Provenance stamped automatically; serial is content-derived.',null]);
+    items.push(['Vulnerability assessment & VEX','info','§524B expects each component assessed for known vulnerabilities with a disposition — completed in VEX Bench and attached to the same submission.',null]);
+    const gaps=items.map(i=>i[3]).filter(Boolean);
+    const anyFail=items.some(i=>i[1]==='fail'), anyWarn=items.some(i=>i[1]==='warn');
+    const band = comps.length===0?'DRAFT' : anyFail?'GAPS' : anyWarn?'REVIEW':'READY';
+    return { counts:{n:comps.length,direct:comps.filter(c=>c.scope==='direct').length,transitive:comps.filter(c=>c.scope==='transitive').length,withId:comps.filter(c=>c.purl||c.cpe).length,withSup:comps.filter(c=>c.supplier).length},
+      ntia, idPct, supPct, items, gaps, band, at:now(), serial:this.serial(b) };
+  },
+  diff(b){ // vs most recent prior FILED build of same product
+    const prior=builds.filter(x=>x.id!==b.id && x.terminal==='FILED' && x.device===b.device).sort((a,c)=>(c.filedAt||'').localeCompare(a.filedAt||''))[0];
+    if(!prior) return {prior:null,rows:[]};
+    const cur=new Map((b.components||[]).map(c=>[(c.name||'').toLowerCase(),c]));
+    const base=new Map((prior.components||[]).map(c=>[(c.name||'').toLowerCase(),c]));
+    const rows=[];
+    cur.forEach((c,k)=>{ if(!base.has(k))rows.push(['add',`+ ${c.name} ${c.version}`]); else if(base.get(k).version!==c.version)rows.push(['chg',`~ ${c.name} ${base.get(k).version} → ${c.version}`]); });
+    base.forEach((c,k)=>{ if(!cur.has(k))rows.push(['rem',`− ${c.name} ${c.version}`]); });
+    return {prior,rows};
+  }
+};
+
+/* =====================================================================
+   LLM LAYER — narrative prose only. Never scores, never gate decisions.
+   ===================================================================== */
+const LLM = {
+  provider:'deterministic', status:'idle',
+  async narrate(purpose, ctx){
+    if(this.provider==='deterministic') return {text:null,src:'det'};
+    const prompt=this.prompts[purpose](ctx);
+    try{
+      let text=null;
+      if(this.provider==='anthropic'){
+        const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:900,messages:[{role:'user',content:prompt}]})});
+        const d=await r.json(); text=(d.content||[]).map(x=>x.type==='text'?x.text:'').join('').trim();
+      } else if(this.provider==='ollama'){
+        const r=await fetch('http://localhost:11434/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({model:'llama3.1',prompt,stream:false})});
+        const d=await r.json(); text=(d.response||'').trim();
+      }
+      return text?{text,src:'llm'}:{text:null,src:'det'};
+    }catch(e){ return {text:null,src:'det',err:String(e)}; }
+  },
+  prompts:{
+    inventory: c=>`You are a product-security analyst preparing an FDA §524B SBOM. In 3-4 plain sentences (no markdown, no preamble), describe the composition and supply-chain risk posture of this build. Do NOT invent or change any counts — use the figures given.\n\nDevice: ${c.device} (${c.assetClass})\nComponents: ${c.n} (${c.direct} direct, ${c.transitive} transitive)\nEcosystems: ${c.ecos}\nNTIA completeness: ${c.ntia}%, identifier coverage ${c.idPct}%, supplier coverage ${c.supPct}%.`,
+    cover: c=>`Write the Executive Summary (4-6 plain sentences, no markdown, no heading) of an FDA premarket cybersecurity (§524B) SBOM submission cover for device "${c.device}" v${c.version} by ${c.mfr}. The SBOM has ${c.n} components at ${c.ntia}% NTIA completeness, machine-readable in CycloneDX 1.5 and SPDX 2.3. Keep it factual; do not alter figures.`
+  }
+};
+const Fallback = {
+  inventory(b,v){ const ecos=[...new Set((b.components||[]).map(c=>c.ecosystem))].join(', ')||'none';
+    return `This build of ${b.device} contributes ${v.counts.n} components (${v.counts.direct} direct, ${v.counts.transitive} transitive) across ${ecos}. Identifier coverage is ${v.idPct}% and supplier coverage ${v.supPct}%, giving an NTIA minimum-elements completeness of ${v.ntia}%. ${v.gaps.length?`Open gaps before packaging: ${v.gaps.length}.`:'No open NTIA gaps were detected.'} Each component carries a PURL/CPE so it can be mapped to known vulnerabilities during the VEX stage.`; },
+  cover(b,v){ return `This submission provides a machine-readable software bill of materials for ${b.device}${b.version?` v${b.version}`:''}${b.mfr?`, manufactured by ${b.mfr}`:''}, prepared per FDA §524B and the NTIA minimum elements. The SBOM enumerates ${v.counts.n} software components — commercial, open-source and off-the-shelf — with ${v.idPct}% carrying unique identifiers (PURL/CPE) for vulnerability mapping. It is provided in CycloneDX 1.5 and SPDX 2.3 formats with a content-derived serial number for integrity. NTIA minimum-element completeness is assessed at ${v.ntia}%. Per-component exploitability and VEX dispositions are provided separately via BitSense VEX Bench and attached to this submission. The SBOM is point-in-time for the build identified below and is regenerated on each release across the total product lifecycle.`; }
+};
+
+/* =====================================================================
+   AGENT RUNNER — autonomous between gates, halts for humans
+   ===================================================================== */
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const running=new Set();
+function setStage(b,id){ b.stage=id; b.stageEntered=now(); save(); renderAll(); }
+function gateStage(b){ const s=STAGES[STAGE_IDX[b.stage]]; return s&&s.kind==='gate'?s:null; }
+async function runAgent(b){ if(running.has(b.id)||b.terminal)return; running.add(b.id); try{ await advance(b);} finally{ running.delete(b.id);} }
+
+async function advance(b){
+  while(!b.terminal){
+    const stage=STAGES[STAGE_IDX[b.stage]]; if(!stage)break;
+    if(stage.kind==='gate'){
+      ensureApprovals(b,stage);
+      if(!allApproved(b,stage.id)){ log(b.id,'GATE',`Halted at ${stage.label} — awaiting ${pendingRoles(b,stage.id).join(', ')}`); toast(`${b.device}: awaiting human approval — ${stage.label}`,'gate'); return; }
+      b.stage=STAGES[STAGE_IDX[b.stage]+1]?.id||'FILED'; save(); renderAll(); continue;
+    }
+    if(!$('autoRun').checked && stage.id!=='INTAKE'){ log(b.id,'SYSTEM','Autonomy off — advance manually from the drawer.'); return; }
+    await runStage(b,stage);
+    if(b.terminal)break;
+    const ni=STAGE_IDX[b.stage]+1; if(ni>=STAGES.length){ fileBuild(b); break; }
+    setStage(b,STAGES[ni].id);
+  }
+  save(); renderAll();
+}
+
+async function runStage(b, stage){
+  switch(stage.id){
+    case 'INTAKE':
+      log(b.id,'AGENT',`Intake accepted — ${(b.sources||[]).length} build input(s) for ${b.device}.`); await sleep(350); break;
+    case 'GENERATE': {
+      log(b.id,'AGENT','Parsing build inputs into a consolidated component inventory…'); await sleep(600);
+      const sc=Engine.generate(b);
+      const total=Object.values(sc).reduce((a,c)=>a+c,0);
+      Object.entries(sc).forEach(([s,n])=>log(b.id,'ENGINE',`Parsed ${s} → ${n} component(s).`));
+      log(b.id,'ENGINE',`Inventory generated: ${total} raw components from ${Object.keys(sc).length} source(s).`);
+      if(total===0){ b.terminal='EMPTY'; log(b.id,'ENGINE','No components parsed — nothing to package. Add recognizable build inputs.'); toast(`${b.device}: no components parsed`,'crit'); }
+      break;
+    }
+    case 'IDENTIFY': {
+      log(b.id,'AGENT','Deriving PURL + CPE identifiers and resolving suppliers…'); await sleep(500);
+      const filled=Engine.identify(b);
+      log(b.id,'ENGINE',`Derived identifiers for ${filled} component(s); suppliers resolved from ecosystem metadata.`); break;
+    }
+    case 'NORMALIZE': {
+      log(b.id,'AGENT','De-duplicating and assigning dependency relationships…'); await sleep(450);
+      const removed=Engine.normalize(b);
+      log(b.id,'ENGINE',`Merged ${removed} duplicate record(s); ${b.components.length} unique components retained.`); break;
+    }
+    case 'VALIDATE': {
+      const v=Engine.validate(b); b.validation=v;
+      log(b.id,'ENGINE',`NTIA completeness ${v.ntia}% · identifier coverage ${v.idPct}% · supplier coverage ${v.supPct}% · readiness ${v.band}.`);
+      log(b.id,'LLM',`Requesting inventory narrative from provider: ${LLM.provider}…`);
+      const ecos=[...new Set((b.components||[]).map(c=>c.ecosystem))].join(', ');
+      const n=await LLM.narrate('inventory',{device:b.device,assetClass:b.assetClass,n:v.counts.n,direct:v.counts.direct,transitive:v.counts.transitive,ecos,ntia:v.ntia,idPct:v.idPct,supPct:v.supPct});
+      b.inventoryNarrative=n.text||Fallback.inventory(b,v); b.narrativeSrc=n.src;
+      log(b.id, n.src==='llm'?'LLM':'ENGINE', n.src==='llm'?'Inventory narrative generated by LLM (counts held to engine output).':'LLM unavailable or disabled — deterministic narrative applied.');
+      break;
+    }
+    case 'VEX_LINK':
+      log(b.id,'AGENT','Preparing VEX linkage — exporting identifier register for vulnerability mapping…'); await sleep(400);
+      b.vex={ handedOff:now(), components:b.components.length };
+      log(b.id,'ENGINE',`VEX handoff manifest built (${b.components.length} identifiers). Assess exploitability & VEX in BitSense VEX Bench, then attach CycloneDX VEX / CSAF to this submission.`); break;
+    case 'PACKAGE': {
+      log(b.id,'AGENT','Assembling machine-readable package: CycloneDX 1.5, SPDX 2.3, submission cover…'); await sleep(600);
+      const v=b.validation||Engine.validate(b); b.validation=v;
+      const n=await LLM.narrate('cover',{device:b.device,version:b.version,mfr:b.mfr,n:v.counts.n,ntia:v.ntia});
+      b.coverNarrative=n.text||Fallback.cover(b,v); b.coverSrc=n.src;
+      b.package={ builtAt:now(), serial:v.serial, formats:['CycloneDX 1.5','SPDX 2.3 (JSON)','SPDX 2.3 (tag-value)','CSV','524B cover'] };
+      log(b.id,'ENGINE',`Package assembled · serial ${v.serial}. Awaiting submission sign-off.`); break;
+    }
+  }
+}
+
+function fileBuild(b){
+  b.terminal='FILED'; b.filedAt=now();
+  const v=b.validation||Engine.validate(b); b.validation=v;
+  const base=slug(b.device||'device')+(b.version?('-'+slug(b.version)):'');
+  const arts=[
+    {fmt:'CycloneDX 1.5', name:base+'.cdx.json', kind:'cdx'},
+    {fmt:'SPDX 2.3 JSON', name:base+'.spdx.json', kind:'spdxj'},
+    {fmt:'SPDX 2.3 TV',   name:base+'.spdx',      kind:'spdxt'},
+    {fmt:'CSV',           name:base+'-sbom.csv',  kind:'csv'},
+    {fmt:'524B cover',    name:base+'-524B-cover.txt', kind:'pkg'},
+  ];
+  arts.forEach(a=>artifacts.unshift({id:uid(),buildId:b.id,device:b.device,version:b.version,serial:v.serial,filedAt:b.filedAt,fmt:a.fmt,name:a.name,kind:a.kind}));
+  log(b.id,'AGENT',`Build FILED — submission package published to the register (${arts.length} artifacts, ${v.counts.n} components, NTIA ${v.ntia}%).`);
+  toast(`${b.device}: filed — FDA package ready (${v.counts.n} components)`,'ok');
+  save();
+}
+
+/* ---------------- Approvals ---------------- */
+function ensureApprovals(b,stage){ b.approvals=b.approvals||{}; if(!b.approvals[stage.id]) b.approvals[stage.id]=stage.roles.map(r=>({role:r,status:'PENDING',by:null,at:null,note:''})); }
+const pendingRoles=(b,sid)=>(b.approvals?.[sid]||[]).filter(a=>a.status==='PENDING').map(a=>a.role);
+const allApproved=(b,sid)=>(b.approvals?.[sid]||[]).length>0 && b.approvals[sid].every(a=>a.status==='APPROVED');
+function decide(bId,sid,role,status,by,note){
+  const b=builds.find(x=>x.id===bId); if(!b)return;
+  const slot=(b.approvals?.[sid]||[]).find(a=>a.role===role); if(!slot)return;
+  slot.status=status; slot.by=by||role; slot.at=now(); slot.note=note||'';
+  log(b.id,'HUMAN',`${role} ${status==='APPROVED'?'approved':'REJECTED'} at ${STAGES[STAGE_IDX[sid]].label}${note?` — “${note}”`:''} (signed: ${slot.by})`);
+  if(status==='REJECTED'){ b.terminal='REJECTED'; toast(`${b.device}: rejected by ${role}`,'crit'); }
+  else if(allApproved(b,sid)){ log(b.id,'GATE',`${STAGES[STAGE_IDX[sid]].label} — all sign-offs complete. Agent resuming.`); runAgent(b); }
+  save(); renderAll();
+}
+
+/* =====================================================================
+   INTAKE
+   ===================================================================== */
+function createBuild(d, sources){
+  const b={ id:uid(), device:d.device||'Unnamed device', mfr:d.mfr||'', version:d.version||'', build:d.build||'',
+    assetClass:d.assetClass||'medical-device', author:d.author||'BitSense SBOM Orchestrator',
+    created:now(), stage:'INTAKE', stageEntered:now(), sources:sources||[], components:[],
+    validation:null, package:null, vex:null, approvals:{}, terminal:null, log:[] };
+  builds.unshift(b); save();
+  log(b.id,'SYSTEM',`Build created for ${b.device}${b.version?` v${b.version}`:''} with ${b.sources.length} input(s).`);
+  renderAll(); runAgent(b); return b;
+}
+
+/* ---------------- Sample inputs ---------------- */
+const SAMPLES={
+'sample.cdx.json': JSON.stringify({bomFormat:'CycloneDX',specVersion:'1.5',
+  metadata:{component:{type:'application',name:'Infusion Pump Controller fw',version:'4.2.0'}},
+  components:[
+    {type:'library',name:'openssl',version:'3.0.8',purl:'pkg:generic/openssl@3.0.8',supplier:{name:'OpenSSL'}},
+    {type:'library',name:'libcurl',version:'7.84.0',purl:'pkg:generic/curl@7.84.0',supplier:{name:'curl'}},
+    {type:'library',name:'log4j-core',version:'2.14.1',purl:'pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1',supplier:{name:'Apache'}}
+  ]},null,2),
+'requirements.txt':'flask==2.0.1\nrequests==2.31.0\npyyaml==5.3.1\ncryptography==41.0.0\n',
+'package-lock.json': JSON.stringify({name:'pump-ui',version:'4.2.0',packages:{'':{name:'pump-ui',version:'4.2.0'},'node_modules/react':{version:'18.2.0'},'node_modules/axios':{version:'1.6.2'},'node_modules/lodash':{version:'4.17.21',dev:true}}},null,2),
+'go.mod':'module device/fw\n\ngo 1.21\n\nrequire (\n\tgithub.com/gorilla/mux v1.8.0\n\tgithub.com/prometheus/client_golang v1.17.0\n)\n',
+'Dockerfile':'FROM debian:bullseye-slim\nFROM gcr.io/distroless/base:latest AS final\n'
+};
+
+/* ---------------- Seed ---------------- */
+function seed(){
+  builds=[]; audit=[]; artifacts=[];
+  const b1=createBuild({device:'Infusion Pump Controller fw',mfr:'Acme Medical Systems',version:'4.2.0',build:'a1b9f3c',assetClass:'medical-device',author:'DevSecOps CI'},
+    [{name:'sample.cdx.json',text:SAMPLES['sample.cdx.json']},{name:'requirements.txt',text:SAMPLES['requirements.txt']},{name:'Dockerfile',text:SAMPLES['Dockerfile']}]);
+  const b2=createBuild({device:'VitalsHub Monitor fw',mfr:'',version:'7.1',build:'',assetClass:'medical-device',author:'DevSecOps CI'},
+    [{name:'go.mod',text:SAMPLES['go.mod']},{name:'package-lock.json',text:SAMPLES['package-lock.json']}]);
+}
+
+/* =====================================================================
+   RENDERING
+   ===================================================================== */
+function stageChip(b){
+  if(b.terminal){ const cls=b.terminal==='FILED'?'fda':b.terminal==='EMPTY'?'':'crit'; return `<span class="chip ${cls}">${esc(TERMINALS[b.terminal])}</span>`; }
+  const s=STAGES[STAGE_IDX[b.stage]];
+  if(s.kind==='gate') return `<span class="chip gate live">⬧ ${esc(s.label)} — awaiting human</span>`;
+  return `<span class="chip agent">◈ ${esc(s.label)}</span>`;
+}
+function readTag(b){ const band=b.terminal==='FILED'?'READY':(b.validation?b.validation.band:'DRAFT'); return `<span class="sev ${band}">${band}</span>`; }
+function rail(b){
+  const cur=STAGE_IDX[b.stage]; let h='<div class="rail">';
+  STAGES.forEach((s,i)=>{ let cls=s.kind==='gate'?'node gate':'node';
+    if(b.terminal==='EMPTY'||b.terminal==='REJECTED'){ cls+= i<cur?' done':' skipped'; }
+    else if(b.terminal==='FILED') cls+=' done';
+    else if(i<cur) cls+=' done';
+    else if(i===cur) cls+= s.kind==='gate'&&!allApproved(b,s.id)?' waiting':' active';
+    h+=`<span class="${cls}" title="${esc(s.label)}"></span>`; if(i<STAGES.length-1)h+=`<span class="seg ${i<cur||b.terminal==='FILED'?'done':''}"></span>`; });
+  h+='</div><div class="raillabels"><span>INTAKE</span><span>GENERATE</span><span>VALIDATE</span><span>PACKAGE</span><span>FILED</span></div>';
+  return h;
+}
+function filtered(){
+  const q=ui.search.toLowerCase();
+  return builds.filter(b=>{
+    const band=b.terminal==='FILED'?'READY':(b.validation?b.validation.band:'DRAFT');
+    if(ui.fSev && band!==ui.fSev) return false;
+    if(ui.fStage){ if(ui.fStage==='GATES'){ if(!(gateStage(b)&&!b.terminal))return false; } else if(ui.fStage.startsWith('T:')){ if(b.terminal!==ui.fStage.slice(2))return false; } else if(b.stage!==ui.fStage||b.terminal) return false; }
+    if(q && !(`${b.device} ${b.id} ${b.mfr} ${b.version}`.toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+function renderStats(){
+  const open=builds.filter(b=>!b.terminal);
+  const gates=open.filter(b=>gateStage(b));
+  const gaps=builds.filter(b=>b.validation&&b.validation.band==='GAPS'&&!b.terminal);
+  const filed=builds.filter(b=>b.terminal==='FILED');
+  $('stats').innerHTML=`
+    <div class="stat agenty"><div class="n">${open.length}</div><div class="l">Active in pipeline</div></div>
+    <div class="stat gatey"><div class="n">${gates.length}</div><div class="l">Awaiting human gate</div></div>
+    <div class="stat crity"><div class="n">${gaps.length}</div><div class="l">Builds with open gaps</div></div>
+    <div class="stat oky"><div class="n">${filed.length}</div><div class="l">Filed / submission-ready</div></div>`;
+  $('gateAlertBox').innerHTML = gates.length ? `<div class="gatealert"><div class="t">⬧ Human decisions pending</div>
+    ${gates.slice(0,4).map(b=>`<div style="margin:3px 0"><a href="#" data-open="${b.id}" style="color:var(--text);text-decoration:none">▸ <b class="mono">${esc(b.device)}</b> — ${esc(STAGES[STAGE_IDX[b.stage]].label)}</a></div>`).join('')}</div>`:'';
+  const bySrc={}; builds.forEach(b=>(b.sources||[]).forEach(s=>{ const key=s.name.replace(/^.*\./,m=>m); bySrc[s.name]=(bySrc[s.name]||0)+1; }));
+  $('srcBreakdown').innerHTML=Object.entries(bySrc).sort((a,c)=>c[1]-a[1]).slice(0,8).map(([s,n])=>`<div class="srcrow"><span class="ellip" style="max-width:150px">${esc(s)}</span><b>${n}</b></div>`).join('')||'<div class="faint" style="font-size:12px">No intake yet</div>';
+}
+function renderView(){
+  const list=filtered(); $('countLabel').textContent=`${list.length} of ${builds.length} builds`;
+  const root=$('viewRoot');
+  if(!list.length){ root.innerHTML=`<div class="empty"><b>No builds match</b>Start a build, load a sample, or clear filters.</div>`; return; }
+  if(ui.view==='compact'){
+    root.innerHTML=`<div class="compact">
+      <div class="crow head"><span>Build</span><span class="hidesm">Readiness</span><span>Device</span><span class="hidesm">Components</span><span class="hidesm">Stage</span><span></span></div>
+      ${list.map(b=>`<div class="crow" data-open="${b.id}">
+        <span class="mono" style="color:var(--agent)">${esc((b.id||'').slice(0,8))}</span>
+        <span class="hidesm">${readTag(b)}</span>
+        <span class="ellip">${esc(b.device)} <span class="faint">${b.version?('v'+esc(b.version)):''}</span></span>
+        <span class="dim hidesm">${(b.components||[]).length} comp · ${b.validation?b.validation.ntia+'% NTIA':'—'}</span>
+        <span class="hidesm">${stageChip(b)}</span>
+        <span class="faint">›</span></div>`).join('')}</div>`;
+  } else if(ui.view==='table'){
+    const cols=[['device','Device'],['band','Readiness'],['mfr','Manufacturer'],['n','Components'],['ntia','NTIA %'],['stage','Stage'],['created','Created']];
+    const g=(b,k)=>k==='band'?({READY:3,REVIEW:2,GAPS:1,DRAFT:0}[b.terminal==='FILED'?'READY':(b.validation?.band||'DRAFT')]):k==='n'?(b.components||[]).length:k==='ntia'?(b.validation?.ntia??-1):k==='created'?b.created:(b[k]||'');
+    const sorted=list.slice().sort((a,c)=>{const d=ui.sortDir;return (g(a,ui.sortKey)>g(c,ui.sortKey)?1:g(a,ui.sortKey)<g(c,ui.sortKey)?-1:0)*d;});
+    root.innerHTML=`<table class="grid"><thead><tr>${cols.map(([k,l])=>`<th data-sort="${k}">${l}${ui.sortKey===k?(ui.sortDir>0?' ▲':' ▼'):''}</th>`).join('')}</tr></thead>
+      <tbody>${sorted.map(b=>`<tr class="row" data-open="${b.id}">
+        <td>${esc(b.device)} <span class="faint mono" style="font-size:10px">${b.version?('v'+esc(b.version)):''}</span></td>
+        <td>${readTag(b)}</td><td class="dim">${esc(b.mfr)||'<span class="faint">—</span>'}</td>
+        <td class="mono">${(b.components||[]).length}</td>
+        <td class="mono">${b.validation?b.validation.ntia+'%':'<span class="faint">—</span>'}</td>
+        <td>${stageChip(b)}</td><td class="dim mono" style="font-size:11px">${fmtD(b.created)}</td></tr>`).join('')}</tbody></table>`;
+    root.querySelectorAll('th[data-sort]').forEach(th=>th.onclick=()=>{ const k=th.dataset.sort; if(ui.sortKey===k)ui.sortDir*=-1; else{ui.sortKey=k;ui.sortDir=1;} renderView(); });
+  } else if(ui.view==='cards'){
+    root.innerHTML=`<div class="cards">${list.map(b=>`<div class="vcard" data-open="${b.id}">
+      <div class="top"><span class="cve">${esc((b.id||'').slice(0,8))}</span>${readTag(b)}</div>
+      <h4>${esc(b.device)} ${b.version?('<span class="faint">v'+esc(b.version)+'</span>'):''}</h4>
+      <div class="desc">${esc(b.mfr)||'Manufacturer not set'} · ${(b.sources||[]).length} input(s)</div>
+      <div class="meta"><span class="tag">${esc(b.assetClass)}</span><span class="tag">${(b.components||[]).length} components</span>${b.validation?`<span class="tag">${b.validation.ntia}% NTIA</span>`:''}</div>
+      <div class="meta">${stageChip(b)}</div>${rail(b)}</div>`).join('')}</div>`;
+  }
+}
+
+/* =====================================================================
+   DRAWER
+   ===================================================================== */
+function openDrawer(id){ ui.selected=id; ui.tab='overview'; $('overlay').classList.add('open'); $('drawer').classList.add('open'); renderDrawer(); }
+function closeDrawer(){ ui.selected=null; $('overlay').classList.remove('open'); $('drawer').classList.remove('open'); }
+
+function renderDrawer(){
+  const b=builds.find(x=>x.id===ui.selected); if(!b)return;
+  $('drawerHead').innerHTML=`<div class="row1"><span class="mono" style="color:var(--agent);font-size:13px">${esc((b.id||'').slice(0,10))}</span>
+    <div style="display:flex;gap:8px;align-items:center">${readTag(b)}${stageChip(b)}<button class="close-x" id="dClose" aria-label="Close">✕</button></div></div>
+    <h2>${esc(b.device)} ${b.version?('<span class="faint">v'+esc(b.version)+'</span>'):''}</h2>${rail(b)}`;
+  const tabs=[['overview','Overview'],['inventory','Inventory'],['validation','Validation'],['package','Package'],['approvals','Approvals'],['log','Agent Log']];
+  $('drawerTabs').innerHTML=tabs.map(([k,l])=>`<button data-tab="${k}" class="${ui.tab===k?'active':''}">${l}${k==='inventory'&&b.components?.length?` <span class="tag">${b.components.length}</span>`:''}</button>`).join('');
+  const body=$('drawerBody');
+  const gate=gateStage(b);
+  const gateBanner = gate&&!b.terminal ? `<div class="gatebanner"><div class="t">⬧ HUMAN GATE — ${esc(gate.label)}</div>
+    <p>The agent is paused. Required sign-offs: ${gate.roles.map(r=>esc(r)).join(', ')}. Nothing is filed without approval.</p>
+    <div class="acts"><button class="btn gatey sm" data-goapprove="${gate.id}">Review &amp; decide</button></div></div>`:'';
+
+  if(ui.tab==='overview'){
+    const v=b.validation;
+    body.innerHTML=gateBanner+`
+      <div class="kv">
+        <div class="k">Device / product</div><div>${esc(b.device)} <span class="tag">${esc(b.assetClass)}</span></div>
+        <div class="k">Manufacturer</div><div>${esc(b.mfr)||'<span class="faint">not set</span>'}</div>
+        <div class="k">Version · build</div><div class="mono">${esc(b.version)||'—'} ${b.build?`· ${esc(b.build)}`:''}</div>
+        <div class="k">SBOM author</div><div>${esc(b.author)}</div>
+        <div class="k">Created</div><div>${fmtD(b.created)} <span class="faint mono">${fmtT(b.created)}</span></div>
+        <div class="k">Serial</div><div class="mono" style="font-size:11px">${esc(v?v.serial:Engine.serial(b))}</div>
+        ${b.terminal==='FILED'?`<div class="k">Filed</div><div>${fmtD(b.filedAt)} <span class="chip fda">submission-ready</span></div>`:''}
+      </div>
+      <div class="block"><h5>Build inputs</h5>${(b.sources||[]).map(s=>`<span class="tag" style="margin:0 4px 4px 0;display:inline-block">${esc(s.name)}${b.srcCounts?` · ${b.srcCounts[s.name]??'?'}`:''}</span>`).join('')||'<span class="faint">None.</span>'}</div>
+      ${b.inventoryNarrative?`<div class="block"><h5>Inventory summary <span class="src ${b.narrativeSrc==='llm'?'llm':'det'}">${b.narrativeSrc==='llm'?'LLM prose · engine numbers':'deterministic template'}</span></h5><p>${esc(b.inventoryNarrative)}</p></div>`:''}
+      ${b.terminal==='EMPTY'?'<div class="block"><h5>Disposition</h5><p>No recognizable components were parsed from the supplied inputs. Add lockfiles/manifests or an existing SBOM and start a new build.</p></div>':''}
+      ${!b.terminal&&!$('autoRun').checked?`<button class="btn primary" id="stepBtn">Advance one stage</button>`:''}`;
+    const sb=$('stepBtn'); if(sb) sb.onclick=async()=>{ const st=STAGES[STAGE_IDX[b.stage]]; if(st.kind!=='gate'){ await runStage(b,st); if(!b.terminal){const ni=STAGE_IDX[b.stage]+1; if(ni>=STAGES.length)fileBuild(b); else setStage(b,STAGES[ni].id);} renderAll(); renderDrawer(); } };
+  }
+  else if(ui.tab==='inventory'){
+    if(!(b.components||[]).length){ body.innerHTML=gateBanner+`<div class="empty"><b>Inventory not generated yet</b>The agent parses build inputs at the Generate stage.</div>`; }
+    else{
+      const TYPES=['library','application','framework','operating-system','firmware','container','device'];
+      const ECOS=Object.keys(PURL_TYPE); const SCOPES=['direct','transitive'];
+      const opt=(arr,v)=>arr.map(o=>`<option${o===v?' selected':''}>${o}</option>`).join('');
+      body.innerHTML=gateBanner+`
+        <div class="kpiline">
+          <div><b>${b.components.length}</b><span>components</span></div>
+          <div><b>${b.components.filter(c=>c.scope==='direct').length}</b><span>direct</span></div>
+          <div><b>${b.components.filter(c=>c.scope==='transitive').length}</b><span>transitive</span></div>
+          <div><b>${b.components.filter(c=>c.purl||c.cpe).length}</b><span>with id</span></div>
+          <div><b>${b.components.filter(c=>c.supplier).length}</b><span>with supplier</span></div>
+        </div>
+        <div class="invwrap"><table class="inv"><thead><tr><th>Component</th><th>Version</th><th>Type</th><th>Ecosystem</th><th>Supplier</th><th>PURL / id</th><th>License</th><th>Scope</th><th>Src</th><th></th></tr></thead>
+        <tbody>${b.components.map((c,i)=>`<tr>
+          <td${!c.name?" class='miss'":''}><input value="${esc(c.name)}" data-i="${i}" data-f="name"></td>
+          <td${!c.version?" class='miss'":''}><input value="${esc(c.version)}" data-i="${i}" data-f="version"></td>
+          <td><select data-i="${i}" data-f="type">${opt(TYPES,c.type)}</select></td>
+          <td><select data-i="${i}" data-f="ecosystem" data-re="1">${opt(ECOS,c.ecosystem)}</select></td>
+          <td${!c.supplier?" class='miss'":''}><input value="${esc(c.supplier)}" data-i="${i}" data-f="supplier"></td>
+          <td${(!c.purl&&!c.cpe)?" class='miss'":''}><input value="${esc(c.purl)}" data-i="${i}" data-f="purl"></td>
+          <td><input value="${esc(c.license)}" data-i="${i}" data-f="license"></td>
+          <td><select data-i="${i}" data-f="scope">${opt(SCOPES,c.scope)}</select></td>
+          <td class="faint mono" style="font-size:9px">${esc((c.source||'').split(', ')[0])}</td>
+          <td><button class="rowdel" data-del="${i}">×</button></td></tr>`).join('')}</tbody></table></div>
+        <div style="margin-top:8px"><button class="btn sm ghost" id="addComp">+ Add component</button>
+        <span class="faint" style="font-size:11px;margin-left:8px">Edits recompute NTIA / §524B validation live.</span></div>`;
+      body.querySelectorAll('input[data-f],select[data-f]').forEach(el=>{ const ev=el.tagName==='SELECT'?'change':'input';
+        el.addEventListener(ev,()=>{ const i=+el.dataset.i,f=el.dataset.f; b.components[i][f]=el.value;
+          if(el.dataset.re){ b.components[i].purl=derivePurl(b.components[i]); b.components[i].cpe=deriveCpe(b.components[i]); }
+          b.validation=Engine.validate(b); save();
+          if(f==='scope'||el.dataset.re||f==='name'||f==='supplier'||f==='purl'){ renderDrawer(); renderView(); renderStats(); } else { renderView(); renderStats(); } }); });
+      body.querySelectorAll('[data-del]').forEach(x=>x.onclick=()=>{ b.components.splice(+x.dataset.del,1); b.validation=Engine.validate(b); save(); renderDrawer(); renderAll(); });
+      const ac=$('addComp'); if(ac) ac.onclick=()=>{ b.components.push(newComp({source:'manual'})); b.validation=Engine.validate(b); save(); renderDrawer(); };
+    }
+  }
+  else if(ui.tab==='validation'){
+    const v=b.validation;
+    if(!v){ body.innerHTML=gateBanner+`<div class="empty"><b>Validation pending</b>The engine scores NTIA / §524B readiness at the Validate stage.</div>`; }
+    else{
+      const bar=(pct,col)=>`<div class="riskbar"><span>${pct}%</span><div class="meter"><i style="width:${pct}%;background:${col}"></i></div></div>`;
+      const ntiaCol=v.ntia>=90?'var(--ok)':v.ntia>=60?'var(--gate)':'var(--crit)';
+      body.innerHTML=gateBanner+`
+        <div class="block"><h5>NTIA minimum elements <span class="src det">deterministic</span></h5>${bar(v.ntia,ntiaCol)}
+          <p style="margin-top:8px;font-size:12px" class="dim">Per-component elements (name, version, unique id, supplier) weighted with SBOM-level author, timestamp and dependency relationships across ${v.counts.n} component(s).</p></div>
+        <div class="block"><h5>Identifier coverage (CVE-mappable) <span class="src det">deterministic</span></h5>${bar(v.idPct,'var(--info)')}
+          <p style="margin-top:8px;font-size:12px" class="dim">${v.counts.withId}/${v.counts.n} components carry a PURL or CPE.</p></div>
+        <div class="block"><h5>Supplier coverage <span class="src det">deterministic</span></h5>${bar(v.supPct,'var(--fda)')}
+          <p style="margin-top:8px;font-size:12px" class="dim">${v.counts.withSup}/${v.counts.n} components name a supplier.</p></div>
+        <div class="block"><h5>FDA §524B readiness checklist <span class="src det">deterministic</span></h5>
+          <ul class="checklist">${v.items.map(it=>{const sym={pass:'✓',warn:'!',fail:'✕',info:'i'}[it[1]];return `<li><span class="ck ${it[1]}">${sym}</span><span><span class="ck-t">${esc(it[0])}</span> <span class="ck-d">— ${esc(it[2])}</span></span></li>`;}).join('')}</ul>
+          ${v.gaps.length?`<div style="margin-top:10px"><b style="font-size:12px;color:var(--gate)">Open gaps</b><ul class="gaplist">${v.gaps.map(g=>`<li>${esc(g)}</li>`).join('')}</ul></div>`:'<p style="margin-top:10px;color:var(--ok);font-size:12.5px">No open gaps — ready for completeness review.</p>'}</div>`;
+    }
+  }
+  else if(ui.tab==='package'){
+    if(!b.package && b.terminal!=='FILED'){ body.innerHTML=gateBanner+`<div class="empty"><b>Package not assembled yet</b>Formats are assembled after completeness review and VEX linkage.</div>`; }
+    else{
+      const v=b.validation||Engine.validate(b);
+      const diff=Engine.diff(b);
+      body.innerHTML=gateBanner+`
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <button class="btn sm" data-dl="cdx">↧ CycloneDX 1.5</button>
+          <button class="btn sm" data-dl="spdxj">↧ SPDX 2.3 JSON</button>
+          <button class="btn sm" data-dl="spdxt">↧ SPDX tag-value</button>
+          <button class="btn sm" data-dl="csv">↧ CSV</button>
+          <button class="btn sm fda" data-dl="pkg">⧉ 524B cover</button>
+          <a class="btn sm ghost" href="sbom/index.html" title="Assess vulnerabilities & VEX">→ VEX Bench</a>
+        </div>
+        <div class="block"><h5>Submission cover <span class="src ${b.coverSrc==='llm'?'llm':'det'}">${b.coverSrc==='llm'?'LLM prose · engine numbers':'deterministic template'}</span></h5>
+          <div class="doc">${b.terminal==='FILED'?'<div class="stamp filed">FILED — SUBMISSION-READY</div>':'<div class="stamp">DRAFT — PENDING SIGN-OFF</div>'}
+            <h1>FDA §524B SBOM Submission — ${esc(b.device)}</h1>
+            <div class="docmeta">${esc(b.mfr||'Manufacturer not set')} · v${esc(b.version||'—')} · ${v.counts.n} components · NTIA ${v.ntia}% · serial ${esc(v.serial)}</div>
+            <h2>Executive Summary</h2><p>${esc(b.coverNarrative||Fallback.cover(b,v))}</p>
+            <h2>Inventory</h2>
+            <table><tr><th>Metric</th><th>Value</th></tr>
+              <tr><td>Total components</td><td>${v.counts.n} (${v.counts.direct} direct / ${v.counts.transitive} transitive)</td></tr>
+              <tr><td>Unique identifiers</td><td>${v.counts.withId}/${v.counts.n} (${v.idPct}%)</td></tr>
+              <tr><td>Named suppliers</td><td>${v.counts.withSup}/${v.counts.n} (${v.supPct}%)</td></tr>
+              <tr><td>NTIA minimum elements</td><td>${v.ntia}%</td></tr></table>
+            <h2>Formats attached</h2><ul><li>CycloneDX 1.5 (JSON)</li><li>SPDX 2.3 (JSON + tag-value)</li><li>CSV</li><li>CycloneDX VEX / CSAF — produced in VEX Bench and attached separately</li></ul>
+          </div></div>
+        <div class="block"><h5>Lifecycle diff <span class="src det">deterministic</span></h5>
+          ${diff.prior?`<p class="dim" style="font-size:12px;margin-bottom:8px">vs previously filed ${esc(diff.prior.device)} v${esc(diff.prior.version||'—')} (${fmtD(diff.prior.filedAt)})</p>
+            ${diff.rows.length?diff.rows.map(r=>`<div class="diffrow diff-${r[0]}">${esc(r[1])}</div>`).join(''):'<p class="dim" style="font-size:12px">No component changes vs the last filed build.</p>'}`
+            :'<p class="faint" style="font-size:12px">No earlier filed build for this device yet. Once a build is filed, the next one diffs against it — SBOMs are point-in-time, so this catches drift release-over-release.</p>'}</div>`;
+      body.querySelectorAll('[data-dl]').forEach(x=>x.onclick=()=>downloadArtifact(b,x.dataset.dl));
+    }
+  }
+  else if(ui.tab==='approvals'){
+    const sids=Object.keys(b.approvals||{});
+    body.innerHTML=gateBanner+(sids.length? sids.map(sid=>{ const st=STAGES[STAGE_IDX[sid]];
+      return `<div class="block"><h5>${esc(st.label)}</h5>${b.approvals[sid].map(a=>`<div class="approver">
+        <span class="role">${esc(a.role)}</span>
+        <span class="who">${a.by?`signed: ${esc(a.by)} · ${fmtD(a.at)}`:''}${a.note?` — “${esc(a.note)}”`:''}</span>
+        <span class="st">${a.status==='PENDING'&&sid===b.stage&&!b.terminal?`<button class="btn sm gatey" data-approve='${JSON.stringify({sid,role:a.role})}'>Decide</button>`:`<span class="chip ${a.status==='APPROVED'?'ok':a.status==='REJECTED'?'crit':''}">${a.status}</span>`}</span></div>`).join('')}</div>`;
+    }).join('') : `<div class="empty"><b>No approval gates reached yet</b>Sign-off slots appear as the build hits the completeness review and submission gates.</div>`);
+  }
+  else if(ui.tab==='log'){ body.innerHTML=`<div class="agentlog">${(b.log||[]).map(logLine).join('')||'<span class="faint">Empty.</span>'}</div>`; }
+
+  $('dClose').onclick=closeDrawer;
+  $('drawerTabs').querySelectorAll('button').forEach(t=>t.onclick=()=>{ ui.tab=t.dataset.tab; renderDrawer(); });
+  body.querySelectorAll('[data-goapprove]').forEach(x=>x.onclick=()=>{ ui.tab='approvals'; renderDrawer(); });
+  body.querySelectorAll('[data-approve]').forEach(x=>x.onclick=()=>{ const {sid,role}=JSON.parse(x.dataset.approve); openApprove(b.id,sid,role); });
+}
+const logLine=l=>`<div class="ln"><span class="ts">${fmtT(l.ts)}</span><span class="who ${l.who}">${l.who}</span><span>${esc(l.msg)}</span></div>`;
+
+/* ---------------- Approval modal ---------------- */
+function openApprove(bId,sid,role){
+  const b=builds.find(x=>x.id===bId); const st=STAGES[STAGE_IDX[sid]]; const v=b.validation||{};
+  $('approveBox').innerHTML=`<h3>⬧ ${esc(st.label)} — ${esc(role)} decision</h3>
+    <p class="dim" style="font-size:13px;margin-bottom:12px">${esc(b.device)} ${b.version?('v'+esc(b.version)):''}</p>
+    ${sid==='REVIEW_GATE'?`<div class="block"><h5>What you are approving</h5><p>The generated SBOM inventory (${(b.components||[]).length} components) and its NTIA / §524B readiness: NTIA ${v.ntia}%, identifier coverage ${v.idPct}%, supplier coverage ${v.supPct}%, readiness ${v.band}. ${v.gaps?.length?`There are ${v.gaps.length} open gap(s) — approve only if acceptable or documented.`:'No open gaps.'} Approval releases the build to VEX linkage and packaging.</p></div>`:''}
+    ${sid==='SUBMIT_GATE'?`<div class="block"><h5>What you are approving</h5><p>Filing the assembled FDA §524B package for ${esc(b.device)} (CycloneDX 1.5 + SPDX 2.3 + cover), on behalf of ${esc(role)}. Both Regulatory Affairs and Quality Assurance must sign before the package is filed to the register.</p></div>`:''}
+    <div class="frow"><div><label>Signed by (name)</label><input id="ap_by" placeholder="${esc(role)}"></div>
+      <div><label>Note (optional)</label><input id="ap_note" placeholder="Rationale, conditions…"></div></div>
+    <div class="macts"><button class="btn ghost" id="ap_cancel">Cancel</button><button class="btn danger" id="ap_reject">Reject</button><button class="btn primary" id="ap_ok">Approve &amp; sign</button></div>`;
+  $('approveModal').classList.add('open');
+  $('ap_cancel').onclick=()=>$('approveModal').classList.remove('open');
+  const go=s=>{ decide(bId,sid,role,s,$('ap_by').value.trim(),$('ap_note').value.trim()); $('approveModal').classList.remove('open'); renderDrawer(); };
+  $('ap_ok').onclick=()=>go('APPROVED'); $('ap_reject').onclick=()=>go('REJECTED');
+}
+
+/* =====================================================================
+   EXPORTERS
+   ===================================================================== */
+function meta(b){ return {device:b.device||'Unnamed device',mfr:b.mfr,ver:b.version,build:b.build,author:b.author||'BitSense SBOM Orchestrator',ts:b.created,serial:(b.validation?b.validation.serial:Engine.serial(b))}; }
+function toCycloneDX(b){ const m=meta(b);
+  return { bomFormat:'CycloneDX', specVersion:'1.5', serialNumber:m.serial, version:1,
+    metadata:{ timestamp:m.ts, tools:[{vendor:'BitSense',name:'SBOM Orchestrator',version:'1.0'}], authors:[{name:m.author}],
+      component:{type:'device',name:m.device,version:m.ver||undefined,supplier:m.mfr?{name:m.mfr}:undefined,properties:m.build?[{name:'build:ref',value:m.build}]:undefined} },
+    components:(b.components||[]).map((c,i)=>({type:c.type||'library','bom-ref':c.purl||`comp-${i}`,name:c.name,version:c.version||undefined,
+      supplier:c.supplier?{name:c.supplier}:undefined,purl:c.purl||undefined,cpe:c.cpe||undefined,
+      licenses:c.license?[{license:{name:c.license}}]:undefined,scope:c.scope==='transitive'?'optional':'required'})),
+    dependencies:[{ref:m.serial,dependsOn:(b.components||[]).map((c,i)=>c.purl||`comp-${i}`)}] };
+}
+function toSpdxJson(b){ const m=meta(b);
+  const pkgs=(b.components||[]).map((c,i)=>{ const refs=[]; if(c.purl)refs.push({referenceCategory:'PACKAGE-MANAGER',referenceType:'purl',referenceLocator:c.purl}); if(c.cpe)refs.push({referenceCategory:'SECURITY',referenceType:'cpe23Type',referenceLocator:c.cpe});
+    return {SPDXID:`SPDXRef-Package-${i}`,name:c.name,versionInfo:c.version||'NOASSERTION',supplier:c.supplier?('Organization: '+c.supplier):'NOASSERTION',downloadLocation:'NOASSERTION',licenseConcluded:c.license||'NOASSERTION',licenseDeclared:c.license||'NOASSERTION',copyrightText:'NOASSERTION',externalRefs:refs.length?refs:undefined}; });
+  const rels=(b.components||[]).map((c,i)=>({spdxElementId:'SPDXRef-Product',relatedSpdxElement:`SPDXRef-Package-${i}`,relationshipType:c.scope==='transitive'?'DEPENDS_ON':'CONTAINS'}));
+  return { spdxVersion:'SPDX-2.3',dataLicense:'CC0-1.0',SPDXID:'SPDXRef-DOCUMENT',name:m.device+' SBOM',documentNamespace:m.serial,
+    creationInfo:{created:m.ts,creators:['Tool: BitSense-SBOM-Orchestrator-1.0','Organization: '+(m.author||'')]},
+    packages:[{SPDXID:'SPDXRef-Product',name:m.device,versionInfo:m.ver||'NOASSERTION',supplier:m.mfr?('Organization: '+m.mfr):'NOASSERTION',downloadLocation:'NOASSERTION',licenseConcluded:'NOASSERTION',copyrightText:'NOASSERTION'}].concat(pkgs),
+    relationships:[{spdxElementId:'SPDXRef-DOCUMENT',relatedSpdxElement:'SPDXRef-Product',relationshipType:'DESCRIBES'}].concat(rels) };
+}
+function toSpdxTv(b){ const m=meta(b); const L=['SPDXVersion: SPDX-2.3','DataLicense: CC0-1.0','SPDXID: SPDXRef-DOCUMENT','DocumentName: '+m.device+' SBOM','DocumentNamespace: '+m.serial,'Creator: Tool: BitSense-SBOM-Orchestrator-1.0','Creator: Organization: '+(m.author||''),'Created: '+m.ts,'','PackageName: '+m.device,'SPDXID: SPDXRef-Product','PackageVersion: '+(m.ver||'NOASSERTION'),'PackageSupplier: '+(m.mfr?('Organization: '+m.mfr):'NOASSERTION'),'PackageDownloadLocation: NOASSERTION','PackageLicenseConcluded: NOASSERTION',''];
+  (b.components||[]).forEach((c,i)=>{ L.push('PackageName: '+c.name,'SPDXID: SPDXRef-Package-'+i,'PackageVersion: '+(c.version||'NOASSERTION'),'PackageSupplier: '+(c.supplier?('Organization: '+c.supplier):'NOASSERTION'),'PackageDownloadLocation: NOASSERTION','PackageLicenseConcluded: '+(c.license||'NOASSERTION'));
+    if(c.purl)L.push('ExternalRef: PACKAGE-MANAGER purl '+c.purl); if(c.cpe)L.push('ExternalRef: SECURITY cpe23Type '+c.cpe);
+    L.push('Relationship: SPDXRef-Product '+(c.scope==='transitive'?'DEPENDS_ON':'CONTAINS')+' SPDXRef-Package-'+i,''); });
+  return L.join('\n');
+}
+function toCsv(b){ const cols=['name','version','type','ecosystem','supplier','purl','cpe','license','scope','source']; const q=v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`;
+  return [cols.join(',')].concat((b.components||[]).map(c=>cols.map(k=>q(c[k])).join(','))).join('\n'); }
+function toCover(b){ const v=b.validation||Engine.validate(b); const m=meta(b);
+  return [`FDA PREMARKET CYBERSECURITY (SECTION 524B) — SBOM SUBMISSION COVER`,`================================================================`,``,
+`Device / product : ${m.device}`,`Manufacturer     : ${m.mfr||'(not set)'}`,`Version / model  : ${m.ver||'(not set)'}`,`Build / commit   : ${m.build||'(not set)'}`,`SBOM author      : ${m.author}`,`Generated (UTC)  : ${m.ts}`,`SBOM serial      : ${m.serial}`,``,
+`INVENTORY`,`  Total components ....... ${v.counts.n}`,`  Direct / transitive .... ${v.counts.direct} / ${v.counts.transitive}`,`  With unique identifier . ${v.counts.withId}/${v.counts.n} (${v.idPct}%)`,`  With named supplier .... ${v.counts.withSup}/${v.counts.n} (${v.supPct}%)`,`  NTIA minimum elements .. ${v.ntia}%`,``,
+`FORMATS ATTACHED`,`  [x] CycloneDX 1.5 (JSON)`,`  [x] SPDX 2.3 (JSON + tag-value)`,`  [ ] CycloneDX VEX / CSAF 2.0  -> produce in BitSense VEX Bench and attach`,``,
+`524B READINESS`, v.items.map(it=>`  [${it[1]==='pass'?'x':it[1]==='info'?'i':' '}] ${it[0]}`).join('\n'),``,
+ v.gaps.length?`OPEN GAPS TO CLOSE BEFORE FILING\n`+v.gaps.map(g=>'  - '+g).join('\n'):`No open gaps detected. Complete the vulnerability assessment (VEX) before filing.`,``,
+`EXECUTIVE SUMMARY`, (b.coverNarrative||Fallback.cover(b,v)),``,
+`NOTES`,`  - The SBOM is point-in-time for the build above; regenerate and re-diff on every release.`,`  - Unique identifiers (PURL/CPE) enable mapping each component to known vulnerabilities.`,`  - Drafted by BitSense SBOM Orchestrator; requires regulatory review before filing.`].join('\n');
+}
+function download(name,text,type){ const bl=new Blob([text],{type:type||'text/plain'}); const u=URL.createObjectURL(bl); const a=document.createElement('a'); a.href=u; a.download=name; a.click(); URL.revokeObjectURL(u); }
+function downloadArtifact(b,kind){ const base=slug(b.device||'device')+(b.version?('-'+slug(b.version)):'');
+  if(kind==='cdx')download(base+'.cdx.json',JSON.stringify(toCycloneDX(b),null,2),'application/json');
+  else if(kind==='spdxj')download(base+'.spdx.json',JSON.stringify(toSpdxJson(b),null,2),'application/json');
+  else if(kind==='spdxt')download(base+'.spdx',toSpdxTv(b));
+  else if(kind==='csv')download(base+'-sbom.csv',toCsv(b),'text/csv');
+  else if(kind==='pkg')download(base+'-524B-cover.txt',toCover(b));
+  toast('Downloaded '+kind.toUpperCase(),'ok');
+}
+
+/* =====================================================================
+   SECTIONS — Submission Register & Artifact Outbox
+   ===================================================================== */
+function renderRegister(){
+  const filed=builds.filter(b=>b.terminal==='FILED').sort((a,c)=>(c.filedAt||'').localeCompare(a.filedAt||''));
+  const open=ui.regOpen?filed.find(b=>b.id===ui.regOpen):null;
+  $('sectionRoot').innerHTML=`<div class="regwrap">
+    <div class="regnote">SUBMISSION REGISTER — filed, sign-off-complete SBOM packages ready to attach to an FDA §524B premarket submission</div>
+    <div class="reg">
+      <div class="rhead"><div class="org">◈ BitSense · Submission Register</div><h1>FDA §524B SBOM Packages</h1>
+        <p>Every package here completed automated generation, NTIA / §524B validation, and human sign-off (Product Security completeness review + Regulatory Affairs &amp; Quality Assurance submission gate).</p></div>
+      ${open?renderRegisterDoc(open):(filed.length?filed.map(b=>{ const v=b.validation||{}; const band=v.band||'READY';
+        return `<div class="regrow" data-reg="${b.id}"><span class="aid">${esc((b.id||'').slice(0,8))}</span>
+          <span class="tcsev" style="background:#3E8E5E;color:#fff;font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;text-align:center">FILED</span>
+          <span class="tt">${esc(b.device)} <span class="sub">${esc(b.mfr||'')} · ${(b.components||[]).length} components</span></span>
+          <span class="mono" style="color:#5B6472;font-size:12px">v${esc(b.version||'—')}</span>
+          <span class="mono" style="color:#5B6472;font-size:12px">${fmtD(b.filedAt)}</span></div>`; }).join('')
+        :`<div class="rempty">No filed packages yet. Drive a build through the pipeline to file its FDA package here.</div>`)}
+    </div></div>`;
+  if(open){ $('sectionRoot').querySelector('.backlink').onclick=()=>{ ui.regOpen=null; renderRegister(); }; }
+  $('sectionRoot').querySelectorAll('[data-reg]').forEach(x=>x.onclick=()=>{ ui.regOpen=x.dataset.reg; renderRegister(); });
+}
+function renderRegisterDoc(b){ const v=b.validation||Engine.validate(b);
+  return `<button class="backlink">‹ Back to register</button>
+    <div class="docwrap"><div class="doc"><div class="stamp filed">FILED — SUBMISSION-READY</div>
+      <h1>FDA §524B SBOM Submission — ${esc(b.device)}</h1>
+      <div class="docmeta">${esc(b.mfr||'')} · v${esc(b.version||'—')} · ${v.counts.n} components · NTIA ${v.ntia}% · filed ${fmtD(b.filedAt)} · serial ${esc(v.serial)}</div>
+      <h2>Executive Summary</h2><p>${esc(b.coverNarrative||Fallback.cover(b,v))}</p>
+      <h2>Inventory</h2><table><tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Total components</td><td>${v.counts.n} (${v.counts.direct} direct / ${v.counts.transitive} transitive)</td></tr>
+        <tr><td>Unique identifiers</td><td>${v.counts.withId}/${v.counts.n} (${v.idPct}%)</td></tr>
+        <tr><td>Named suppliers</td><td>${v.counts.withSup}/${v.counts.n} (${v.supPct}%)</td></tr>
+        <tr><td>NTIA minimum elements</td><td>${v.ntia}%</td></tr></table>
+      <h2>Sign-off</h2><p>${['REVIEW_GATE','SUBMIT_GATE'].map(sid=>(b.approvals?.[sid]||[]).map(a=>`${a.role}: ${a.by||'—'} (${fmtD(a.at)})`).join('; ')).filter(Boolean).join(' · ')}</p>
+    </div></div>`;
+}
+function renderArtifacts(){
+  $('sectionRoot').innerHTML=`<div style="max-width:820px;margin:0 auto">
+    <p class="dim" style="font-size:12.5px;margin-bottom:14px">Machine-readable artifacts generated when builds were filed. Click to download.</p>
+    ${artifacts.length?artifacts.map(a=>`<div class="artitem"><div class="ai"><div class="fn">${esc(a.name)}</div>
+      <div class="meta2">${esc(a.device)} v${esc(a.version||'—')} · filed ${fmtD(a.filedAt)} · ${esc(a.serial)}</div></div>
+      <span class="fmt">${esc(a.fmt)}</span><button class="btn sm" data-art="${a.id}">↧ Download</button></div>`).join('')
+      :`<div class="empty"><b>No artifacts yet</b>File a build to generate its CycloneDX / SPDX / cover artifacts.</div>`}</div>`;
+  $('sectionRoot').querySelectorAll('[data-art]').forEach(x=>x.onclick=()=>{ const a=artifacts.find(y=>y.id===x.dataset.art); const b=builds.find(y=>y.id===a.buildId); if(b)downloadArtifact(b,a.kind); });
+}
+
+/* ---------------- Sections switch ---------------- */
+function renderSection(){
+  const isPipe=ui.section==='pipeline';
+  document.querySelector('.viewhead').style.display=isPipe?'':'none';
+  $('viewRoot').style.display=isPipe?'':'none';
+  $('sectionRoot').style.display=isPipe?'none':'';
+  $('shell').classList.toggle('full',!isPipe);
+  if(ui.section==='register') renderRegister();
+  else if(ui.section==='artifacts') renderArtifacts();
+}
+
+/* ---------------- Toast / audit / render orchestration ---------------- */
+function toast(msg,kind){ const t=document.createElement('div'); t.className='toast '+(kind||''); t.textContent=msg; $('toasts').appendChild(t); setTimeout(()=>t.remove(),5000); }
+function renderAuditIfOpen(){ if($('auditModal').classList.contains('open')) $('auditLog').innerHTML=audit.slice().reverse().map(l=>{ const b=builds.find(x=>x.id===l.buildId); return `<div class="ln"><span class="ts">${fmtT(l.ts)}</span><span class="who ${l.who}">${l.who}</span><span><b class="mono" style="color:var(--agent)">${esc(b?b.device:l.buildId)}</b> ${esc(l.msg)}</span></div>`; }).join(''); }
+function renderNavBadges(){ $('regBadge').textContent=builds.filter(b=>b.terminal==='FILED').length; $('artBadge').textContent=artifacts.length;
+  const gates=builds.filter(b=>!b.terminal&&gateStage(b)).length; $('regBadge').classList.remove('hot'); }
+function renderStageFilter(){ const sel=$('fStage'); if(sel.options.length>1)return;
+  STAGES.filter(s=>s.kind!=='end').forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=s.label; sel.appendChild(o); });
+  const g=document.createElement('option'); g.value='GATES'; g.textContent='— Awaiting gates'; sel.appendChild(g);
+  Object.keys(TERMINALS).forEach(t=>{ const o=document.createElement('option'); o.value='T:'+t; o.textContent=TERMINALS[t]; sel.appendChild(o); });
+}
+function renderAll(){ if(!builds)return; renderStats(); renderNavBadges(); if(ui.section==='pipeline'){ if($('viewRoot').style.display!=='none')renderView(); } else renderSection(); if(ui.selected)renderDrawer(); }
+
+/* =====================================================================
+   WIRING
+   ===================================================================== */
+// provider
+$('providerSel').onchange=e=>{ LLM.provider=e.target.value; const on=LLM.provider!=='deterministic';
+  $('providerPill').classList.toggle('on',on);
+  $('providerLabel').textContent = LLM.provider==='anthropic'?'LLM: ANTHROPIC':LLM.provider==='ollama'?'LLM: OLLAMA':'ENGINE: DETERMINISTIC';
+  toast(on?`Narrative provider: ${LLM.provider} (numbers still engine-owned)`:'Deterministic only — no model in the loop', on?'':'ok'); };
+
+// mainnav
+document.querySelectorAll('.mainnav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('.mainnav button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); ui.section=b.dataset.section; ui.regOpen=null; renderSection(); });
+// view tabs
+document.querySelectorAll('.viewtabs button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('.viewtabs button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); ui.view=b.dataset.view; renderView(); });
+$('search').oninput=e=>{ ui.search=e.target.value; renderView(); };
+$('fSev').onchange=e=>{ ui.fSev=e.target.value; renderView(); };
+$('fStage').onchange=e=>{ ui.fStage=e.target.value; renderView(); };
+$('autoRun').onchange=()=>{ if($('autoRun').checked) builds.filter(b=>!b.terminal).forEach(runAgent); };
+
+// delegated open
+document.body.addEventListener('click',e=>{ const o=e.target.closest('[data-open]'); if(o){ e.preventDefault(); openDrawer(o.dataset.open); } });
+$('overlay').onclick=closeDrawer;
+
+// new build modal
+let modalSources=[];
+function renderFileTags(){ $('fileTags').innerHTML=modalSources.map((s,i)=>`<span class="filetag">${esc(s.name)} <button data-rm="${i}">✕</button></span>`).join('');
+  $('fileTags').querySelectorAll('[data-rm]').forEach(x=>x.onclick=()=>{ modalSources.splice(+x.dataset.rm,1); renderFileTags(); }); }
+function openBuildModal(){ modalSources=[]; ['f_device','f_mfr','f_ver','f_build','f_author'].forEach(id=>$(id).value=''); $('f_asset').value='medical-device'; renderFileTags(); $('buildModal').classList.add('open'); }
+$('newBuildBtn').onclick=openBuildModal;
+$('buildCancel').onclick=()=>$('buildModal').classList.remove('open');
+$('modalDrop').onclick=()=>$('modalFiles').click();
+$('modalFiles').onchange=e=>{ addModalFiles(e.target.files); e.target.value=''; };
+['dragenter','dragover'].forEach(ev=>$('modalDrop').addEventListener(ev,e=>{e.preventDefault();$('modalDrop').classList.add('over');}));
+['dragleave','drop'].forEach(ev=>$('modalDrop').addEventListener(ev,e=>{e.preventDefault();$('modalDrop').classList.remove('over');}));
+$('modalDrop').addEventListener('drop',e=>{ if(e.dataTransfer.files.length)addModalFiles(e.dataTransfer.files); });
+function addModalFiles(files){ [...files].forEach(f=>f.text().then(t=>{ modalSources.push({name:f.name,text:t}); renderFileTags(); }));
+  if(!$('f_device').value && files[0]){ /* leave device blank for user */ } }
+$('sampleBtns').innerHTML=Object.keys(SAMPLES).map(k=>`<button class="btn sm ghost" data-sample="${k}">◇ ${esc(k)}</button>`).join('');
+$('sampleBtns').querySelectorAll('[data-sample]').forEach(x=>x.onclick=()=>{ const k=x.dataset.sample; modalSources.push({name:k,text:SAMPLES[k]}); renderFileTags(); });
+$('buildSave').onclick=()=>{ if(!modalSources.length){ toast('Add at least one build input','crit'); return; }
+  createBuild({device:$('f_device').value.trim()||'Unnamed device',mfr:$('f_mfr').value.trim(),version:$('f_ver').value.trim(),build:$('f_build').value.trim(),assetClass:$('f_asset').value,author:$('f_author').value.trim()}, modalSources.slice());
+  $('buildModal').classList.remove('open'); toast('Build submitted to pipeline','ok'); };
+
+// audit
+$('auditBtn').onclick=()=>{ $('auditModal').classList.add('open'); renderAuditIfOpen(); };
+$('auditClose').onclick=()=>$('auditModal').classList.remove('open');
+// export state
+$('exportBtn').onclick=()=>download('bitsense-sbom-state.json',JSON.stringify({builds,artifacts,audit},null,2),'application/json');
+// modal backdrop close
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m)m.classList.remove('open'); }));
+
+/* ---------------- init ---------------- */
+renderStageFilter();
+if(!builds){ builds=[]; seed(); }
+renderAll();
+</script>
+</body>
+</html>
