@@ -1,0 +1,14 @@
+{
+  "name": "cvd-console",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Coordinated Vulnerability Disclosure workflow console",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "validate": "node scripts/validate.mjs",
+    "test": "npm run validate"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
