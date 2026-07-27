@@ -1,0 +1,37 @@
+{
+  "name": "ai-security-knowledge-graph",
+  "displayName": "AI Security Knowledge Graph",
+  "description": "Threat models, attack paths, FDA premarket views and a running risk register, generated from the open workspace and fed by your scans.",
+  "version": "1.0.0",
+  "publisher": "prompthalo",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other", "Linters", "Visualization"],
+  "activationEvents": ["workspaceContains:.threatforge/model.json"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "askg.open", "title": "Open workbench", "category": "AI Security Knowledge Graph" },
+      { "command": "askg.sync", "title": "Send workspace tree to the model", "category": "AI Security Knowledge Graph" },
+      { "command": "askg.agents", "title": "Run the agent pipeline", "category": "AI Security Knowledge Graph" },
+      { "command": "askg.clean", "title": "Clean the threat model", "category": "AI Security Knowledge Graph" },
+      { "command": "askg.framework", "title": "Run a framework overlay", "category": "AI Security Knowledge Graph" },
+      { "command": "askg.ingest", "title": "Ingest a scan result", "category": "AI Security Knowledge Graph" },
+      { "command": "askg.export", "title": "Export the security package", "category": "AI Security Knowledge Graph" }
+    ],
+    "menus": {
+      "explorer/context": [
+        { "command": "askg.ingest", "when": "resourceExtname =~ /\\.(sarif|json|csv|xml)$/", "group": "askg" }
+      ]
+    },
+    "configuration": {
+      "title": "AI Security Knowledge Graph",
+      "properties": {
+        "askg.modelPath": { "type": "string", "default": ".threatforge/model.json", "description": "Where the project file is kept in the workspace." },
+        "askg.intakeFolder": { "type": "string", "default": ".threatforge/intake", "description": "Folder watched for scan results. Anything written here is sent to the agents." },
+        "askg.excludeGlobs": { "type": "array", "default": ["**/node_modules/**", "**/.git/**", "**/dist/**", "**/build/**", "**/vendor/**"], "description": "Paths kept out of the workspace tree." },
+        "askg.maxFiles": { "type": "number", "default": 4000, "description": "Upper bound on files sent to the model." },
+        "askg.openOnStartup": { "type": "boolean", "default": false, "description": "Open the workbench when a workspace with a model is loaded." }
+      }
+    }
+  }
+}
