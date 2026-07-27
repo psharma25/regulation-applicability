@@ -1,0 +1,15 @@
+{
+  "name": "threatforge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ThreatForge web workbench and VS Code extension",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "sync:extension": "node scripts/sync-extension.mjs",
+    "validate": "node scripts/validate.mjs",
+    "test": "npm run validate"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
