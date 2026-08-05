@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Separation Dependency Timeline — Trap &amp; Fix</title>
+<style>
+  :root{
+    --ink:#12222b; --petrol:#1b4965; --petrol-2:#2c6e8f; --line:#dfe5e8; --line-2:#eef1f3;
+    --paper:#f7f9fa; --card:#fff; --muted:#5d7079;
+    --hi:#a4262c; --med:#a1631a; --lo:#3a6b52; --late:#ffa500;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:Inter,Calibri,"Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.5}
+  .wrap{max-width:1220px;margin:0 auto;padding:20px 16px 64px}
+  header.top{border-bottom:2px solid var(--petrol);padding-bottom:11px;margin-bottom:14px}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--petrol-2);font-weight:600}
+  h1{font-size:21px;margin:5px 0 3px;font-weight:650;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;margin:0;max-width:80ch}
+
+  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:13px 0 10px}
+  .bar label{font-size:12px;color:var(--muted)}
+  input[type=date],select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+  button{font:inherit;font-size:13px;padding:5px 10px;border:1px solid var(--line);background:#fff;color:var(--petrol);border-radius:6px;cursor:pointer}
+  button:hover{border-color:var(--petrol-2);background:#f2f7f9}
+  button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,tr:focus-visible{outline:2px solid var(--petrol-2);outline-offset:2px}
+  .spacer{flex:1}
+
+  .stats{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;background:var(--card);overflow:hidden;margin-bottom:14px}
+  .stat{flex:1 1 105px;padding:9px 12px;border-right:1px solid var(--line)}
+  .stat:last-child{border-right:0}
+  .stat b{display:block;font-size:19px;font-weight:650;line-height:1.15}
+  .stat span{font-size:10.5px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+  .stat.late b{color:#b06d00} .stat.hi b{color:var(--hi)} .stat.gate b{color:var(--petrol)}
+
+  .sec-h{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--petrol-2);font-weight:650;margin:24px 0 8px}
+  .sec-h .note{text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
+
+  .tbox{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:880px}
+  th{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:650;
+     text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;background:#fbfcfd}
+  td{padding:0 10px;border-bottom:1px solid var(--line-2);font-size:13px;vertical-align:middle;height:30px}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:#f2f7f9}
+  tr.dhead td{background:#f4f7f9;font-weight:650;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--petrol);height:26px;cursor:default}
+  tr.dhead:hover{background:#f4f7f9}
+  .name{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dc{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;color:var(--petrol-2);
+    background:#eef3f6;border-radius:3px;padding:1px 4px;margin-right:7px;vertical-align:1px}
+  .gatemark{color:var(--petrol);font-weight:700;margin-right:5px}
+  .when{white-space:nowrap;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+  .when.isLate{color:#a06400;font-weight:600}
+  .rk{display:inline-block;width:9px;height:9px;border-radius:2px}
+  .rk-H{background:var(--hi)} .rk-M{background:var(--med)} .rk-L{background:var(--lo)}
+
+  .tl{position:relative;width:100%;height:30px;min-width:290px}
+  .tl .grid{position:absolute;inset:0}
+  .tl .gl{position:absolute;top:0;bottom:0;width:1px;background:#eef1f3}
+  .tl .d1{background:#9ab6c6;z-index:2}
+  .tl .now{background:var(--late);z-index:3}
+  .barw{position:absolute;top:9px;height:12px;border-radius:3px;z-index:1}
+  .b-H{background:#d99aa0} .b-M{background:#e6c894} .b-L{background:#a9cbba}
+  .barw.gate{box-shadow:inset 3px 0 0 var(--petrol)}
+  .barw.behind{outline:1.5px solid var(--late)}
+  tr.done .barw{background:#cfd8dc;box-shadow:none;outline:none}
+  th.tlh{padding:0}
+  .axis{position:relative;height:30px}
+  .axis span{position:absolute;top:9px;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}
+  .axis span.k{color:var(--petrol);font-weight:650}
+
+  .st{font:inherit;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:5px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;color:var(--muted);white-space:nowrap}
+  .st[data-s="In progress"]{background:#eaf2f7;color:var(--petrol);border-color:#c3dced}
+  .st[data-s="Blocked"]{background:#f9e9ea;color:var(--hi);border-color:#eec8ca}
+  .st[data-s="Done"]{background:#e9f2ed;color:var(--lo);border-color:#c6ddd1}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin:8px 2px 0}
+  .legend i{display:inline-block;width:16px;height:8px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+  details{background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:8px}
+  summary{cursor:pointer;padding:10px 13px;list-style:none;display:flex;gap:10px;align-items:center;font-weight:600;font-size:14px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸";color:var(--petrol-2);font-size:12px;flex:none;transition:transform .12s}
+  details[open]>summary::before{transform:rotate(90deg)}
+  summary .grow{flex:1;min-width:0}
+  .chip{font-size:10.5px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:20px;
+    background:#eef3f6;color:var(--muted);flex:none;white-space:nowrap}
+  .chip.count{background:transparent;font-weight:500;letter-spacing:0;text-transform:none;font-size:12px}
+  .chip.late{background:#fff2d9;color:#8a5800;border:1px solid #f0cd86}
+  .chip.gate{background:#e7eff4;color:var(--petrol);border:1px solid #c6d9e4}
+  .dom-body{padding:0 12px 10px}
+  .item{border-top:1px solid var(--line-2);border-radius:0;border-left:0;border-right:0;border-bottom:0;margin:0}
+  .item>summary{font-weight:500;font-size:13.5px;padding:8px 4px}
+  .item>summary::before{content:"+";font-size:13px;color:#9bb0ba}
+  .item[open]>summary::before{content:"–";transform:none}
+  .item[open]>summary{font-weight:650}
+  .item.flash{background:#fffaf0}
+  .ibody{padding:0 4px 12px 22px;font-size:13px}
+  .fld{margin:0 0 8px}
+  .fld .k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:650;margin-bottom:1px;color:var(--petrol-2)}
+  .fld.trap .k{color:var(--hi)} .fld.fix .k{color:var(--lo)}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 18px}
+  @media(max-width:820px){.grid3{grid-template-columns:1fr}}
+  textarea{width:100%;min-height:44px;font:inherit;font-size:12.5px;padding:6px 8px;border:1px solid var(--line);
+    border-radius:6px;resize:vertical;background:#fcfdfd;margin-top:6px}
+  .dates{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .up{font-size:11.5px;color:var(--petrol-2);text-decoration:none;margin-left:10px}
+  .ref .ibody{padding-left:6px}
+  .ref ul,.ref ol{margin:2px 0 0;padding-left:18px}
+  .ref li{margin-bottom:6px}
+  .chain{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--petrol);display:block;margin-top:2px}
+  table.xtab{width:100%;border-collapse:collapse;margin-top:2px}
+  table.xtab th{width:1%;white-space:nowrap;text-align:left;vertical-align:top;background:transparent;
+    border-bottom:1px solid var(--line-2);padding:7px 12px 7px 0;font-size:10px;letter-spacing:.09em;color:var(--petrol)}
+  table.xtab td{border-bottom:1px solid var(--line-2);padding:7px 0;height:auto;font-size:12.5px;vertical-align:top}
+  .ichips{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}
+  .ichip{font-size:11.5px;background:#eef3f6;border:1px solid #d6e2e8;color:var(--petrol);border-radius:5px;
+    padding:2px 8px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ichip:hover{background:#e0ebf1;border-color:var(--petrol-2)}
+
+  /* banner */
+  .banner{background:linear-gradient(135deg,#0f2f42 0%,#1b4965 42%,#2c6e8f 78%,#3c8aa8 100%);
+    color:#fff;border-radius:12px;padding:20px 22px 18px;margin-bottom:6px;
+    box-shadow:0 1px 3px rgba(18,34,43,.16)}
+  .banner .eyebrow{color:#a8d3e5}
+  .banner h1{font-size:23px;margin:6px 0 4px;color:#fff}
+  .banner .sub{color:#d5e7f0;max-width:86ch}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+  .pill{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:8px;
+    padding:6px 12px;min-width:90px}
+  .pill b{display:block;font-size:18px;font-weight:650;line-height:1.15;color:#fff}
+  .pill span{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#bcdcea}
+  .pill.late b{color:#ffd27f} .pill.hi b{color:#f7b8bb} .pill.gate b{color:#a8e6d2}
+
+  /* tabs */
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 12px;border-bottom:1px solid var(--line);padding-bottom:10px}
+  .tabs button{font-size:13px;font-weight:600;padding:7px 13px;border-radius:7px;border:1px solid var(--line);
+    background:#fff;color:var(--muted)}
+  .tabs button .n{font-size:11px;font-weight:700;color:var(--petrol-2);margin-right:6px}
+  .tabs button.on{background:var(--petrol);border-color:var(--petrol);color:#fff}
+  .tabs button.on .n{color:#a8d3e5}
+  .tabs button:hover{border-color:var(--petrol-2)}
+  .panel.hide{display:none}
+  .pnote{font-size:12.5px;color:var(--muted);margin:0 2px 10px;max-width:88ch}
+
+  /* numbering and collapsible groups */
+  td.num,th.num{width:1%;white-space:nowrap;color:#9bb0ba;font-size:11.5px;font-variant-numeric:tabular-nums;
+    text-align:right;padding:0 4px 0 10px}
+  tr.dhead td{cursor:pointer}
+  tr.dhead:hover td{background:#eaf1f5}
+  .car{display:inline-block;width:12px;color:var(--petrol-2);font-size:11px;transition:transform .12s}
+  tr.dhead.shut .car{transform:rotate(-90deg)}
+  .gcount{float:right;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);font-size:11.5px}
+  table.caltab{border-collapse:collapse;width:100%;min-width:880px}
+  table.caltab td{padding:6px 10px;border-bottom:1px solid var(--line-2);height:auto;vertical-align:middle}
+  .evt{display:block;font-size:13px}
+  .evo{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+  .evown{font-size:11.5px;color:var(--muted);white-space:nowrap}
+  .mnote{font-size:12.5px;color:var(--muted);margin:0 2px 12px;max-width:88ch}
+  .lyr{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--petrol);font-weight:700;
+    margin:16px 0 7px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+  .lyr span{text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
+  .fld.met .k{color:var(--petrol)}
+  .tgt{display:inline-block;font-size:11.5px;font-weight:650;color:#8a5800;background:#fff2d9;
+    border:1px solid #f0cd86;border-radius:4px;padding:0 6px;margin-left:4px;white-space:nowrap}
+  .feeds{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--petrol-2)}
+  table.mtab{width:100%;border-collapse:collapse;margin-top:2px}
+  table.mtab td{border-bottom:1px solid var(--line-2);padding:6px 8px;height:auto;font-size:12.5px;vertical-align:top}
+  tr.mrow{cursor:pointer}
+  tr.mrow:hover{background:#f2f7f9}
+  td.tgtcell{color:#8a5800;font-weight:600;white-space:nowrap;width:1%;text-align:right}
+  @media(max-width:640px){td.tgtcell{white-space:normal}}
+  footer{margin-top:26px;padding-top:11px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="banner" id="top">
+  <div class="eyebrow">Orthopaedics separation · dependency timeline</div>
+  <h1>What starts when — and what it blocks</h1>
+  <p class="sub">Set a Day 1 date. Each bar runs from the month the work must start to the month it must finish. Amber outline means the start date has passed. A petrol edge marks a gate: something other workstreams wait on.</p>
+  <div class="pills">
+    <div class="pill"><b id="s-total">0</b><span>Items shown</span></div>
+    <div class="pill gate"><b id="s-gate">0</b><span>Gates</span></div>
+    <div class="pill late"><b id="s-late">0</b><span>Behind start</span></div>
+    <div class="pill hi"><b id="s-hi">0</b><span>High risk</span></div>
+    <div class="pill"><b id="s-done">0</b><span>Done</span></div>
+    <div class="pill"><b id="s-first">&mdash;</b><span>Earliest start</span></div>
+  </div>
+</header>
+
+<div class="bar">
+  <label for="d1">Day 1</label>
+  <input type="date" id="d1" value="2027-09-30">
+  <select id="filter">
+    <option value="all">All items</option>
+    <option value="gate">Gates only</option>
+    <option value="late">Behind start date</option>
+    <option value="soon">Starts within 90 days</option>
+    <option value="H">High risk only</option>
+    <option value="open">Not done</option>
+  </select>
+  <select id="dom"><option value="all">All domains</option></select>
+  <select id="sort">
+    <option value="domain">Group by domain</option>
+    <option value="start">Sort by start date</option>
+    <option value="risk">Sort by risk</option>
+  </select>
+  <button id="shutAll">Collapse groups</button>
+  <button id="openAll">Expand groups</button>
+  <span class="spacer"></span>
+  <button id="csv">CSV</button><button id="json">JSON</button><button id="reset">Reset</button>
+</div>
+
+<nav class="tabs" id="tabs">
+  <button data-p="p-timeline" class="on"><span class="n">1</span>Timeline</button>
+  <button data-p="p-detail"><span class="n">2</span>Detail</button>
+  <button data-p="p-cross"><span class="n">3</span>Control crosswalk</button>
+  <button data-p="p-metrics"><span class="n">4</span>Metrics</button>
+  <button data-p="p-guide"><span class="n">5</span>Guidance</button>
+</nav>
+
+<section class="panel" id="p-timeline">
+  <div class="pnote">Click a numbered row to open its trap and fix. Click a domain header to collapse that group.</div>
+  <div class="tbox">
+    <table><thead><tr>
+      <th class="num">#</th>
+      <th style="width:32%">Item</th><th style="width:1%">Risk</th><th style="width:1%">Start by</th>
+      <th class="tlh"><div class="axis" id="axis"></div></th><th style="width:1%">Status</th>
+    </tr></thead><tbody id="tbody"></tbody></table>
+  </div>
+  <div class="legend">
+    <span><i class="b-H"></i>High</span><span><i class="b-M"></i>Medium</span><span><i class="b-L"></i>Low</span>
+    <span><i style="background:var(--petrol);width:3px;height:12px"></i>Gate</span>
+    <span><i style="background:var(--late);width:2px;height:12px"></i>Today</span>
+    <span><i style="background:#9ab6c6;width:2px;height:12px"></i>Day 1</span>
+  </div>
+</section>
+
+<section class="panel hide" id="p-detail">
+  <div class="pnote">Every item: what it depends on, what it blocks, the evidence, the trap, the fix and its layer 3 metric.</div>
+  <div id="domains"></div>
+</section>
+
+<section class="panel hide" id="p-cross">
+  <div class="pnote">One control, six regimes: SOX, FDA, CMMC Level 2, EU CRA, GDPR, HIPAA.</div>
+  <div id="cross"></div>
+</section>
+
+<section class="panel hide" id="p-metrics">
+  <div class="pnote">Layer 1 board and audit committee, layer 2 executive steering, layer 3 workstream, layer 4 evidence.</div>
+  <div id="metrics"></div>
+</section>
+
+<section class="panel hide" id="p-guide">
+  <div class="pnote">Dependency chains, long poles, slip patterns, dual-track planning and early-warning metrics.</div>
+  <div id="refs"></div>
+</section>
+
+<footer>Status, notes and your Day 1 date are stored in this browser only. Structure and dates are planning assumptions, not confirmed programme facts.</footer>
+</div>
+
+<script>
+/* ===== data: t title, risk, lead months before Day 1, dur months, g gate,
+   dep depends on, b blocks, ev evidence, trap, fix ===== */
+var DOMAINS=[
+
+{k:"MFG",n:"Manufacturing and supply chain",items:[
+{t:"Site allocation and multi-tenant plant decisions",risk:"H",lead:24,dur:9,g:1,
+dep:"Deal structure; tax and legal entity design",b:"MES scope, OT segregation, supplier novation, establishment registration, network cutovers",
+ev:"Signed allocation matrix; contract-manufacture agreements for shared sites",
+trap:"Plants making both transferred and retained product get deferred as too hard, and five workstreams wait on that one answer.",
+fix:"Force the matrix to a decision at 24 months with a named tie-breaker. Per shared site pick one of three: transfer, contract-manufacture back, or dual-tenant with segregated lines."},
+{t:"FDA establishment registration and device listing transfer",risk:"H",lead:9,dur:4,
+dep:"Legal entity; site allocation; owner-operator account",b:"Adverse event gateway, importer identity, market continuity",
+ev:"FURLS account; per-site registrations; listings reassigned; fees paid",
+trap:"Annual renewal runs October to December, so a Q4 Day 1 collides with renewal at every site at once and fees can fall due twice.",
+fix:"Push back on a Q4 Day 1 while it is still a finance preference. If fixed, pre-create the owner-operator account and dry-run one small site."},
+{t:"MES, historian and shop-floor clone plus requalification",risk:"H",lead:20,dur:12,
+dep:"Site allocation; validation capacity",b:"Plant cutover, lot traceability, batch release",
+ev:"Validation plan; IQ/OQ/PQ records; migration reconciliation; audit trail continuity",
+trap:"A validated clone is treated as lift-and-shift. New infrastructure, identity and interfaces all touch the validated state, and requalification lands beside ERP cutover.",
+fix:"Get a written revalidation position from Quality per system at 20 months and use it to size the validation queue. Full-requalification systems go first."},
+{t:"OT and plant-floor network segregation",risk:"H",lead:22,dur:14,
+dep:"Site allocation; network architecture; machine vendor contracts",b:"Site network cutover, data centre exit, plant security posture",
+ev:"Segmented diagrams per site; asset inventory with OS and firmware; compensating controls",
+trap:"Controllers that cannot be re-imaged or re-addressed, vendors who no longer support the OS, and change windows that exist only during plant shutdowns.",
+fix:"Inventory OT by supportability, not count. Unsupportable assets get compensating controls, not migration plans. Book shutdown windows early."},
+{t:"Contract sterilization and supplier quality agreement novation",risk:"H",lead:18,dur:12,
+dep:"Legal entity; supplier master; Quality resourcing",b:"Product release, market supply continuity",
+ev:"Novated quality agreements; requalification records; sterilization validation transfer",
+trap:"Novation is treated as legal paperwork, but validation attaches to the legal manufacturer, and capacity-constrained suppliers reprice on a change of control.",
+fix:"Split the critical few from the long tail. Executive sponsor on sterilization at 18 months; templated batch novation with a hard cut-off for the tail."},
+{t:"Supplier requalification and purchasing controls transfer",risk:"M",lead:20,dur:14,
+dep:"ERP carve; supplier master quality",b:"Approved supplier list, third-party risk programme",
+ev:"Approved supplier list at the new entity; requalification evidence; audit schedule",
+trap:"The supplier master carries duplicates and parent-level approvals that do not survive the carve, and the queue is sized on average effort rather than the tail.",
+fix:"Clean the master before migrating it, and size the requalification queue on the tail."},
+{t:"Consignment and loaner kit field inventory baseline",risk:"H",lead:12,dur:8,
+dep:"ERP carve; field logistics; sales operations",b:"Opening balance sheet, SOX inventory controls, hospital consignment re-papering",
+ev:"Physical counts; reconciliation to book; revenue recognition memo",
+trap:"Kits sit in hospitals and cars, so book and physical diverge. A late baseline becomes an audit finding, a revenue question and a traceability gap at once.",
+fix:"Cycle count from 12 months out and report count-to-book variance as a readiness metric. Fix what creates the variance before taking the baseline."},
+{t:"Distribution, third-party logistics and importer identity",risk:"M",lead:15,dur:10,
+dep:"Legal entity per country; customs registrations",b:"Day 1 shipping in every market",
+ev:"Importer-of-record designations; customs registrations; 3PL contracts",
+trap:"Customs and importer identities are per country and depend on entities that may not exist yet. Shipments hold on Day 1 in the markets nobody checked.",
+fix:"Map importer of record per market against entity formation dates, not against Day 1."},
+{t:"Lot traceability and device history record continuity",risk:"H",lead:14,dur:9,
+dep:"ERP carve; MES migration; retention agreement",b:"Recall execution, complaint investigation, inspection readiness",
+ev:"Completeness reconciliation; retention and retrieval agreement; retrieval test results",
+trap:"Records left in parent systems depend on an access clause that expires with the TSA, untested until a recall needs a ten-year-old lot.",
+fix:"Make retention and retrieval a standalone long-tail agreement outside the TSA, and run two live retrieval tests before Day 1."}
+]},
+
+{k:"FIN",n:"Finance, HR, legal and business functions",items:[
+{t:"Chart of accounts, company codes and consolidation design",risk:"H",lead:22,dur:12,g:1,
+dep:"Legal entity; tax structure",b:"ERP carve, key report inventory, SOX scoping, close calendar, statutory filings",
+ev:"Approved account and company code design; consolidation model; close calendar",
+trap:"The design is settled by finance in isolation and lands after the ERP build has begun, forcing rework in every downstream report and control.",
+fix:"Freeze account and company code design at 22 months and treat any later change as a formal request with a stated ERP cost attached."},
+{t:"Treasury, banking and payment infrastructure",risk:"H",lead:18,dur:10,
+dep:"Legal entity per country; signatory appointments",b:"Payment runs, collections, payroll funding, customer credit",
+ev:"Open accounts per entity; payment file testing; rehearsed collection cycle",
+trap:"Account opening is slow and jurisdiction by jurisdiction, depending on entities and signatories that arrive late. Payments and collections fail quietly on Day 1.",
+fix:"Start account opening alongside entity formation, not after it, and rehearse a full payment and collection cycle before Day 1."},
+{t:"Payroll and HR system separation",risk:"H",lead:16,dur:10,
+dep:"Employee transfer; entity and banking; HR data model",b:"Identity lifecycle, joiner-mover-leaver automation, retention credibility",
+ev:"Parallel payroll run results; reconciled first independent run; HR data migration validation",
+trap:"Payroll is the one system where a defect is immediate and personal, and it usually runs on a parent service everyone assumes will simply continue.",
+fix:"Run two parallel payroll cycles before cutover and treat the first independent run as a hypercare event with finance, HR and IT on standby."},
+{t:"Employee transfer, works councils and consultation",risk:"H",lead:20,dur:14,g:1,
+dep:"Organisation design; legal entity per country",b:"Who is available to run the separation; identity migration; retention plans",
+ev:"Consultation calendar per country; transfer agreements; completed consultations",
+trap:"Transfer in some jurisdictions requires consultation that cannot be compressed, and the outcome determines who is actually available to deliver the programme.",
+fix:"Map consultation requirements per country at 20 months and put them on the same critical path as entity formation."},
+{t:"Contract novation across customers, GPOs and distributors",risk:"H",lead:20,dur:16,
+dep:"Legal entity; commercial terms; customer relationship map",b:"Revenue continuity, pricing, hospital ordering, consignment",
+ev:"Tiered contract inventory; consent tracking; executed novations; transitional terms",
+trap:"Thousands of contracts name the parent. Some need consent, some reopen pricing, and hospital contracting cycles are slow and outside your control.",
+fix:"Tier by revenue and consent requirement, start the top tier at 20 months, and plan for the tail to run past Day 1 under transitional terms."},
+{t:"Insurance, product liability and legacy claims allocation",risk:"M",lead:15,dur:8,
+dep:"Separation agreement; claims history data",b:"Board risk reporting, customer assurance, balance sheet",
+ev:"Allocation of legacy claims in the separation agreement; placed cover; claims data transfer",
+trap:"Liability history sits with the parent, so new cover is priced without a claims history of its own and legacy allocation is settled late.",
+fix:"Settle legacy claim allocation in the separation agreement and start placement early using the parent's claims data."},
+{t:"Commercial systems, pricing and rebate administration",risk:"M",lead:16,dur:12,
+dep:"ERP carve; contract novation; customer master",b:"Revenue recognition, GPO compliance, SOX process controls",
+ev:"Parallel-run rebate reconciliation; pricing condition migration; contract-to-system mapping",
+trap:"Rebate and pricing logic lives in parent systems and spreadsheets, and a mis-carve shows up as revenue misstatement rather than a system defect.",
+fix:"Reconstruct rebate and pricing calculations in the new environment and reconcile against a parallel run before cutover."},
+{t:"Tax reporting, transfer pricing and statutory filings",risk:"M",lead:20,dur:14,
+dep:"Legal entity; chart of accounts; intercompany model",b:"System readiness dates, close calendar, audit scope",
+ev:"Statutory filing calendar per entity; transfer pricing documentation; intercompany flows tested",
+trap:"Transfer pricing between new entities is designed late, and statutory filing calendars per country are discovered rather than planned.",
+fix:"Publish a filing calendar per entity at 20 months and align system readiness to the earliest filing, not to Day 1."}
+]},
+
+{k:"SOX",n:"SOX, ITGC and financial controls",items:[
+{t:"ITGC scope re-baseline at the new entity",risk:"H",lead:18,dur:10,
+dep:"System landscape; new-entity materiality",b:"Control testing, auditor walkthroughs, ICFR readiness",
+ev:"In-scope application list; control matrix mapped to assertions; named control owners",
+trap:"Inherited matrices name parent owners, parent systems and parent evidence. Copied across, they produce controls with nobody to operate them.",
+fix:"Rebuild scope bottom-up from your own materiality and landscape. Name an owner for every control before Day 1 — an unowned control is a dated deficiency."},
+{t:"Cloned ERP role redesign and segregation of duties",risk:"H",lead:16,dur:12,
+dep:"ERP carve; organisation design; process ownership",b:"Go-live approval, access reviews, first-year ICFR opinion",
+ev:"Role-to-transaction mapping; SoD conflict report; mitigating controls",
+trap:"Parent roles built for segmented teams land in a much smaller org, so duties stack on individuals. The most reliable single source of a first-year material weakness.",
+fix:"Run the SoD ruleset against the projected org chart before go-live. Where the org is genuinely too small, document the mitigating control and get the auditor's view early."},
+{t:"Elevated and emergency access during cutover",risk:"H",lead:6,dur:6,
+dep:"Cutover plan; privileged access tooling",b:"Cutover sign-off, ITGC evidence for the go-live period",
+ev:"Time-bounded grants with justification; independent log review; revocation evidence",
+trap:"Broad access granted fast, rarely revoked, logs unreviewed — in exactly the window auditors focus on.",
+fix:"Pre-agree the process with Internal Audit: automatic expiry, an independent reviewer off the cutover team, and revocation as a cutover exit criterion."},
+{t:"Information produced by the entity and key report re-certification",risk:"H",lead:12,dur:9,
+dep:"System landscape; data migration",b:"Every control relying on a system report; ICFR readiness",
+ev:"Key report inventory with query, parameters and source; completeness and accuracy evidence",
+trap:"Reports look identical because the logic was cloned, so prior-year testing is assumed to carry. The source system is new, so completeness and accuracy start from zero.",
+fix:"Capture query, parameters and source table during migration, while the knowledge is still in the room. Highest-value evidence work in the stream."},
+{t:"Service organisation reporting over TSA services",risk:"H",lead:15,dur:6,g:1,
+dep:"TSA service catalogue; parent assurance posture",b:"ICFR opinion, audit scope, TSA exit sequencing",
+ev:"SOC 1 Type 2 covering the right services and period, or carve-in with testing rights",
+trap:"The parent becomes a service organisation to your financial reporting. Without assurance rights in the TSA you discover it near year-end, when only costly direct testing remains.",
+fix:"Write it in at drafting: named services, report type, period aligned to your fiscal year, user entity controls disclosed, audit access as fallback."},
+{t:"End-user computing and spreadsheet inventory",risk:"M",lead:10,dur:8,
+dep:"Process design; report inventory",b:"Close reliability, audit evidence",
+ev:"EUC inventory with owner and criticality; access and version controls",
+trap:"Every gap between a parent capability and a not-yet-built one is bridged with a workbook that quietly joins the close.",
+fix:"Inventory EUCs as they are created, with an owner, rather than sweeping up afterwards."},
+{t:"Entity-level controls, delegation of authority and close calendar",risk:"M",lead:12,dur:8,
+dep:"Board formation; finance org design",b:"Approval workflows in systems; audit committee reporting",
+ev:"Delegation matrix; close calendar; policy suite; committee charter",
+trap:"Assumed to arrive with the board, but the board forms late and the calendar is set by people who have never closed at this entity.",
+fix:"Draft the delegation matrix and close calendar ahead of board formation and ratify them, rather than starting from zero after."},
+{t:"Registration statement technology and cyber disclosure",risk:"H",lead:12,dur:8,
+dep:"Risk assessment; incident history; governance model",b:"Filing timetable; investor diligence; Day 1 readiness narrative",
+ev:"Risk factors; governance disclosure; incident materiality process; disclosure controls",
+trap:"Drafts written from parent material describe a programme that will not exist, and an incident mid-separation hits a materiality process nobody built.",
+fix:"Stand up the incident materiality process before drafting begins, and disclose only capabilities that will demonstrably exist at Day 1."},
+{t:"First-year ICFR readiness and auditor alignment",risk:"M",lead:9,dur:12,
+dep:"All control streams; auditor appointment",b:"Nothing downstream — this is where everything lands",
+ev:"Management testing results; deficiency log with aggregation analysis; walkthroughs completed",
+trap:"First-year reporting relief gets mistaken for a grace year on the controls themselves, and deficiencies accumulate quietly until the audit.",
+fix:"Run a full management test cycle the year before, and agree deficiency aggregation and escalation with the audit committee up front."}
+]},
+
+{k:"REG",n:"FDA and global regulatory",items:[
+{t:"510(k) and PMA holder and correspondent transfer",risk:"M",lead:12,dur:6,
+dep:"Legal entity; establishment registration; records inventory",b:"Market authorisation continuity; labelling changes",
+ev:"Transfer letters per clearance; updated correspondents; clearance-to-product reconciliation",
+trap:"The mechanics are easy; the inventory is not. No single reliable list maps every clearance to every product still sold, so orphans surface late.",
+fix:"Build the clearance-to-marketed-product reconciliation first. The letters follow easily once the list is right."},
+{t:"UDI labeller change and device identifier reissuance",risk:"H",lead:22,dur:16,g:1,
+dep:"Legal entity and DUNS; labelling systems; item master",b:"Artwork, hospital catalogues, EDI ordering, instrument pairing, sell-through",
+ev:"New labeller DUNS; reissued identifiers; GUDID published and reconciled; sell-through plan",
+trap:"New identifiers across tens of thousands of items touch artwork, item master, hospital catalogues and GPO records. Scoped as a data project, it is a commercial and customer-systems project.",
+fix:"Run it as its own workstream from 22 months. Sequence by revenue, agree dual-identifier sell-through, and brief large customers early — their catalogue update is a dependency you do not control."},
+{t:"Label and artwork change control across the SKU estate",risk:"H",lead:22,dur:18,g:1,
+dep:"UDI decisions; legal manufacturer name; registration sequence; print vendors",b:"Product release, inventory build, market entry per country",
+ev:"Artwork revision plan; change control records; print capacity commitments; rework plan",
+trap:"Change control and print capacity are fixed, existing inventory must sell through, and the artwork sequence is hostage to the registration sequence.",
+fix:"Measure artwork throughput per week, multiply by remaining SKUs, and put the resulting date to the steering committee while Day 1 or scope can still move."},
+{t:"EU MDR certificate transfer with the notified body",risk:"H",lead:24,dur:15,g:1,
+dep:"EU legal entity; QMS separation; technical documentation; NB capacity",b:"European market continuity; CE marking on labels; distributor arrangements",
+ev:"Transfer application; QMS audit reports; transferred certificates; EUDAMED updates",
+trap:"Certificates attach to a legal manufacturer, so transfer is an assessment, not an update. Miss the capacity slot and you wait months. A coverage gap is a stop-sell.",
+fix:"Book notified body capacity at 24 months on a planning assumption rather than waiting for deal certainty, then work backwards to fix and protect the QMS readiness date."},
+{t:"Country registration transfers across international markets",risk:"H",lead:24,dur:20,g:1,
+dep:"Legal entity per country; local representatives; labelling; certificates",b:"Revenue continuity per market; importer identity; distributor terms",
+ev:"Market tracker with legal basis and approval dates; interim distribution arrangements",
+trap:"Over a hundred markets, many requiring a local entity or representative before a transfer can even be filed — a decision regulatory does not own.",
+fix:"Publish the market-level critical path with entity readiness visible as the constraint. Sequence by revenue and use distributor-held or transitional arrangements for the tail."},
+{t:"Adverse event reporting continuity and gateway account",risk:"H",lead:9,dur:5,
+dep:"Legal entity; establishment registration; complaint system",b:"Regulatory compliance from Day 1 minute one",
+ev:"Gateway account and connectivity tests; accepted test submissions; transition decision log",
+trap:"Gateway setup and connectivity testing take weeks and need identifiers that exist only after registration, while reporting clocks keep running.",
+fix:"Set up and test the gateway early, run parallel reporting through both entities for a defined overlap, and write the transition reportability decision path in advance."},
+{t:"Quality management system separation",risk:"H",lead:20,dur:14,g:1,
+dep:"Site allocation; eQMS migration; procedure rewrite; training",b:"Notified body audit, FDA inspection readiness, supplier controls, design controls",
+ev:"Quality manual and procedures; training records; management review; internal audit programme",
+trap:"Rewriting parent procedures looks like documentation and is really organisational design. It gates the notified body audit, and training completion slips last.",
+fix:"Rewrite against the new org chart, starting with what the notified body will sample. Track training completion as a gating metric from 12 months."},
+{t:"Complaint, CAPA, recall and open regulatory commitments",risk:"H",lead:14,dur:10,
+dep:"eQMS migration; liability allocation; open field action inventory",b:"Inspection readiness; postmarket obligations; product safety continuity",
+ev:"Open item inventory with single owners; commitment tracker; migration reconciliation",
+trap:"Items spanning retained and transferred products end up with ambiguous ownership and stall. Migration gets declared done on a record count.",
+fix:"Assign one accountable owner per open item before migration, and require a reconciliation report — not a status update — as the definition of done."},
+{t:"Design history and master record migration in PLM",risk:"H",lead:18,dur:12,
+dep:"PLM separation; validation capacity; retention agreement",b:"Submissions, design changes, inspection response",
+ev:"Migration validation; e-signature and audit trail integrity evidence; retrieval tests",
+trap:"Signature manifestations and audit trails do not always survive migration intact, and the failure is invisible until a record is pulled.",
+fix:"Validate the migration and run retrieval tests on both the newest and the oldest records in scope."},
+{t:"In-flight cyber submissions, SBOM and disclosure ownership",risk:"M",lead:12,dur:9,
+dep:"Portfolio allocation; product security team; source control migration",b:"Clearance timelines for connected products; labelling contacts",
+ev:"Submission inventory with filer of record; regenerated SBOMs; published policy and contacts",
+trap:"Submissions cross the date naming the parent throughout — security contact, disclosure policy, SBOM attribution — so reviewer questions reach an organisation that no longer owns the product.",
+fix:"Freeze and inventory in-flight submissions at 12 months, decide filer of record, and regenerate SBOMs from your own build pipeline."}
+]},
+
+{k:"ROB",n:"Robotic surgery and digital ecosystem",items:[
+{t:"Robotic platform install base register",risk:"H",lead:16,dur:8,g:1,
+dep:"Product allocation; service records; hospital contracts",b:"Every other robotics item; hospital security reviews; service coverage; update cutover",
+ev:"Unit-level register: site, version, service contract, network configuration, contact",
+trap:"Nobody holds a complete list of units, versions, service contracts and host sites, and every downstream robotics decision assumes one exists.",
+fix:"Build the register first, reconciled against service records and hospital contracts, and treat it as a gating deliverable with a named owner."},
+{t:"Robot software update and release channel cutover",risk:"H",lead:15,dur:11,
+dep:"Install base register; code signing; cloud tenancy; hospital network access",b:"Field patching, vulnerability response, feature releases",
+ev:"Per-site channel confirmation; staged rollout records; rollback plan",
+trap:"Updates flow through a parent-operated channel with parent signing and parent hosting. Cutting over fleet-wide strands units that cannot reach the new channel.",
+fix:"Keep the parent channel under TSA until each site confirms the new channel works, and cut over site by site rather than all at once."},
+{t:"Surgical planning and preoperative imaging services",risk:"H",lead:14,dur:10,
+dep:"Cloud tenancy; data processing agreements; hospital IT review",b:"Case scheduling, planning workflow, surgeon adoption",
+ev:"Data pathway design; executed agreements per health system; validated planning service",
+trap:"Planning services touch patient imaging under agreements naming the parent, so the data pathway and the legal basis have to move together or not at all.",
+fix:"Move the legal basis and the technical pathway in one change per health system rather than as two separate projects."},
+{t:"Navigation, instrument tracking and consumable pairing",risk:"M",lead:14,dur:9,
+dep:"UDI identifier changes; firmware release; manufacturing labelling",b:"Case execution in the OR; consumable supply",
+ev:"Pairing regression tests against reissued identifiers; firmware compatibility matrix",
+trap:"Tracked instruments and single-use consumables pair by identifier. A device identifier change breaks pairing in the field and shows up mid-procedure.",
+fix:"Test identifier changes against pairing logic before any relabelled consumable ships, and stage the change jointly with the UDI workstream."},
+{t:"Robotics service organisation, field engineers and spares",risk:"H",lead:14,dur:10,
+dep:"Install base register; service contracts; logistics; hospital credentialing",b:"Uptime commitments; contractual service levels; commercial credibility",
+ev:"Regional coverage map; spares depot and repair contracts; engineer credentialing status",
+trap:"Field service, spares depots and repair loops are shared with the parent's wider service organisation and get separated last because they are invisible from headquarters.",
+fix:"Inventory service coverage by region at 14 months and stand up spares and repair contracts before the commercial team starts selling standalone."},
+{t:"Robotics regulatory files and cybersecurity documentation",risk:"H",lead:14,dur:9,
+dep:"Portfolio allocation; source control; SBOM tooling",b:"Post-separation submissions; hospital security questionnaires",
+ev:"Regenerated SBOMs; updated security documentation and labelling contacts; disclosure policy",
+trap:"Connected robotic platforms carry cybersecurity documentation, SBOMs and disclosure commitments naming the parent throughout.",
+fix:"Regenerate security documentation from your own pipeline and update labelling contacts before the first post-separation submission or questionnaire."},
+{t:"Clinical training, education centres and simulation assets",risk:"M",lead:12,dur:9,
+dep:"Property and asset allocation; faculty agreements",b:"Surgeon adoption; installed base utilisation; commercial ramp",
+ev:"Education centre access agreements; faculty contracts; training capacity plan",
+trap:"Surgeon training runs through shared education centres and faculty agreements that do not automatically transfer, and training capacity gates adoption.",
+fix:"Secure education centre access and faculty agreements as a named TSA service with an explicit exit plan and a capacity target."},
+{t:"Robotics outcomes data, registries and analytics",risk:"M",lead:15,dur:12,
+dep:"Data allocation; privacy basis; cloud platform",b:"Clinical claims; commercial positioning; future submissions",
+ev:"Registry transfer basis; migrated data with lineage; updated participant notices",
+trap:"Outcome data collected under parent agreements underpins clinical claims and cannot simply be copied across to a new legal entity.",
+fix:"Establish the transfer basis per registry and per study before the analytics platform is built, not after the data has moved."}
+]},
+
+{k:"HOSP",n:"Hospital deployment and customer-side change",items:[
+{t:"Hospital IT and security review pipeline",risk:"H",lead:15,dur:12,g:1,
+dep:"Install base register; technical change design",b:"Robot channel cutover, remote service access, planning services, cloud pathways",
+ev:"Review queue by account with dates; standard change pack; approval records",
+trap:"Every network, hosting or vendor change needs the hospital's own security review. Capacity is theirs, not yours, and a large system can take a quarter or more.",
+fix:"Queue reviews by account size starting at 15 months and give hospitals a standard change pack so their review starts complete rather than with questions."},
+{t:"Business associate and data processing agreement renewal",risk:"H",lead:15,dur:12,g:1,
+dep:"Legal entity; data flow inventory; account map",b:"Every patient-data pathway; planning services; telemetry; analytics",
+ev:"Executed agreements per health system; data flow inventory mapped to agreements",
+trap:"Agreements name the parent. Without renewal, data flows that were lawful the day before Day 1 are not lawful the day after.",
+fix:"Sequence agreement renewal ahead of the technical cutover per account, and hold the technical change until the paper is signed."},
+{t:"Vendor credentialing and site access re-registration",risk:"M",lead:12,dur:8,
+dep:"Legal entity; employee transfer; credentialing platforms",b:"Field rep and engineer access to the OR; case coverage; service response",
+ev:"Credentialing status per rep per hospital; platform registrations; insurance evidence",
+trap:"Reps and engineers are credentialed under the parent's vendor identity. Re-registration is per hospital, per platform, and blocks entry to the operating room.",
+fix:"Start re-registration at 12 months and track it as a commercial readiness metric, not an administrative task."},
+{t:"Hospital network access, VPN and remote service paths",risk:"H",lead:14,dur:10,
+dep:"Install base register; IAM; hospital security review",b:"Remote diagnostics; service response times; update delivery",
+ev:"Remote access inventory per site; re-provisioned connections; tested service paths",
+trap:"Remote service connections into hospital networks are provisioned to the parent. They lapse or get revoked on Day 1 and service response times collapse.",
+fix:"Inventory remote access paths per site and re-provision under the new identity before the parent's access is withdrawn."},
+{t:"Purchase orders, EDI and customer ordering systems",risk:"H",lead:12,dur:9,g:1,
+dep:"UDI and catalogue changes; contract novation; ERP carve",b:"Day 1 revenue; hospital supply continuity; GPO compliance",
+ev:"EDI endpoint changes tested per account; catalogue updates confirmed; end-to-end order tests",
+trap:"Hospital and GPO ordering systems carry the parent's supplier identity, catalogue numbers and EDI endpoints. Orders fail on Day 1 and the customer sees it first.",
+fix:"Run EDI and catalogue changes as a customer project with account-level owners, and test end-to-end orders with the largest accounts before Day 1."},
+{t:"Consignment agreements and hospital-held inventory",risk:"M",lead:12,dur:8,
+dep:"Field inventory baseline; contract novation",b:"Opening balance sheet; revenue recognition; kit availability",
+ev:"Site-by-site reconciliation; re-papered consignment agreements",
+trap:"Consigned stock sits under agreements naming the parent, so ownership on Day 1 is legally ambiguous and physically unverified.",
+fix:"Reconcile and re-paper consignment site by site, starting with the highest-value locations."},
+{t:"Customer communication and disruption management",risk:"M",lead:10,dur:8,
+dep:"All customer-facing change dates; account team readiness",b:"Customer confidence during the switch; competitive defence",
+ev:"One consolidated change calendar per account; account owner sign-off; issue log",
+trap:"Customers learn about identifier, catalogue and contact changes from a failure rather than from you, at the moment competitors are calling.",
+fix:"Publish one consolidated change calendar per account owned by the account team, covering identifiers, ordering, service contacts and paperwork."}
+]},
+
+{k:"CLD",n:"Cloud platform and landing zone",items:[
+{t:"Cloud landing zone and tenancy design",risk:"H",lead:22,dur:12,g:1,
+dep:"IAM tenant decision; data classification; regulated workload patterns",b:"Every workload migration; validation approach; logging and evidence; cost model",
+ev:"Approved landing zone design; guardrail policies; regulated workload reference pattern",
+trap:"Workloads get migrated before the identity, network, logging and guardrail design is settled, and the design is then retrofitted around whatever already landed.",
+fix:"Settle the landing zone design at 22 months, including the regulated workload pattern, before the first migration wave leaves."},
+{t:"Subscription, account and enterprise agreement separation",risk:"H",lead:18,dur:10,
+dep:"Legal entity; spend forecast; parent agreement terms",b:"Cloud cost base; migration sequencing; FinOps",
+ev:"Own enterprise agreement; committed spend model; account hierarchy",
+trap:"Cloud spend sits under a parent agreement with parent discounts. Splitting reprices everything and can strand committed spend.",
+fix:"Model standalone cloud cost at 18 months and negotiate your own agreement early rather than inheriting a TSA passthrough at parent rates."},
+{t:"Shared services, shared networks and cross-tenant dependencies",risk:"H",lead:18,dur:12,g:1,
+dep:"Workload inventory; landing zone; IAM",b:"Every TSA exit involving a cloud workload",
+ev:"Per-workload dependency map; TSA line items with exit criteria; severed-dependency evidence",
+trap:"Workloads quietly depend on parent-run shared services — logging, secrets, DNS, registries, build pipelines. The dependency surfaces at exit, not at migration.",
+fix:"Map cross-tenant dependencies per workload before migration and make each one a TSA line item with its own exit criteria."},
+{t:"Data residency, sovereignty and regional footprint",risk:"M",lead:16,dur:12,
+dep:"Customer commitments; regulatory footprint; legal entity map",b:"Region selection; hospital agreements; EU and other market operations",
+ev:"Residency requirements per data set; region mapping; customer commitment register",
+trap:"Data sits in regions chosen under parent agreements and parent entities, and sovereignty commitments made to customers do not automatically survive the change.",
+fix:"Re-derive residency requirements from your own customer commitments and regulatory footprint before choosing regions."},
+{t:"Validated and GxP workloads in cloud",risk:"H",lead:20,dur:13,
+dep:"Landing zone; validation capacity; supplier assessment of the provider",b:"eQMS, PLM, MES cloud components; inspection readiness",
+ev:"Provider assessment under your own quality system; infrastructure qualification records",
+trap:"Qualified cloud infrastructure carries qualification evidence tied to the parent's controls and the parent's supplier assessment of the provider.",
+fix:"Re-perform the provider assessment under your own quality system and requalify the infrastructure as part of the validation queue, not beside it."},
+{t:"Secrets, keys and encryption key custody",risk:"H",lead:15,dur:9,g:1,
+dep:"Landing zone; IAM; application inventory",b:"Every TSA exit involving encrypted data; product signing; data confidentiality from the parent",
+ev:"Key inventory by data set; rotation records under own custody; retirement of old key material",
+trap:"Keys and secrets are held in parent-controlled vaults. Rotating at exit breaks whatever still depends on them; not rotating leaves the parent able to decrypt your data.",
+fix:"Inventory keys by data set, rotate under your own custody before exit, and prove the old key material is retired."},
+{t:"Cloud logging, monitoring and evidence retention",risk:"M",lead:15,dur:10,
+dep:"Landing zone; security operations; audit requirements",b:"Incident detection; SOX and audit evidence; boundary monitoring",
+ev:"Own log pipeline; dual-write during TSA; retention policy meeting audit needs",
+trap:"Logs land in parent-run platforms with parent retention. At exit you lose both the monitoring and the historical evidence auditors will ask for.",
+fix:"Stand up your own log pipeline early and dual-write during the TSA so the evidence trail is continuous across the boundary."},
+{t:"Cost ownership and runaway cloud spend",risk:"M",lead:14,dur:10,
+dep:"Account hierarchy; workload ownership; finance reporting",b:"Standalone margin; first-quarter results credibility",
+ev:"Cost allocation per workload with a named owner; unit economics reported monthly",
+trap:"Cost was absorbed centrally and nobody owned it. As a standalone the same footprint becomes a visible margin problem in the first quarter.",
+fix:"Assign cost ownership per workload before separation and publish unit economics from month one."}
+]},
+
+{k:"IAM",n:"Identity and access management",items:[
+{t:"Directory and tenant separation strategy",risk:"H",lead:20,dur:12,g:1,
+dep:"Deal structure; application inventory; cloud landing zone",b:"Every application migration; cloud design; access evidence; TSA exit sequencing",
+ev:"Decision record with consequences; tenant design; application migration waves",
+trap:"The choice between a clean new tenant and a cloned one is made on migration convenience, and the consequences appear in every application, every audit and every TSA exit.",
+fix:"Decide at 20 months with security, SOX and application owners in the room, and write the consequences of the choice into the TSA."},
+{t:"Workforce identity migration and joiner-mover-leaver",risk:"H",lead:18,dur:12,
+dep:"HR system separation; employee transfer; directory strategy",b:"Access reviews; ITGC evidence; deprovisioning during the highest-movement period",
+ev:"Lifecycle automation tested; manual leaver checks during the gap; reconciliation to HR data",
+trap:"Identity lifecycle depends on HR data that is itself being separated, so leavers stop being deprovisioned during exactly the period with the most movement.",
+fix:"Sequence HR data separation ahead of identity migration and run manual leaver checks during the gap rather than assuming automation holds."},
+{t:"Non-human identity inventory — service and machine accounts",risk:"H",lead:18,dur:12,g:1,
+dep:"Application inventory; integration mapping; cloud landing zone",b:"Cutover stability; cross-boundary access removal; TSA exits",
+ev:"Inventory with named human owner per account; credential rotation records; decommission log",
+trap:"Nobody has the inventory, and service accounts are what break at cutover. They also outlive the separation with parent credentials still valid.",
+fix:"Inventory with a named human owner for each; no owner means decommission, not investigation. Rotate every credential that crosses the boundary."},
+{t:"Privileged access management and break-glass",risk:"H",lead:16,dur:10,
+dep:"Directory strategy; PAM tooling; cutover plan",b:"Cutover elevated access controls; ITGC opinion; incident response",
+ev:"Vaulted credentials; session recording; monthly break-glass review from go-live",
+trap:"Privileged access is re-created in a hurry at cutover on parent-era assumptions, and break-glass accounts are created and never reviewed.",
+fix:"Build the privileged model before migration, with vaulting, session recording and a monthly break-glass review operating from day one."},
+{t:"Cross-boundary access register and expiry",risk:"H",lead:16,dur:14,g:1,
+dep:"Identity separation; TSA service catalogue; integration inventory",b:"TSA exit certification; SOX boundary evidence; security posture after Day 1",
+ev:"Register with owner and expiry both sides; monthly review minutes; removal evidence",
+trap:"Access both ways persists after Day 1 because removing it breaks an integration. It is a security exposure, a SOX finding and a TSA boundary failure at the same time.",
+fix:"Give every cross-boundary entitlement an expiry date and a named owner on both sides, reviewed as a standing item in TSA governance."},
+{t:"Application onboarding, single sign-on and federation backlog",risk:"M",lead:16,dur:12,
+dep:"Directory strategy; application inventory",b:"Parent authentication switch-off; user experience at Day 1",
+ev:"Complete authentication integration inventory; migration waves; switch-off date",
+trap:"Hundreds of applications need re-federating, and the backlog is sized on the strategic ones while the long tail quietly keeps parent authentication.",
+fix:"Inventory every authentication integration, not just the strategic ones, and set a hard date after which parent authentication is switched off."},
+{t:"Customer and surgeon-facing identity",risk:"M",lead:14,dur:10,
+dep:"External application inventory; customer communication plan",b:"Portal access; ordering systems; planning software login",
+ev:"External user migration plan; staged cutover; support surge plan",
+trap:"External users hold accounts in parent-run identity systems, so migration means a visible credential change to customers at the worst possible moment.",
+fix:"Plan external identity migration as a customer communication project with a staged cutover and a support surge, not as an IT change."},
+{t:"Access recertification evidence at the new entity",risk:"M",lead:12,dur:9,
+dep:"Role definitions; identity migration; SOX scope",b:"First-year ITGC evidence; audit findings",
+ev:"Dry-run recertification results; baseline role definitions; first live cycle evidence",
+trap:"The first recertification happens after Day 1 with incomplete role definitions and no baseline, producing evidence auditors will not accept.",
+fix:"Run a dry-run recertification before Day 1 so the first real cycle has a baseline and clean role definitions behind it."}
+]},
+
+{k:"IT",n:"Enterprise, GxP and infrastructure IT",items:[
+{t:"Legal entity and tax structure — the hidden critical path",risk:"H",lead:26,dur:10,g:1,
+dep:"Deal structure decision; tax planning",b:"Country registrations, banking, importer identity, company codes, contracts, credentialing",
+ev:"Entity formation calendar by country; bank and tax registrations; entity-to-site mapping",
+trap:"Everything downstream waits here, on a timetable operations cannot see. It rarely appears on the operational plan, then explains six other slips.",
+fix:"Put the entity formation calendar on the same page as the operational plan and review it in the same forum. Every dependent workstream names its entity and required date."},
+{t:"ERP carve and data scoping",risk:"H",lead:24,dur:18,g:1,
+dep:"Chart of accounts; legal entity; site allocation; validation plan",b:"Inventory, commercial systems, key reports, field logistics, close",
+ev:"Data scoping rules; migration reconciliation; cutover runbook with rollback; mock cutover results",
+trap:"Scoping arguments run for months because they are legal, tax and quality questions dressed as technical ones. Mock cutovers get compressed to one exactly when three are needed.",
+fix:"Fix scoping rules by written decision at 24 months with Legal, Tax and Quality signing. Protect three mock cutovers — cut scope, not rehearsals."},
+{t:"Electronic quality system clone and revalidation",risk:"H",lead:20,dur:12,
+dep:"Validation capacity; procedure rewrite; records migration",b:"QMS separation; notified body audit; complaint and CAPA migration",
+ev:"Validation package; record reconciliation; audit trail evidence; access re-provisioning",
+trap:"It gates the notified body audit and the QMS separation, and competes for the same validation resource as MES and PLM.",
+fix:"Sequence it ahead of lower-consequence systems in the validation queue, since its slip propagates straight into the regulatory long pole."},
+{t:"PLM, CAD and engineering IP separation",risk:"M",lead:20,dur:12,
+dep:"IP allocation; validation; design data volumes",b:"Design history migration; submissions; engineering continuity",
+ev:"IP allocation schedule; migrated design data with integrity checks; tool licence transfers",
+trap:"Shared platform designs land in an allocation schedule negotiated late, and engineering tool licences reprice on separation.",
+fix:"Settle the IP allocation schedule early and renegotiate tool licences in the same conversation."},
+{t:"Domain, email deliverability and certificate estate",risk:"H",lead:12,dur:8,
+dep:"Brand and domain decisions; identity; external integrations",b:"Customer communication, invoicing, regulatory correspondence, integrations",
+ev:"Domain and certificate inventory with expiry; sender authentication published and monitored",
+trap:"A cold sending domain puts invoices, complaint acknowledgements and regulatory mail in junk folders. Parent-bought certificates expire after the programme has stood down.",
+fix:"Publish sender authentication and warm the domain months ahead. Hand a 12-month certificate expiry register with named owners to permanent operations."},
+{t:"Network, site cutovers and data centre exit",risk:"M",lead:18,dur:14,
+dep:"Site allocation; circuit lead times; OT segregation",b:"Plant operations at cutover; TSA hosting exit",
+ev:"Site cutover schedule with circuit dates; data centre exit plan; acceptance tests",
+trap:"Circuit delivery varies far more by country than the plan assumes, and data centre exit dates are contractual and expensive to extend.",
+fix:"Order circuits against the worst-case country rather than the average, and align site cutovers to delivery dates."},
+{t:"Validation capacity — the real constraint",risk:"H",lead:22,dur:20,g:1,
+dep:"All GxP system decisions; quality resourcing",b:"MES, eQMS, PLM, LIMS, cloud GxP workloads — the whole regulated migration",
+ev:"Queue with per-system effort; resourcing plan; throughput actuals versus forecast",
+trap:"Migrations run in parallel, qualification runs in series. The queue quietly becomes the schedule and no single system owner can see it.",
+fix:"Model the queue as a capacity plan with one named owner and report throughput monthly. When it will not clear, decide deliberately what runs on TSA past Day 1."},
+{t:"Standalone security operations, tooling and licensing",risk:"H",lead:15,dur:10,
+dep:"Organisation design; licence assignability; cloud logging",b:"Monitoring at every TSA boundary; incident response; customer assurance",
+ev:"Contracts; monitoring coverage map by TSA phase; incident response runbooks",
+trap:"Enterprise licences rarely transfer and reprice badly at smaller scale. Monitoring gaps open at the TSA boundary and neither side believes the gap is theirs.",
+fix:"Draw a written coverage map per TSA phase agreed by both sides and review it at every exit. Start procurement at 15 months."},
+{t:"Data platform, registries and privacy basis",risk:"M",lead:16,dur:12,
+dep:"Data allocation; privacy review; study agreements",b:"Analytics; clinical evidence; commercial reporting",
+ev:"Data inventory by classification; transfer legal basis; updated notices; sponsorship transfers",
+trap:"Clinical, registry and health-professional data was collected under notices naming the parent. Transfer is not automatic, and study sponsorship moves per study and per country.",
+fix:"Inventory by classification, establish the transfer basis with Legal, and start sponsorship transfers with the longest-running studies first."}
+]},
+
+{k:"PRD",n:"Product and connected device estate",items:[
+{t:"Code signing keys, certificates and trust chain reissuance",risk:"H",lead:12,dur:8,g:1,
+dep:"Build pipeline separation; certificate authorities; key custody",b:"All field software updates; robot channel cutover; device trust",
+ev:"Key and certificate inventory with expiry; staged trust rollout; parent revocation date agreed",
+trap:"Deployed devices trust the parent's signing identity. Revocation or expiry on the parent's schedule stops updates, sometimes requiring a visit per unit.",
+fix:"Inventory every trusted key with its expiry. Push the new trust anchor while the old one is still valid, and get a written revocation date from the parent."},
+{t:"Licence servers, activation and entitlement dependencies",risk:"M",lead:12,dur:7,
+dep:"Software inventory; cloud tenancy; commercial terms",b:"Feature availability after TSA exit",
+ev:"Product-to-service dependency map; migration plan; offline activation fallback",
+trap:"Features that phone home to a parent service fail silently after TSA exit, surfacing as clinical support calls rather than IT incidents.",
+fix:"Map the dependencies and build an offline activation fallback before the exit, not after the first call."},
+{t:"Product telemetry pathways and device data flows",risk:"M",lead:15,dur:10,
+dep:"Cloud tenancy; data classification; hospital agreements",b:"Analytics; service diagnostics; postmarket surveillance inputs",
+ev:"Pathway design; segregation evidence; privacy assessments; updated data agreements",
+trap:"Product data flows under agreements naming the parent, so splitting needs new agreements with each health system and a defensible transfer basis.",
+fix:"Classify the data first, then renegotiate agreements alongside the pathway rebuild rather than after it."},
+{t:"Product incident response and coordinated disclosure",risk:"M",lead:10,dur:6,
+dep:"Security organisation; regulatory contacts; portfolio allocation",b:"Vulnerability response credibility; regulatory notification",
+ev:"Published policy and intake; response playbook; regulator and sharing-organisation contacts",
+trap:"Researchers and coordinating bodies keep contacting the parent, so reports about your products land where nobody is obliged to act.",
+fix:"Publish your own policy and intake and register the contacts before the first labelling change goes out."},
+{t:"Open source and third-party licence re-attribution",risk:"M",lead:12,dur:8,
+dep:"Source control migration; legal assignability review",b:"Product shipment; SBOM accuracy; buyer diligence",
+ev:"Component inventory with assignability analysis; remediation plan; regenerated SBOMs",
+trap:"Some embedded and commercial licences do not survive a change of control, or need consent and a fee. Found during diligence for a sale, often not at all in a spin.",
+fix:"Run assignability analysis across the component inventory and plan remediation for what cannot transfer."},
+{t:"Surgeon-facing applications and store accounts",risk:"M",lead:12,dur:8,
+dep:"Identity; developer accounts; branding",b:"Surgeon app access; planning workflow",
+ev:"Application inventory; developer account transfers; user migration and comms plan",
+trap:"Developer account transfers move on the platform's timetable, and re-publishing under a new publisher can break existing installs and reviews.",
+fix:"Start transfers early and plan user communication for the publisher change rather than letting it surprise people."}
+]},
+
+{k:"ENG",n:"Engineering platform, CI/CD and source control",items:[
+{t:"Source control tenancy and repository separation",risk:"H",lead:18,dur:12,g:1,
+dep:"IP allocation; identity strategy; product allocation",b:"Build pipelines, SBOM generation, design history, in-flight submissions",
+ev:"Repository inventory with owner and licence; organisation migration record; history integrity check",
+trap:"Repositories get forked rather than transferred, so history, issues, releases and signing provenance stay with the parent and the new company cannot evidence what it actually shipped.",
+fix:"Transfer with history where possible and record a written provenance statement where not. Inventory first — the repository list is always longer than engineering believes."},
+{t:"Branch protection, code review and approval enforcement",risk:"H",lead:15,dur:9,
+dep:"Repository migration; identity groups; SDLC procedure",b:"Change management evidence, Part 11 authority checks, release integrity",
+ev:"Organisation-level protection policy; per-repository conformance report; drift alerts and closure",
+trap:"Protections are re-created by hand per repository after migration, so a subset ends up with no required review — and that subset is exactly what a SOX or Part 11 sampler pulls.",
+fix:"Enforce protection at organisation level as policy-as-code with drift alerting, rather than configuring repository by repository."},
+{t:"CI/CD pipeline separation and build environment segregation",risk:"H",lead:16,dur:12,g:1,
+dep:"Repository migration; cloud landing zone; secrets custody",b:"Every release; SBOM generation; signing; TSA exit for engineering services",
+ev:"Runner, credential and shared-action inventory; pipeline dependency map; TSA line items with exit dates",
+trap:"Pipelines run on parent-hosted runners with parent credentials, so builds keep working after Day 1 for reasons nobody can explain — until the credentials are revoked mid-release.",
+fix:"Inventory every runner, credential and shared action, treat each as a TSA line item with an exit date, and prove independence with a clean-room build."},
+{t:"Release authorization and deployment approval gates",risk:"H",lead:15,dur:10,
+dep:"Delegation of authority; identity groups; pipeline separation",b:"SOX change management, Part 11 authority checks, CMMC change control evidence",
+ev:"Approval record per production deployment; bypass log with review; gate configuration under change control",
+trap:"Automated deployment inherits parent approval routing, so the approver of record works for a company that no longer owns the product. SOX change management and Part 11 authority checks then fail on the same evidence.",
+fix:"Rebuild the approval chain against the new delegation of authority and prove the gate cannot be bypassed — including for hotfixes, which is where the exception always lives."},
+{t:"Environment segregation — development, test and production",risk:"H",lead:14,dur:9,
+dep:"Data classification; cloud landing zone; migration scoping",b:"GDPR and HIPAA posture, CUI boundary, validation scope",
+ev:"Environment data classification; masking or synthesis evidence; access separation proof",
+trap:"Non-production environments hold copies of production data, including patient and health-professional data, carried across in migration because it was convenient.",
+fix:"Classify data in every environment before migration, mask or synthesise non-production data, and evidence the separation rather than asserting it."},
+{t:"Automated SBOM generation and build provenance",risk:"H",lead:14,dur:9,
+dep:"Pipeline separation; artefact registry; signing keys",b:"524B submissions, EU CRA vulnerability handling, customer questionnaires",
+ev:"SBOM and provenance attestation as build artefacts tied to each release; retention with the release record",
+trap:"SBOMs are produced as one-off documents for submissions rather than generated by the build, so they drift from what shipped and cannot be reproduced on request.",
+fix:"Generate the SBOM and a provenance attestation as build artefacts bound to the release, and retain both with the release record."},
+{t:"Infrastructure-as-code baselines and drift detection",risk:"M",lead:15,dur:10,
+dep:"Cloud landing zone; change control process",b:"Configuration management evidence across every regime",
+ev:"Baselines as code; drift detection alerts; exception records through change control",
+trap:"Landing zone guardrails are set once and drift as teams work around them under delivery pressure, with no record of who changed what or why.",
+fix:"Define baselines as code with automated drift detection, and route exceptions through the same change control as application changes."},
+{t:"Dependency, container and artefact registry security",risk:"M",lead:14,dur:9,
+dep:"Pipeline separation; cloud platform; licence review",b:"Build reproducibility; vulnerability management; SBOM accuracy",
+ev:"Own registry with provenance and vulnerability policy; pinned dependencies; upstream source allowlist",
+trap:"Builds resolve through parent-run registries and mirrors. At exit, builds either break or silently start pulling from unvetted upstream sources.",
+fix:"Stand up your own registry with provenance and vulnerability policy before the parent's is withdrawn, and pin dependencies rather than floating them."},
+{t:"Software development lifecycle procedure and tool validation",risk:"M",lead:16,dur:11,
+dep:"QMS separation; validation capacity; engineering organisation",b:"Every post-separation release; design controls; submission credibility",
+ev:"Approved SDLC procedure; tool validation package; training records; design control linkage",
+trap:"The SDLC procedure, tool validation and design control linkage are all parent documents. The new entity ships software under procedures it has not approved or trained anyone on.",
+fix:"Approve the SDLC and tool validation package before the first post-separation release, and link it explicitly to design controls and the quality system."}
+]},
+
+{k:"SOC",n:"Security operations and incident coordination",items:[
+{t:"Detection coverage map across the separation boundary",risk:"H",lead:15,dur:11,g:1,
+dep:"Cloud logging; identity separation; TSA service catalogue",b:"Incident detection; audit evidence; customer and regulator assurance",
+ev:"Joint coverage map by system and TSA phase, signed by both sides; gap register with owners",
+trap:"Both sides assume the other is watching the shared estate. The gap is invisible until an incident is found late, and then neither party owns the failure.",
+fix:"Produce one written coverage map covering every system and every TSA phase, signed by both security leaders, and review it at each exit."},
+{t:"Joint incident response protocol with the parent",risk:"H",lead:15,dur:9,g:1,
+dep:"Detection coverage; legal agreements; contact directories",b:"Response time; regulatory clocks; evidence preservation",
+ev:"Joint runbook; named contacts both sides with out-of-hours routing; tested handoff; evidence-sharing terms",
+trap:"An incident crosses the boundary and the first hour goes on working out who leads, who can access what, and whether either side may share logs with the other.",
+fix:"Agree lead-agency rules, access rights and evidence-sharing terms in writing before Day 1, and test them in a joint exercise rather than in a live event."},
+{t:"Escalation, materiality and regulatory notification clocks",risk:"H",lead:12,dur:8,g:1,
+dep:"Legal and privacy functions; disclosure controls; product regulatory",b:"Every notification obligation the new entity carries",
+ev:"Single clock matrix by obligation with trigger, deadline and named decision maker; tested decision path",
+trap:"The clocks differ by regime and start at different triggers. Teams track one and miss others, or escalate late because the materiality decision has no named owner out of hours.",
+fix:"Build one clock matrix covering every obligation the new entity carries, with the trigger, the deadline and the person who decides — and rehearse the decision, not just the notification."},
+{t:"Log retention, forensic readiness and evidence custody",risk:"H",lead:14,dur:10,
+dep:"Cloud logging; TSA terms; audit and legal requirements",b:"Investigations; audit evidence; litigation hold; regulatory response",
+ev:"Retention schedule by log type against the longest applicable obligation; custody and access terms; retrieval tests",
+trap:"Retention is set to the platform default rather than the longest applicable obligation, and logs from the parent period become unavailable exactly when an investigation needs them.",
+fix:"Set retention against the longest obligation across all regimes, secure access to parent-period logs in writing, and test retrieval before the TSA ends."},
+{t:"SOC tooling, staffing model and coverage hours",risk:"H",lead:14,dur:10,
+dep:"Security operations build; licensing; organisation design",b:"Detection and response capability from Day 1",
+ev:"Coverage roster against the global footprint; tooling in production; response time measured against target",
+trap:"Coverage is scoped to headquarters hours while manufacturing and field operations run continuously across time zones, so nights and weekends fall to an on-call rota that was never staffed.",
+fix:"Scope coverage to the operating footprint, not the office, and measure response time by shift so the weak window is visible before an incident finds it."},
+{t:"Threat intelligence, sector sharing and product-specific feeds",risk:"M",lead:12,dur:7,
+dep:"Security organisation; sector memberships; product portfolio",b:"Early warning; vulnerability triage; regulator engagement",
+ev:"Memberships registered under the new entity; feed integration; triage evidence tied to product versions",
+trap:"Sector information-sharing memberships and vendor feeds sit with the parent, so advisories about your own products stop arriving without anyone noticing they stopped.",
+fix:"Register memberships under the new entity early and verify receipt with a test advisory before the parent's membership lapses."},
+{t:"Joint tabletop exercises across the boundary",risk:"M",lead:10,dur:8,
+dep:"Joint protocol; contact directories; leadership availability",b:"Response readiness; board assurance; regulator confidence",
+ev:"Exercise records with both sides present; findings log with owners and closure dates",
+trap:"Exercises are run inside each company separately, so the handoff — the part most likely to fail — is the only part never tested.",
+fix:"Run at least two joint exercises before Day 1, one technical and one executive, and treat unclosed findings as open risk rather than as exercise output."}
+]},
+
+{k:"CMP",n:"Multi-regime compliance alignment",items:[
+{t:"Unified control set and regime crosswalk",risk:"H",lead:18,dur:14,g:1,
+dep:"Control inventory; regulatory footprint; system landscape",b:"Every assessment, audit and customer questionnaire the new entity faces",
+ev:"One control set with regime mapping; evidence produced once and reused; ownership per control",
+trap:"Each regime gets its own control set, its own owner and its own evidence run, so the same control is tested four times, four ways, and the answers diverge.",
+fix:"Build one control set mapped to every applicable regime, produce evidence once, and let each assessment draw from the same pool. Divergent answers to the same question are the finding auditors remember."},
+{t:"Records of processing, transfer basis and controller change",risk:"H",lead:16,dur:12,g:1,
+dep:"Legal entity; data inventory; privacy function",b:"Every personal data flow; hospital agreements; analytics; HR systems",
+ev:"Records of processing at the new entity; lawful basis per processing; transfer mechanisms; updated notices",
+trap:"The new company becomes a controller in its own right, but inherits records, notices and processor contracts written for the parent — and data flows back to the parent are now third-party transfers.",
+fix:"Rebuild the processing records at the new entity, re-paper processor and joint-controller arrangements, and treat every parent-bound flow under the TSA as a transfer requiring its own basis."},
+{t:"Business associate posture and safeguards mapping",risk:"H",lead:15,dur:11,
+dep:"Hospital agreements; data flows; security control set",b:"US hospital data pathways; robotics and planning services; analytics",
+ev:"Agreement inventory with counterparties; safeguards mapped to the control set; risk analysis at the new entity",
+trap:"Agreements are re-signed as paperwork while the underlying safeguards, risk analysis and workforce training still point at the parent's programme.",
+fix:"Re-perform the risk analysis at the new entity and map each required safeguard to a control you actually operate, then sign — not the other way round."},
+{t:"CMMC Level 2 scope, CUI boundary and system security plan",risk:"H",lead:18,dur:14,
+dep:"Defence-adjacent contract inventory; system landscape; enclave design",b:"Contract eligibility; flowdown to suppliers; assessment scheduling",
+ev:"Defined CUI boundary and asset categorisation; system security plan; plan of action; assessment readiness",
+trap:"Scope is drawn around systems rather than around the data, so the boundary quietly expands to the whole estate — or contracts so far that assets handling covered information sit outside it.",
+fix:"Define the boundary from the data and its flows, categorise every asset explicitly, and keep the plan current — a stale plan is treated as no plan at assessment."},
+{t:"Cyber resilience obligations for the non-device digital estate",risk:"M",lead:16,dur:12,
+dep:"Product classification; EU market footprint; vulnerability handling",b:"EU market placement for non-device software; disclosure obligations",
+ev:"Applicability analysis per product; vulnerability handling process; SBOM; disclosure policy; reporting path",
+trap:"Teams assume device regulation covers everything sold in Europe, so the non-device digital estate — companion apps, standalone software, connected accessories — falls between two regimes with nobody owning it.",
+fix:"Run an applicability analysis product by product and name an owner for the residual estate. The overlap and the gap are both decisions, and neither should be made by default."},
+{t:"Electronic records and signatures at the new entity",risk:"H",lead:16,dur:12,
+dep:"System migrations; QMS separation; validation capacity",b:"Every regulated system; inspection readiness; submission integrity",
+ev:"System inventory in scope; validation records; audit trail and signature manifestation evidence; signature certifications",
+trap:"Migrated systems keep their signature functionality but lose the documented basis — the validation, the authority checks and the certification all sit with the parent entity.",
+fix:"Re-establish the scope list, the validation position and the signature certification under the new entity before the first regulated record is signed in a migrated system."},
+{t:"Evidence adequacy and sufficiency standard across regimes",risk:"H",lead:14,dur:12,
+dep:"Control crosswalk; assessment calendar; evidence repositories",b:"Every audit and assessment outcome",
+ev:"Written evidence standard per control: what proves it, how much, over what period, who attests",
+trap:"Different regimes judge evidence differently — completeness and accuracy for financial reporting, adequacy and sufficiency for assessment, attributable and contemporaneous for regulated records. One evidence pack fails three ways.",
+fix:"Write the evidence standard down per control, covering artefact, sample size, period and attester, and have the strictest regime set the bar so a single pack satisfies all of them."},
+{t:"Assessment and audit calendar deconfliction",risk:"M",lead:12,dur:10,
+dep:"All assessment obligations; auditor and assessor appointments",b:"Team availability; evidence readiness; leadership bandwidth",
+ev:"Single calendar of every audit, assessment and inspection with evidence owner and preparation window",
+trap:"The notified body audit, the first SOX year-end, a customer assessment and an inspection land in one quarter because each was scheduled by a different function against its own constraint.",
+fix:"Hold one calendar for every external examination, published to the steering committee, and negotiate dates against evidence readiness rather than accepting the first slot offered."}
+]},
+
+{k:"TSA",n:"Transition services and parent dependency",items:[
+{t:"Service catalogue with bottom-up exit dates",risk:"H",lead:20,dur:6,g:1,
+dep:"Workstream estimates; deal team schedule",b:"Every exit plan, assurance right, boundary control and extension decision",
+ev:"Catalogue with scope, service levels, exit criteria, pricing and traceable exit dates",
+trap:"Exit dates get set top-down to a target duration and handed to the teams who must hit them. The estimates were never bottom-up, so the first honest replan looks like failure.",
+fix:"Every exit date traces to a named workstream estimate before signature. Flag imposed dates in the catalogue — that list is the earliest and cheapest warning you get."},
+{t:"Reverse transition services to the parent",risk:"M",lead:18,dur:5,
+dep:"Site allocation; shared capability inventory",b:"Separation team capacity",
+ev:"Reverse service catalogue; separate resourcing commitment; pricing",
+trap:"Capabilities the parent needs back are found late and staffed from the same people running the separation, quietly halving their capacity.",
+fix:"Inventory reverse services at 18 months and resource them separately from the separation team."},
+{t:"Boundary evidence and access control on shared systems",risk:"H",lead:18,dur:12,g:1,
+dep:"Identity separation; logging; audit requirements",b:"SOX evidence; TSA exit certification; audit outcomes after the programme ends",
+ev:"Access register by system and boundary; entitlement reviews; cross-boundary logging; attestations",
+trap:"Two companies operate inside the same systems and neither auditor accepts the agreement as evidence. Reviews stall because the parent reviewer has no incentive and yours has no visibility.",
+fix:"Define the evidence when you define the service — access register, review cadence, log retention, attestation owner both sides. Rehearse a review in the first TSA quarter."},
+{t:"Exit criteria and acceptance testing per service",risk:"H",lead:15,dur:10,
+dep:"Service catalogue; standalone capability builds",b:"Every capability handover; hypercare planning",
+ev:"Written exit criteria per service; acceptance test results; signed exit certificates",
+trap:"Exit means the parent stopped invoicing, not that the capability works, so problems surface after the safety net is gone and parent staff have moved on.",
+fix:"Write exit criteria before the capability is built so the build has a target. Require an acceptance test and a signed certificate, and run hypercare after each exit."},
+{t:"Extension economics and escalation path",risk:"M",lead:12,dur:4,
+dep:"TSA commercial terms; programme forecast",b:"Cost base; board reporting; exit sequencing decisions",
+ev:"Extension cost schedule; forecast by service; escalation ladder with named decision makers",
+trap:"Extension pricing steps up and the decision is made late by whoever is closest to the problem. Cumulative cost becomes a board topic long after a different decision was possible.",
+fix:"Forecast likely extensions by service each quarter and set an escalation ladder with named decision makers and cost thresholds."}
+]},
+
+{k:"REL",n:"Relationships, sponsors and owner finding",items:[
+{t:"Orphan hunt — finding an owner for every process and control",risk:"H",lead:20,dur:16,g:1,
+dep:"Process inventory; control matrix; organisation design",b:"Control operation; system administration; interface support; audit evidence",
+ev:"Named owner per control, system and interface at the new entity; weekly unnamed-item escalation log",
+trap:"Separation exposes processes that ran because a specific person in the parent did them. There is no documented owner, and the gap appears only when the process fails.",
+fix:"Run a deliberate orphan hunt: for every control, system and interface, name a person at the new entity. Unnamed items get escalated weekly, not logged and forgotten."},
+{t:"Executive sponsorship and decision rights map",risk:"H",lead:22,dur:10,g:1,
+dep:"Governance model; leadership appointments",b:"Every decision that currently stalls; escalation speed across all workstreams",
+ev:"Decision rights map by decision type with named deciders; refreshed as parent governance winds down",
+trap:"Decisions stall because nobody knows who can make them, and the escalation path routes through parent governance that is itself dissolving.",
+fix:"Publish a decision rights map at 22 months naming the decider for each recurring decision type, and refresh it as parent governance winds down."},
+{t:"Regulator and notified body relationship handover",risk:"H",lead:18,dur:10,
+dep:"Leadership appointments; regulatory organisation design",b:"First inspection outcome; certificate transfer; submission responsiveness",
+ev:"Introduction record per authority; new-entity leaders present in existing interactions",
+trap:"Regulator and notified body relationships are personal and built over years by parent staff who may not transfer. The new company arrives as an unknown at its first inspection.",
+fix:"Introduce new-entity leaders into existing interactions well before Day 1 so the first contact is not an inspection."},
+{t:"Key customer, GPO and surgeon relationship transfer",risk:"H",lead:18,dur:14,
+dep:"Account allocation; commercial retention; contract novation",b:"Revenue continuity; contract renewal; adoption of new platforms",
+ev:"Top-account map with named relationship owners; retention agreements for account leaders",
+trap:"Relationship equity sits with individuals, and competitors call the moment separation is announced. Account leader attrition compounds it.",
+fix:"Map top accounts to named owners at 18 months and treat account leader retention with the same rigour as technical knowledge retention."},
+{t:"Supplier and partner relationship transfer",risk:"M",lead:16,dur:12,
+dep:"Supplier tiering; novation plan",b:"Supply continuity; commercial terms; capacity priority",
+ev:"Introduction record for critical suppliers; negotiated terms; escalation contacts",
+trap:"Critical suppliers deal with the parent's scale and the parent's people. As a smaller counterparty you drop in priority just as you need flexibility.",
+fix:"Introduce new-entity leaders to critical suppliers early and negotiate terms while parent leverage still exists."},
+{t:"Internal counterpart network across functions",risk:"M",lead:15,dur:12,
+dep:"Organisation design; function leadership",b:"Cross-functional delivery speed on every workstream",
+ev:"Named counterpart per function; standing cross-functional forum; escalation route",
+trap:"Cross-functional work depended on informal networks that dissolve when people are allocated to different companies. Delivery slows with no visible cause.",
+fix:"Replace informal networks with named counterparts per function and a standing forum, before the informal ones break."},
+{t:"Parent-side counterpart map for the TSA period",risk:"H",lead:15,dur:12,
+dep:"TSA governance model; parent reorganisation plans",b:"Every TSA service delivery and exit",
+ev:"Named counterparts per service; change notification obligation; quarterly refresh",
+trap:"TSA services depend on parent staff being reorganised, and your named counterpart changes without notice in the middle of a service.",
+fix:"Require named counterparts and a change notification obligation in the TSA governance model, refreshed quarterly."}
+]},
+
+{k:"ORG",n:"People, governance and security culture",items:[
+{t:"Retention of legacy system and process knowledge",risk:"H",lead:18,dur:18,g:1,
+dep:"Organisation design; retention budget",b:"Every migration that depends on undocumented knowledge",
+ev:"Knowledge-holder register by system with named successor; retention agreements; runbooks",
+trap:"The people who know how the old integrations work are the most employable, and they leave when their future is least certain. Retention money follows grade, not knowledge risk.",
+fix:"Build the register by system, name the single point of failure for each, and direct retention there. Where you cannot retain, buy a runbook and a shadowing period first."},
+{t:"Business-aligned security officer layer and control ownership",risk:"M",lead:15,dur:9,
+dep:"Organisation design; control matrix",b:"Control operation across business units; escalation quality",
+ev:"Control ownership map by function; role charters; escalation paths",
+trap:"Embedded security roles get created without decision rights, so they carry accountability for controls they cannot enforce and become a reporting layer.",
+fix:"Publish the control ownership map alongside the role charters, so accountability and authority arrive together."},
+{t:"Security culture baseline and measurement",risk:"M",lead:12,dur:12,
+dep:"Communications; metrics; business unit access",b:"Post-Day-1 behaviour change; friction remediation",
+ev:"Pre-Day-1 baseline; behavioural metrics; friction inventory with owners",
+trap:"Culture work waits until after Day 1, losing the only clean baseline, then defaults to training completion — which says nothing about what people do when a control is inconvenient.",
+fix:"Baseline before Day 1 and measure workarounds, not completions: exception-path use, approval latency, where people route around a control."},
+{t:"Board and audit committee cyber reporting cadence",risk:"M",lead:10,dur:6,
+dep:"Board formation; disclosure controls; risk framework",b:"Governance credibility; disclosure quality",
+ev:"Reporting calendar; standing metric pack; agreed escalation thresholds",
+trap:"The first pack is built the week before the first meeting from whatever data exists, and sets a precedent that is hard to change.",
+fix:"Agree the calendar, standing metrics and escalation thresholds before the committee first convenes."},
+{t:"Third-party risk programme standalone",risk:"M",lead:15,dur:10,
+dep:"Supplier inventory; contract novation; assessment tooling",b:"Supplier assurance; customer questionnaires; audit scope",
+ev:"Tiered supplier inventory; assessment coverage by tier; security terms in novated agreements",
+trap:"Novation moves contracts without the assessments behind them, so you inherit thousands of relationships with no current risk view and no security terms you chose.",
+fix:"Tier suppliers before novation and insert security terms into agreements as they move, rather than reopening them later."}
+]}];
+
+var REFS=[
+{t:"Dependency chains — what waits on what",
+h:"<p>Nine chains carry most of the schedule risk. Each link is a real handoff, and the chain moves at the speed of its slowest link.</p><ol>"+
+"<li>Legal entity <span class='chain'>entity → country registrations → labelling → importer identity → Day 1 market continuity</span></li>"+
+"<li>Site allocation <span class='chain'>site decision → MES scope + OT segregation + supplier novation + establishment registration</span></li>"+
+"<li>Device identifiers <span class='chain'>labeller change → artwork → print capacity → sell-through → hospital catalogue + EDI → Day 1 ordering</span></li>"+
+"<li>Cloud and identity <span class='chain'>tenant decision → landing zone → workload migration → validation queue → TSA exits</span></li>"+
+"<li>Robotics <span class='chain'>install base register → hospital security review → data agreement → network access → update channel cutover</span></li>"+
+"<li>People data <span class='chain'>HR separation → identity lifecycle → leaver deprovisioning → access recertification → ITGC evidence</span></li>"+
+"<li>Transition services <span class='chain'>bottom-up catalogue → exit criteria → boundary evidence → service-org reporting → first-year ICFR</span></li>"+
+"<li>Finance foundations <span class='chain'>chart of accounts → ERP carve → key report inventory → IPE evidence → ICFR readiness</span></li>"+
+"<li>Ownership <span class='chain'>orphan hunt → named control owners → every control-dependent stream</span></li>"+
+"</ol><p>Filter the timeline to <b>Gates only</b> to see the items these chains hang from.</p>"},
+
+{t:"The long poles, in the order they bind",
+h:"<ul><li><b>Legal entity and tax structure.</b> Everything downstream waits here, on a timetable operations cannot see.</li>"+
+"<li><b>Device identifiers, labelling and artwork.</b> Fixed change-control and print throughput, plus customer catalogue updates you do not control.</li>"+
+"<li><b>Registration and certificate transfer.</b> Notified body capacity and per-country rules, both gated by entity readiness.</li>"+
+"<li><b>Validation capacity.</b> Migrations parallel, qualification serial. The queue is the schedule.</li>"+
+"<li><b>Hospital-side change capacity.</b> Security reviews, data agreements, credentialing and EDI updates run on the customer's clock, not yours.</li>"+
+"<li><b>Knowledge and relationships.</b> All of the above assumes the people who understand today's state, and who regulators and customers know, are still here.</li></ul>"+
+"<p>Steering committee test: which of these moved this month? If none, the programme is reporting on the wrong things.</p>"},
+
+{t:"How the schedule actually slips",
+h:"<ul><li>Top-down dates committed before bottom-up estimates exist.</li>"+
+"<li>Lift-and-shift assumed for validated systems.</li>"+
+"<li>Teams waiting politely on a decision nobody in the room owns.</li>"+
+"<li>Volume sized on the average when the tail holds the months.</li>"+
+"<li>Migration declared done on a record count, with no reconciliation.</li>"+
+"<li>Mock cutovers cut first when the schedule tightens.</li>"+
+"<li>Customer-side and hospital-side work planned as if it ran on your calendar.</li>"+
+"<li>Rework from a dual-track process — building for a spin, then reworking for a sale.</li>"+
+"<li>Calendar collision: notified body audit, first year-end, ERP cutover and a plant shutdown in one quarter.</li>"+
+"<li>Expiries with no owner after Day 1 — certificates, keys, licences, retention clauses, access rights.</li>"+
+"<li>Attrition in the final two quarters, when the plan still assumes today's team.</li></ul>"},
+
+{t:"Dual track — planning when spin and sale are both live",
+h:"<ul><li><b>Separate first, integrate later.</b> Untangling is required on either path; a permanent standalone end-state is required on only one.</li>"+
+"<li><b>Keep the end-state reversible.</b> Shorter contract terms, less customisation, staged builds a buyer can substitute.</li>"+
+"<li><b>List the path-dependent decisions</b> with the latest date each can be deferred to. Everything else proceeds regardless.</li>"+
+"<li><b>Budget for diligence.</b> A live sale process consumes the same people running the separation.</li>"+
+"<li><b>Control documentation is not wasted on a sale</b> — it transfers to the buyer's integration and audit requirements.</li></ul>"},
+
+{t:"Early-warning metrics worth reporting monthly",
+h:"<ul><li><b>Validation throughput</b> vs forecast — two months below means revisit Day 1 scope, not effort.</li>"+
+"<li><b>Artwork revisions per week</b> × remaining SKUs — if the date lands past Day 1, escalate that month.</li>"+
+"<li><b>Hospital security reviews cleared per month</b> vs accounts remaining.</li>"+
+"<li><b>Field inventory count-to-book variance</b> — the trend, not the number.</li>"+
+"<li><b>SoD conflicts against the projected org chart</b> — should trend down.</li>"+
+"<li><b>Cross-boundary access entries past expiry</b> — the cleanest measure of whether separation is completing.</li>"+
+"<li><b>Unowned service and machine accounts</b> — trending to zero.</li>"+
+"<li><b>Controls and interfaces with no named owner</b> — the orphan count.</li>"+
+"<li><b>Open items with ambiguous ownership</b> — unassigned past 30 days is an escalation.</li>"+
+"<li><b>Attrition among named single points of failure</b> — not headcount overall.</li>"+
+"<li><b>Imposed vs estimated TSA exit dates</b> — the count with no traceable estimate.</li>"+
+"<li><b>Expiries in the next 12 months without an owner</b> — certificates, keys, licences.</li></ul>"},
+
+{t:"Where a security and controls leader has most leverage",
+h:"<ul><li><b>TSA drafting.</b> Assurance rights, boundary evidence, log retention, key custody and record retrieval cost nothing to write in and are near-impossible to obtain later.</li>"+
+"<li><b>Control ownership before Day 1.</b> An unowned control is not a control, and the orphan hunt finds them faster than the auditor will.</li>"+
+"<li><b>Asking the evidence question during the build,</b> not the test. Evidence captured at migration is cheap; reconstructed later it is often impossible.</li>"+
+"<li><b>Key and identity custody.</b> Whoever holds the keys and the directory holds the exit date.</li>"+
+"<li><b>The friction inventory after Day 1.</b> Where people route around a control, the control is wrong or too slow. The workaround rate is the honest culture measure.</li></ul>"}];
+
+/* ===== metrics: L3 per item [metric, target] in domain order ===== */
+var M={
+MFG:[["Sites with signed allocation decision, % of production volume","100% by D-24"],
+["Sites registered and listings reassigned, %","100% within 30 days of ownership change"],
+["Plant systems qualified per month vs plan","no shortfall two months running"],
+["OT assets classified by supportability with a control decision, %","100% by D-18"],
+["Critical sterilization and supplier agreements executed, %","100% by D-9"],
+["Approved supplier list coverage of active spend, %","98% by D-6"],
+["Field inventory count-to-book variance, % and trend","under 2% and falling"],
+["Markets with importer of record confirmed, % of revenue","100% by D-3"],
+["Record retrieval tests passed / attempted","2 of 2 before Day 1"]],
+FIN:[["Change requests raised after account design freeze, count","zero after D-22"],
+["Entities with operating account and tested payment run, %","100% by D-3"],
+["Parallel payroll runs reconciled without variance, count","2 before cutover"],
+["Headcount in countries with consultation complete, %","100% by D-3"],
+["Contracts novated or on transitional terms, % of revenue","98% at Day 1"],
+["Cover placed and legacy claim allocation agreed","complete by D-6"],
+["Parallel-run rebate calculation variance, %","under 0.5%"],
+["Entities with filing calendar and tested statutory reporting, %","100% by D-3"]],
+SOX:[["In-scope controls with a named owner at the new entity, %","100% by D-3"],
+["Open SoD conflicts against the target org chart, count","falling; zero unmitigated at go-live"],
+["Cutover elevated grants revoked within SLA, %","100% within 14 days"],
+["Key reports with completeness and accuracy evidence, %","100% by D-3"],
+["TSA services covered by an assurance report, %","100% before first year-end"],
+["EUCs inventoried with owner and control, %","100% by D-3"],
+["Delegation matrix and close calendar ratified","before first close"],
+["Disclosure claims traceable to an existing capability, %","100% at filing"],
+["Controls with one passing management test, %","80% by D-1, 100% by first report"]],
+REG:[["Clearances reconciled to marketed products, %","100% by D-9"],
+["Identifiers reissued and published, % of active SKUs","100% by Day 1"],
+["Artwork revisions released per week vs required rate","at or above required rate"],
+["Certificates transferred, % of EU revenue","100% before Day 1"],
+["Registrations transferred or covered by interim arrangement, % of revenue","98% at Day 1"],
+["Reportable events submitted within the statutory clock, %","100%, no exceptions"],
+["Procedures approved and training complete, %","100% before the notified body audit"],
+["Open CAPAs and field actions with a single named owner, %","100% before migration"],
+["Retrieval tests passed on oldest and newest records","both pass"],
+["In-flight submissions with filer of record decided, %","100% by D-12"]],
+ROB:[["Installed units with a complete register entry, %","100% by D-14"],
+["Units confirmed on the new update channel, % of fleet","100% before the parent channel ends"],
+["Health systems with pathway and agreement moved together, % of cases","95% by Day 1"],
+["Pairing regression pass rate against reissued identifiers, %","100% before relabelled stock ships"],
+["Regions with spares, repair and engineer coverage, % of install base","100% by D-3"],
+["Products with regenerated SBOM and own security contacts, %","100% before the next submission"],
+["Training capacity vs planned surgeon throughput, ratio","at or above 1.0"],
+["Registries with a documented transfer basis, %","100% before platform build"]],
+HOSP:[["Hospital security reviews cleared per month vs remaining","burn-down meets the Day 1 date"],
+["Accounts with a signed agreement ahead of technical change, %","100% — no technical change without paper"],
+["Reps and engineers credentialed, % by account","98% by D-1"],
+["Sites with a re-provisioned service path tested, %","100% before parent access is withdrawn"],
+["Accounts with a successful end-to-end test order, % of revenue","95% before Day 1"],
+["Consignment sites reconciled and re-papered, % of value","95% by Day 1"],
+["Top accounts with a published change calendar, %","100% by D-6"]],
+PRD:[["Products on own signing chain with an agreed parent revocation date, %","100% by D-3"],
+["Products with no parent activation dependency, %","100% before the relevant TSA exit"],
+["Data pathways with agreement and technical route moved together, %","100%"],
+["Median time to acknowledge an external vulnerability report, days","under 3"],
+["Components with licence assignability resolved, %","100% before Day 1"],
+["Applications republished with confirmed user access, %","100% by D-1"]],
+CLD:[["Workloads migrated onto the approved landing zone pattern, %","100%; zero exceptions after wave one"],
+["Standalone cloud cost vs modelled baseline, % variance","within 10%"],
+["Workloads with zero parent-run service dependencies, %","100% by the relevant TSA exit"],
+["Data sets with residency mapped to a customer commitment, %","100%"],
+["Qualified infrastructure with own provider assessment, %","100% before regulated use"],
+["Keys rotated under own custody with old material retired, %","100% before exit"],
+["Days of continuous log coverage across the boundary","no gaps"],
+["Workloads with a named cost owner and unit economics, %","100% by Day 1"]],
+IAM:[["Applications migrated per wave vs plan, %","on plan; zero unplanned parent-auth extensions"],
+["Leavers deprovisioned within SLA, %","100% within 24 hours"],
+["Service and machine accounts with a named human owner, %","100%; unowned means decommissioned"],
+["Privileged sessions vaulted and recorded, %","100%; break-glass reviewed monthly"],
+["Cross-boundary entitlements past their expiry date, count","zero"],
+["Applications still authenticating against the parent, count","zero by the switch-off date"],
+["External users migrated with a successful first login, %","95% within 30 days"],
+["Dry-run recertification completed with exception rate","dry run complete before Day 1"]],
+IT:[["Entities formed vs the date the dependent workstream needs them, %","100% ahead of need"],
+["Mock cutovers completed with defects closed, count","3 completed"],
+["Qualification milestones met vs plan, %","on plan"],
+["Design data migrated with integrity check passed, %","100%"],
+["Certificates expiring within 12 months with no named owner, count","zero"],
+["Sites cut over vs circuit delivery plan, %","on plan"],
+["Systems qualified per month vs forecast","at or above forecast, two months running"],
+["Boundary coverage gaps in the joint monitoring map, count","zero unassigned"],
+["Data sets with a documented transfer basis, %","100% before migration"]],
+ENG:[["Repositories transferred with history integrity verified, %","100% before the first release"],
+["Repositories with enforced review and protected default branch, %","100%; drift alerted within 24 hours"],
+["Pipelines with no parent-hosted runner or credential, %","100% before the relevant TSA exit"],
+["Production deployments with a complete approval record, %","100%; zero unreviewed bypasses"],
+["Non-production environments holding no live regulated data, %","100%"],
+["Releases with a generated SBOM and provenance attestation, %","100%"],
+["Infrastructure changes made through code, %","95%; drift closed within 5 days"],
+["Builds resolving only from own vetted registries, %","100% before the relevant TSA exit"],
+["Releases shipped under an approved new-entity SDLC, %","100% from the first release"]],
+SOC:[["Systems covered in the signed joint detection map, %","100%; zero unassigned gaps"],
+["Joint response handoff tested and closed findings, count","2 exercises before Day 1, findings closed"],
+["Notification obligations with a named decision maker and tested path, %","100%"],
+["Log types retained to the longest applicable obligation, %","100%; retrieval tested before TSA end"],
+["Response time by shift against target, minutes","target met in every shift window, not just business hours"],
+["Sector memberships and feeds verified receiving under the new entity, %","100% before parent lapse"],
+["Joint exercises completed with findings closed, count","2 before Day 1"]],
+CMP:[["Controls mapped to every applicable regime in one control set, %","100%; zero regime-specific duplicates"],
+["Processing activities with documented basis and transfer mechanism, %","100% before Day 1"],
+["Safeguards mapped to an operating control with risk analysis refreshed, %","100% before agreements are signed"],
+["Assets categorised inside a defined covered-information boundary, %","100%; plan current at all times"],
+["Products with a completed applicability analysis and named owner, %","100%"],
+["Regulated systems with validation and signature basis re-established, %","100% before first signed record"],
+["Controls with a written evidence standard covering artefact, sample and attester, %","100% of in-scope controls"],
+["External examinations on one deconflicted calendar, %","100%; no two major events in one month"]],
+TSA:[["Exit dates with a traceable bottom-up estimate, %","100% at signature"],
+["Reverse services resourced outside the separation team, %","100%"],
+["Quarterly boundary attestations completed on both sides, %","100%"],
+["Services exited with a signed certificate on the original date, %","90%"],
+["Extension cost vs baseline, %","within 15%"]],
+REL:[["Controls, systems and interfaces with no named owner, count","zero by D-3"],
+["Decisions escalated without a named decider, count per month","zero"],
+["Authorities where new leaders met before the first formal interaction, %","100%"],
+["Top accounts with a retained named relationship owner, %","95% through Day 1"],
+["Critical suppliers with introduction and agreed terms, %","100% by D-6"],
+["Functions with a named counterpart and standing forum, %","100% by D-12"],
+["TSA services with a current named parent counterpart, %","100%, refreshed quarterly"]],
+ORG:[["Single points of failure with a successor or runbook, %","100% by D-6"],
+["Controls where the owner also holds the decision rights, %","100%"],
+["Workaround rate vs the pre-Day-1 baseline, %","falling"],
+["Reporting packs delivered on cadence with agreed metrics, %","100%"],
+["Tier-1 suppliers assessed with security terms in contract, %","100% by D-3"]]};
+
+/* L2 — one roll-up per domain */
+var DM={
+MFG:["Site readiness index","Sites with allocation decided, plant systems qualified, OT segmented and registration transferred — weighted by production volume"],
+FIN:["Financial operating readiness","Payment, payroll, close and statutory cycles rehearsed successfully vs cycles required before Day 1"],
+SOX:["Control readiness","Share of in-scope controls with an owner, documented design and one passing test, less open unmitigated SoD conflicts"],
+REG:["Authorisation coverage","Share of revenue in markets with a transferred registration or certificate, gated by artwork throughput against remaining SKUs"],
+ROB:["Fleet readiness","Share of installed units with a register entry, confirmed update channel, service coverage and a site agreement in place"],
+HOSP:["Account readiness","Share of accounts with security review cleared, data agreement signed, ordering tested and credentialing complete"],
+PRD:["Field software continuity","Share of shipping products with their own signing chain and no parent-operated runtime dependency"],
+CLD:["Workload independence","Share of workloads with no parent-run dependency, own keys, own logging and a named cost owner"],
+IAM:["Identity independence","Share of applications on the new directory, service accounts owned, and cross-boundary entitlements within expiry"],
+IT:["Migration and validation throughput","Systems qualified per month against forecast, and share of in-scope systems cut over"],
+ENG:["Release integrity","Share of releases produced by a pipeline with no parent dependency, an enforced approval gate, a generated SBOM and an own-entity SDLC behind it"],
+SOC:["Boundary detection and response readiness","Share of systems inside a signed joint detection map, with a tested handoff and every notification clock owned"],
+CMP:["Multi-regime coverage","Share of controls mapped to every applicable regime with one evidence standard, and share of obligations with a named owner"],
+TSA:["Exit performance","Services exited on the original date as a share of services due, and extension cost against baseline"],
+REL:["Ownership coverage","Share of controls, systems, interfaces, accounts and TSA services with a named, current owner on both sides"],
+ORG:["Knowledge and culture","Single-point-of-failure coverage, plus workaround rate against the pre-Day-1 baseline"]};
+
+/* L1 — board and audit committee */
+var L1=[
+{t:"Day 1 readiness index",q:"Will the company function on Day 1?",
+ d:"Share of gate items complete by their required date, weighted by revenue exposure.",
+ th:"Below 95% at D-90 is an escalation. Any gate item more than 30 days past its start date is reported by name.",
+ c:"Monthly, then fortnightly from D-90",f:"MFG · REG · IT · CLD · IAM · HOSP"},
+{t:"Market authorisation coverage",q:"Can we sell in every market on Day 1?",
+ d:"Share of revenue in markets with a transferred registration, certificate or agreed interim arrangement.",
+ th:"98% of revenue covered at Day 1. Any market above 1% of revenue without a confirmed path is named individually.",
+ c:"Monthly",f:"REG · MFG · FIN"},
+{t:"Standalone control readiness",q:"Can we report and be audited as a public company?",
+ d:"Share of in-scope controls with a named owner, documented design and one passing management test.",
+ th:"100% owned by D-90; 80% tested by D-1; zero unmitigated SoD conflicts at go-live.",
+ c:"Monthly to the audit committee",f:"SOX · IAM · IT · FIN"},
+{t:"Customer continuity risk",q:"Will customers notice, and will they mind?",
+ d:"Share of top accounts with ordering, credentialing, data agreements and service access all confirmed.",
+ th:"95% of top accounts fully confirmed by D-30. Any account above 1% of revenue not confirmed is named.",
+ c:"Monthly from D-12",f:"HOSP · ROB · REG · FIN"},
+{t:"Parent dependency burn-down",q:"Are we actually becoming independent?",
+ d:"TSA services exited against plan, plus cross-boundary entitlements past their expiry date.",
+ th:"90% of exits on the original date. Zero entitlements past expiry — this number should never be above zero.",
+ c:"Monthly through the TSA period",f:"TSA · IAM · CLD · IT"},
+{t:"Key person exposure",q:"Does the plan still work if these people leave?",
+ d:"Share of named single points of failure with a successor identified or a written runbook in place.",
+ th:"100% covered by D-180. Any departure from the register is reported to the committee within the month.",
+ c:"Monthly",f:"ORG · REL · IT"},
+{t:"Multi-regime evidence coverage",q:"Can one control set survive every examiner?",
+ d:"Share of controls mapped to all applicable regimes with a single written evidence standard, and share of notification obligations with a named decision maker.",
+ th:"100% mapped by D-90. Any control answered differently to two regimes is reported as a finding before an examiner finds it.",
+ c:"Quarterly to the audit committee",f:"CMP · SOC · ENG · SOX · REG"},
+{t:"Programme honesty index",q:"Is the reporting telling us the truth?",
+ d:"Count of TSA exit dates with no traceable bottom-up estimate, plus items with no named owner.",
+ th:"Both should be zero. A rising count here predicts a red status three to six months out.",
+ c:"Monthly",f:"TSA · REL · SOX"}];
+
+/* ===== control crosswalk: one control, six regimes ===== */
+var CTRL=[
+{c:"Access authorization and provisioning",
+sox:"ITGC access to programs and data — approved provisioning, periodic recertification, terminations",
+fda:"Part 11 §11.10(d) limited system access; §11.10(g) authority checks; QMSR/ISO 13485 §4.1.6",
+cmmc:"AC.L2-3.1.1 authorized access; AC.L2-3.1.2 permitted transactions; IA.L2-3.5.1/3.5.2 identify and authenticate",
+cra:"Annex I Part I(2)(d) access control; secure-by-default configuration",
+gdpr:"Art.32(1)(b) confidentiality; Art.25 data protection by design and by default",
+hipaa:"§164.308(a)(4) information access management; §164.312(a)(1) access control",
+ev:"Approved access request tied to role, recertification record, termination evidence within SLA",
+items:["IAM-0","IAM-1","SOX-0","ENG-1"]},
+
+{c:"Privileged and emergency access",
+sox:"ITGC — restricted administrative access, firefighter usage logged and independently reviewed",
+fda:"Part 11 §11.10(d),(g); §11.10(e) audit trail of privileged actions on regulated records",
+cmmc:"AC.L2-3.1.5 least privilege; AC.L2-3.1.6 non-privileged accounts for non-privileged functions; AC.L2-3.1.7 log privileged functions",
+cra:"Annex I Part I(2)(d),(j) minimise attack surface and record activity",
+gdpr:"Art.32(1)(b),(d) confidentiality and regular testing of measures",
+hipaa:"§164.308(a)(3) workforce security; §164.312(b) audit controls",
+ev:"Vaulted credentials, session recordings, break-glass log with monthly independent review",
+items:["IAM-3","SOX-2","CLD-5"]},
+
+{c:"Segregation of duties",
+sox:"ITGC and process level — conflicting transaction combinations prevented or mitigated and documented",
+fda:"Part 11 §11.10(d),(g); QMSR §5.5.1 responsibility and authority",
+cmmc:"AC.L2-3.1.4 separate duties of individuals to reduce malevolent activity without collusion",
+cra:"Annex I Part I(2)(d) access control proportionate to role",
+gdpr:"Art.32 appropriate organisational measures",
+hipaa:"§164.308(a)(3)(ii)(A) authorization and supervision",
+ev:"SoD ruleset run against the target org, conflict report, mitigating control documentation",
+items:["SOX-1","IAM-0","ENG-3"]},
+
+{c:"Change management and release authorization",
+sox:"ITGC program change — authorized, tested, approved and separately migrated to production",
+fda:"Part 11 §11.10(a) validation, §11.10(k) change control over documentation; QMSR §4.1.6, §7.3.9 design changes",
+cmmc:"CM.L2-3.4.3 track, review, approve changes; CM.L2-3.4.4 analyse security impact; CM.L2-3.4.5 restrict change access",
+cra:"Annex I Part II(2) address vulnerabilities without delay via security updates",
+gdpr:"Art.25 by design — changes assessed for privacy impact",
+hipaa:"§164.308(a)(8) periodic technical and non-technical evaluation",
+ev:"Approval record per deployment, test evidence, bypass log with review, gate configuration under change control",
+items:["ENG-3","ENG-1","SOX-1"]},
+
+{c:"Source code integrity and provenance",
+sox:"ITGC program development and change — code reviewed and approved before release",
+fda:"QMSR §7.3 design controls and design history; Part 11 §11.10(c) record protection and retrieval",
+cmmc:"CM.L2-3.4.1 baseline configurations; CM.L2-3.4.2 enforce security configuration settings",
+cra:"Annex I Part I(1) secure by design; Part II(1) identify and document components",
+gdpr:"Art.32(1)(b) integrity of processing systems",
+hipaa:"§164.312(c)(1) integrity of electronic protected health information",
+ev:"Repository history integrity check, protected branch conformance report, signed commits or provenance statement",
+items:["ENG-0","ENG-1","REG-8"]},
+
+{c:"Build integrity, signing and SBOM",
+sox:"ITGC program change — only authorized code reaches production, evidenced by signing",
+fda:"§524B(b) SBOM for cyber devices; secure development lifecycle and vulnerability management plan",
+cmmc:"SI.L2-3.14.1 identify and correct flaws; CM.L2-3.4.1 baselines covering component inventory",
+cra:"Annex I Part II(1) SBOM in a commonly used machine-readable format, top-level dependencies",
+gdpr:"Art.32(1)(b) integrity; Art.5(1)(f) integrity and confidentiality principle",
+hipaa:"§164.312(c)(2) mechanism to authenticate ePHI has not been altered",
+ev:"SBOM and provenance attestation as build artefacts bound to the release, retained with the release record",
+items:["ENG-5","PRD-0","REG-9","ROB-5"]},
+
+{c:"Secrets and cryptographic key management",
+sox:"ITGC — protection of data and restricted access to keys underpinning financial systems",
+fda:"Part 11 §11.10(c) protection of records; §11.30 controls for open systems",
+cmmc:"SC.L2-3.13.10 establish and manage cryptographic keys; SC.L2-3.13.11 FIPS-validated cryptography; SC.L2-3.13.16 protect CUI at rest",
+cra:"Annex I Part I(2)(e),(f) protect confidentiality and integrity using state-of-the-art mechanisms",
+gdpr:"Art.32(1)(a) encryption of personal data",
+hipaa:"§164.312(a)(2)(iv) encryption and decryption; §164.312(e)(2)(ii) transmission encryption",
+ev:"Key inventory by data set, rotation records under own custody, retirement evidence for parent-held material",
+items:["CLD-5","PRD-0","ENG-2"]},
+
+{c:"Configuration baselines and drift control",
+sox:"ITGC computer operations — controlled infrastructure configuration",
+fda:"Part 11 §11.10(a) validation of systems in their configured state",
+cmmc:"CM.L2-3.4.1 baseline configurations; CM.L2-3.4.6 least functionality; CM.L2-3.4.7 restrict non-essential functions",
+cra:"Annex I Part I(2)(b) secure-by-default configuration; (j) minimise attack surface",
+gdpr:"Art.32(1)(d) process for regularly testing and evaluating measures",
+hipaa:"§164.308(a)(1)(ii)(B) risk management; §164.310(d) device and media controls",
+ev:"Baselines as code, drift detection alerts with closure times, exception records through change control",
+items:["ENG-6","CLD-0","MFG-3"]},
+
+{c:"Vulnerability management and patching",
+sox:"ITGC computer operations — timely remediation on systems supporting financial reporting",
+fda:"§524B(b)(2) plan to monitor, identify and address vulnerabilities; postmarket cybersecurity management",
+cmmc:"RA.L2-3.11.2 scan for vulnerabilities; RA.L2-3.11.3 remediate in accordance with risk; SI.L2-3.14.1 flaw remediation",
+cra:"Annex I Part II(2),(3),(8) remediate without delay, regular testing, disseminate security updates",
+gdpr:"Art.32(1)(b),(d) ongoing security and regular testing",
+hipaa:"§164.308(a)(1)(ii)(A),(B) risk analysis and risk management",
+ev:"Scan coverage against asset inventory, remediation within risk-based SLA, exception approvals with dates",
+items:["ENG-7","IT-7","PRD-3","ROB-1"]},
+
+{c:"Logging, monitoring and SOC coordination",
+sox:"ITGC — audit logging over financially relevant systems, reviewed and protected from alteration",
+fda:"Part 11 §11.10(e) secure computer-generated time-stamped audit trails",
+cmmc:"AU.L2-3.3.1 create and retain audit records; AU.L2-3.3.2 trace actions to individual users; AU.L2-3.3.5 correlate for investigation; AU.L2-3.3.8 protect audit information",
+cra:"Annex I Part I(2)(l) record and monitor relevant internal activity with an opt-out",
+gdpr:"Art.32(1)(b) ongoing confidentiality and integrity; Art.33 breach detection capability",
+hipaa:"§164.312(b) audit controls; §164.308(a)(1)(ii)(D) information system activity review",
+ev:"Signed joint coverage map, log retention schedule against the longest obligation, review and retrieval evidence",
+items:["SOC-0","SOC-3","CLD-6","IT-7"]},
+
+{c:"Incident response and notification clocks",
+sox:"Disclosure controls — material cybersecurity incident assessment and reporting path",
+fda:"Postmarket cybersecurity — MDR reportability assessment where a vulnerability affects safety or performance",
+cmmc:"IR.L2-3.6.1 incident handling capability; IR.L2-3.6.2 track and report incidents; IR.L2-3.6.3 test response capability",
+cra:"Art.14 — early warning within 24 hours, notification within 72 hours, final report within 14 days for actively exploited vulnerabilities",
+gdpr:"Art.33 notify the supervisory authority within 72 hours; Art.34 communicate to data subjects without undue delay",
+hipaa:"§164.308(a)(6) security incident procedures; §164.400-414 breach notification, 60 days",
+ev:"One clock matrix by obligation with trigger, deadline and named decision maker; tested decision path; exercise findings closed",
+items:["SOC-1","SOC-2","SOC-6","SOX-7"]},
+
+{c:"Asset inventory and system boundary",
+sox:"ITGC scoping — the in-scope application and infrastructure list",
+fda:"QMSR §4.1.6 identification of software used in the quality system; device software inventory",
+cmmc:"CA.L2-3.12.4 system security plan describing boundaries and environment; CM.L2-3.4.1 baselines",
+cra:"Annex I Part II(1) component inventory; Part I(1) risk assessment based on intended use",
+gdpr:"Art.30 records of processing activities",
+hipaa:"§164.308(a)(1)(ii)(A) risk analysis covering all systems holding ePHI",
+ev:"Single asset and system inventory reconciled across regimes, boundary diagram, categorisation per asset",
+items:["CMP-3","CMP-0","IAM-2","SOX-0"]},
+
+{c:"Third-party and supply chain assurance",
+sox:"Service organisation reliance — SOC 1 coverage or direct testing over outsourced processes",
+fda:"QMSR §7.4 purchasing controls and supplier evaluation; supplier quality agreements",
+cmmc:"Flowdown of security requirements to subcontractors handling covered information; CA.L2-3.12.4 documented in the plan",
+cra:"Annex I Part II(1),(5) due diligence on integrated components and their vulnerability handling",
+gdpr:"Art.28 processor contracts; Art.44-49 transfer mechanisms for onward flows",
+hipaa:"§164.308(b) business associate contracts; §164.314(a) organizational requirements",
+ev:"Tiered supplier inventory, assurance artefact per tier-1, security terms in novated contracts, flowdown evidence",
+items:["ORG-4","SOX-4","TSA-2","MFG-4"]},
+
+{c:"Data protection, minimisation and transfer basis",
+sox:"Not directly applicable — but data scoping decisions drive completeness of financial records",
+fda:"Part 11 §11.10(c) record retention and retrieval throughout the retention period",
+cmmc:"SC.L2-3.13.8 transmission confidentiality; SC.L2-3.13.16 protect CUI at rest; MP.L2-3.8.x media protection",
+cra:"Annex I Part I(2)(e),(h) confidentiality and data minimisation limited to what is necessary",
+gdpr:"Art.5 principles; Art.6 and Art.9 lawful basis including health data; Art.30 records; Art.44-49 transfers",
+hipaa:"§164.502(b) minimum necessary; §164.312(e) transmission security",
+ev:"Processing records with basis and transfer mechanism, environment data classification, masking evidence",
+items:["CMP-1","ENG-4","CLD-3","IT-8"]},
+
+{c:"Records, audit trail and retention",
+sox:"ITGC and evidence — completeness and accuracy of information produced by the entity",
+fda:"Part 11 §11.10(b),(c),(e) accurate copies, protection through the retention period, audit trails; QMSR §4.2.5 record control",
+cmmc:"AU.L2-3.3.1 retain audit records to support investigation; AU.L2-3.3.8 protect audit information from modification",
+cra:"Annex I Part II(2),(6) document vulnerabilities and remediation over the support period",
+gdpr:"Art.5(1)(e) storage limitation; Art.30 records of processing",
+hipaa:"§164.316(b)(2) retain documentation six years from creation or last effective date",
+ev:"Retention schedule set to the longest applicable obligation, retrieval tests on oldest and newest records",
+items:["SOC-3","MFG-8","REG-8","CMP-5"]},
+
+{c:"Backup, recovery and continuity",
+sox:"ITGC computer operations — backup, restoration and job scheduling over financial systems",
+fda:"Part 11 §11.10(c) ability to retrieve records throughout the retention period; QMSR §4.2.5",
+cmmc:"MP.L2-3.8.9 protect the confidentiality of backup CUI at storage locations",
+cra:"Annex I Part I(2)(k) resilience and availability, including protection against denial of service",
+gdpr:"Art.32(1)(c) ability to restore availability and access in a timely manner",
+hipaa:"§164.308(a)(7) contingency plan — data backup, disaster recovery, emergency mode operation",
+ev:"Restore tests with documented recovery times, backup encryption evidence, continuity plan exercised",
+items:["IT-1","CLD-0","IT-5"]},
+
+{c:"Training, awareness and personnel security",
+sox:"Entity-level controls — competence and awareness of control operators",
+fda:"QMSR §6.2 competence, training and awareness; training records tied to procedures",
+cmmc:"AT.L2-3.2.1/3.2.2 role-based security training; PS.L2-3.9.2 protect systems during personnel transfer and termination",
+cra:"Annex I Part I(1) risk-based development including competent personnel",
+gdpr:"Art.32 organisational measures; Art.39 awareness-raising and training",
+hipaa:"§164.308(a)(5) security awareness and training; §164.308(a)(3)(ii)(C) termination procedures",
+ev:"Training completion by role against procedure version, transfer and termination checklists with access evidence",
+items:["REG-6","ORG-0","IAM-1","ENG-8"]},
+
+{c:"Environment separation and non-production data",
+sox:"ITGC program change — development and test separated from production",
+fda:"Part 11 §11.10(a) validation applies to the production configuration; QMSR §4.1.6",
+cmmc:"SC.L2-3.13.3 separate user functionality from system management; CM.L2-3.4.2 configuration enforcement",
+cra:"Annex I Part I(2)(b),(j) secure default configuration and minimised attack surface",
+gdpr:"Art.5(1)(b),(c) purpose limitation and minimisation — test use is a separate purpose",
+hipaa:"§164.502(b) minimum necessary; §164.312(a)(1) access control per environment",
+ev:"Environment inventory with data classification, masking or synthesis evidence, separate access groups",
+items:["ENG-4","CLD-0","IAM-0"]}
+];
+
+
+/* ===== Layer 0: reporting forums — who gets what, when ===== */
+var FORUMS=[
+{f:"Board of Directors",cad:"Quarterly, monthly from D-90",
+who:"Full board; CEO, CFO and General Counsel presenting; security leader by invitation for the cyber item",
+pack:"Day 1 readiness index · Market authorisation coverage · Parent dependency burn-down · Key person exposure · One page of named risks with an owner and a date each",
+dec:"Approves any change to the Day 1 date, the separation cost envelope and major structural decisions",
+trap:"The pack becomes a status narrative with no number that can go red, so the board learns about a slip when it is no longer recoverable.",
+fix:"Lead with the four layer 1 numbers and their thresholds. Name the risks and the people. Keep the narrative to the exceptions."},
+
+{f:"Audit Committee",cad:"Quarterly, plus a session before each filing",
+who:"Committee chair and members; CFO, Chief Accounting Officer, Internal Audit, external auditor, security leader",
+pack:"Standalone control readiness · Multi-regime evidence coverage · Deficiency log with aggregation analysis · ITGC status by domain · Assurance coverage over transition services · Cyber risk and incident summary",
+dec:"Accepts the deficiency aggregation conclusion, approves remediation dates, approves auditor scope and fees",
+trap:"Individually minor ITGC gaps are reported one at a time, so nobody performs the aggregation until the auditor does it for them at year-end.",
+fix:"Present the deficiency log with the aggregation analysis every quarter, even when the conclusion is that nothing aggregates. Establish the method before you need it."},
+
+{f:"Disclosure Committee",cad:"Monthly, fortnightly inside a filing window",
+who:"CFO, General Counsel, Controller, Investor Relations, security leader, quality and regulatory leader",
+pack:"Materiality decisions taken since the last meeting · Open matters that could become disclosable · Registration statement and periodic report readiness · Proposed risk factor changes · Incident log with assessment status",
+dec:"Determines materiality, approves disclosure language, and starts the reporting clock once a determination is made",
+trap:"The committee is chartered but never rehearsed, so the first real materiality call happens out of hours with no quorum and no documented method.",
+fix:"Run a simulated determination against a fabricated incident before the first filing, and document the decision path including who decides at 2am."},
+
+{f:"Separation Steering Committee",cad:"Fortnightly, weekly from D-90",
+who:"Separation lead, all sixteen domain leads, transition services lead, programme office",
+pack:"Every layer 2 domain roll-up · Gates behind their start date, by name · Decisions needed this period with the named decider · Validation queue throughput against forecast · Imposed versus estimated exit dates",
+dec:"Reprioritises scope, escalates to the board, approves extension requests before they reach the parent",
+trap:"Sixteen domains each report green because each is on its own plan, while the chain between them is the thing that is late.",
+fix:"Report by dependency chain, not by domain. A chain is only as green as its slowest link, and the link owner presents, not the chain owner."},
+
+{f:"Security, Privacy and Compliance Council",cad:"Monthly",
+who:"Security leader, privacy lead, quality and regulatory, IT, engineering, human resources, procurement",
+pack:"Control crosswalk coverage by regime · Open findings by regime with owners · Notification clock readiness · Third-party assurance status · Gaps in the joint detection coverage map · Exceptions granted and their expiry dates",
+dec:"Owns the unified control set; approves exceptions, always with an expiry date and a named owner",
+trap:"Exceptions are granted verbally under delivery pressure and never expire, so the control set on paper and the one in operation drift apart.",
+fix:"Every exception is written, dated, owned and expiring. Publish the open exception count as a standing metric — a rising count is the earliest sign of schedule pressure."},
+
+{f:"Quality Management Review",cad:"Quarterly, per the quality procedure",
+who:"Management with executive responsibility, quality leadership, regulatory, operations, product security",
+pack:"Quality system separation status · Training completion against procedure version · Complaint and corrective action migration · Supplier quality and requalification · Audit and inspection readiness · Postmarket product security summary",
+dec:"Concludes on quality system adequacy and commits resources",
+trap:"Separation status is reported into the review as a project update rather than as an input to the adequacy conclusion, so the conclusion is drawn on a system that is mid-migration.",
+fix:"State explicitly which parts of the quality system are operating under the new entity and which are still parent-dependent, and let the conclusion address both."},
+
+{f:"Transition services governance board (joint with the parent)",cad:"Monthly through the transition period",
+who:"Both separation leads, service owners on both sides, both security leaders for boundary items",
+pack:"Service performance against levels · Exit dates and criteria status · Cross-boundary access register with expiries · Extension requests with cost · Counterpart changes on the parent side",
+dec:"Approves exits and extensions, resolves boundary disputes, ratifies counterpart changes",
+trap:"The meeting becomes a service-level review and the boundary evidence never gets discussed, so both auditors arrive to find no attestation from either side.",
+fix:"Put the access register and the attestation status on the standing agenda above service performance. The evidence is the part that outlives the meeting."},
+
+{f:"Workstream leads and delivery teams",cad:"Weekly",
+who:"Domain leads and their teams; programme office attending",
+pack:"Layer 3 metrics for their own items · Items behind start date · Blockers with the named decider and the date raised · Evidence to capture this week",
+dec:"Sequencing within the workstream; escalates anything unresolved for more than 48 hours",
+trap:"Evidence capture is treated as documentation to be done later, and the knowledge needed to produce it walks out with the migration team.",
+fix:"Make 'evidence to capture this week' a standing agenda line. Evidence captured during the work is cheap; reconstructed afterwards it is often impossible."},
+
+{f:"All-employee and functional briefings",cad:"Monthly, weekly in the final quarter",
+who:"Everyone; functional leaders presenting their own change calendar",
+pack:"What changes for you and when · The consolidated change calendar · Where to ask a question · What security and privacy expectations look like at the new entity",
+dec:"None — this is where the culture of the new company is actually set",
+trap:"Communication focuses on the corporate story and skips the operational detail, so people invent workarounds for changes nobody explained.",
+fix:"Lead with what breaks and what to do instead. Every workaround invented here becomes a control failure later, and the workaround rate is the culture metric that matters."}
+];
+
+/* ===== assurance, rehearsal and reporting calendar ===== */
+var EVENTS=[
+{t:"Reporting cadence agreed; first board and steering packs delivered",lead:22,dur:2,risk:"M",
+own:"Separation lead and programme office",out:"Agreed metric definitions and thresholds per forum; first packs issued"},
+{t:"Unified control set and regime crosswalk baselined",lead:18,dur:6,risk:"H",g:1,
+own:"Compliance and security leaders",out:"One control set mapped to SOX, FDA, CMMC, CRA, GDPR and HIPAA with owners"},
+{t:"Audit committee formed; deficiency aggregation method agreed",lead:15,dur:3,risk:"H",
+own:"CFO and Internal Audit",out:"Committee charter, deficiency taxonomy, escalation thresholds"},
+{t:"Disclosure committee chartered; incident materiality process live",lead:14,dur:4,risk:"H",g:1,
+own:"General Counsel and CFO",out:"Charter, materiality method, documented decision path with out-of-hours routing"},
+{t:"Registration statement drafting and cyber disclosure review",lead:12,dur:8,risk:"H",
+own:"General Counsel, CFO, security leader",out:"Risk factors and governance disclosure traceable to capabilities that will exist"},
+{t:"Management control test cycle one",lead:12,dur:6,risk:"H",
+own:"Internal Audit and control owners",out:"Test results, deficiency log, remediation plans with dates"},
+{t:"Notified body quality system audit window",lead:12,dur:4,risk:"H",g:1,
+own:"Quality and regulatory leadership",out:"Audit report and certificate transfer progression"},
+{t:"First joint technical tabletop with the parent",lead:12,dur:1,risk:"H",g:1,
+own:"Both security operations leads",out:"Tested handoff, evidence-sharing terms exercised, findings log with owners"},
+{t:"Internal audit programme first full cycle at the new entity",lead:9,dur:9,risk:"M",
+own:"Internal Audit",out:"Audit plan executed, findings tracked to closure"},
+{t:"Three mock cutovers with defect closure between each",lead:9,dur:7,risk:"H",g:1,
+own:"ERP and migration leads",out:"Runbook validated, rollback proven, defect log closed"},
+{t:"Disaster recovery and backup restore test",lead:8,dur:2,risk:"M",
+own:"Infrastructure and cloud leads",out:"Documented recovery times against target, restore evidence"},
+{t:"Penetration test and red team of the standalone estate",lead:7,dur:3,risk:"H",
+own:"Security leader with an independent tester",out:"Findings by severity with remediation dates; retest evidence"},
+{t:"Dry-run access recertification",lead:6,dur:2,risk:"H",
+own:"Identity lead and control owners",out:"Baseline role definitions, exception rate, evidence format agreed with the auditor"},
+{t:"Executive crisis simulation, board observed",lead:6,dur:1,risk:"H",g:1,
+own:"CEO sponsor, security and legal leads",out:"Rehearsed materiality determination, escalation and notification decision under time pressure"},
+{t:"Notification clock rehearsal, out of hours",lead:5,dur:1,risk:"H",
+own:"Security operations and legal",out:"Clock matrix exercised across every regime with the real on-call rota"},
+{t:"Management control test cycle two, pre-Day 1",lead:5,dur:4,risk:"H",
+own:"Internal Audit and control owners",out:"Second-pass results; residual deficiencies with committed dates"},
+{t:"Disclosure controls dry run against a simulated filing",lead:5,dur:2,risk:"H",
+own:"Controller and General Counsel",out:"Sub-certification chain exercised; gaps closed before the first real filing"},
+{t:"Assurance review period begins over transition services",lead:3,dur:12,risk:"H",g:1,
+own:"CFO with the parent's control organisation",out:"Service organisation report covering the transition period and the right services"},
+{t:"Day 1 hypercare and standing incident bridge",lead:0,dur:3,risk:"H",g:1,
+own:"Separation lead and all domain leads",out:"Issue log with closure times; exit from hypercare on written criteria"},
+{t:"First post-separation quality management review",lead:-2,dur:2,risk:"M",
+own:"Management with executive responsibility",out:"Adequacy conclusion stating what is standalone and what remains parent-dependent"},
+{t:"First periodic report — control assertion and cyber narrative",lead:-4,dur:2,risk:"H",g:1,
+own:"CFO, Controller, security leader",out:"Management assertion supported by tested controls; narrative matching actual capability"}
+];
+
+/* ===== state ===== */
+var KEY="sep-dep-v3",STATES=["Not started","In progress","Blocked","Done"];
+var store={status:{},notes:{},d1:"2027-09-30",cg:{}};
+try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&typeof p==="object"){store.status=p.status||{};store.notes=p.notes||{};store.d1=p.d1||store.d1;store.cg=p.cg||{};}}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+
+/* ===== helpers ===== */
+var B4=30,AF=6,SPAN=B4+AF;
+function idOf(k,i){return k+"-"+i;}
+function addMonths(d,m){var x=new Date(d.getTime()),day=x.getDate();x.setDate(1);x.setMonth(x.getMonth()+m);
+ var last=new Date(x.getFullYear(),x.getMonth()+1,0).getDate();x.setDate(Math.min(day,last));return x;}
+function fmt(d){return d.toLocaleDateString(undefined,{year:"2-digit",month:"short"});}
+function day1(){var v=document.getElementById("d1").value,d=new Date(v+"T00:00:00");return isNaN(d.getTime())?new Date("2027-09-30T00:00:00"):d;}
+function startBy(it){return addMonths(day1(),-it.lead);}
+function endBy(it){return addMonths(startBy(it),it.dur);}
+function daysTo(d){return Math.round((d-new Date())/86400000);}
+function pct(mb){return ((B4-mb)/SPAN)*100;}
+function nowMB(){return (day1()-new Date())/(86400000*30.4375);}
+function rw(r){return r==="H"?"High":r==="M"?"Medium":"Low";}
+function stOf(id){return store.status[id]||"Not started";}
+function flat(){var o=[];DOMAINS.forEach(function(d){d.items.forEach(function(it,i){
+ o.push({k:d.k,domName:d.n,it:it,i:i,id:idOf(d.k,i)});});});return o;}
+
+/* ===== timeline ===== */
+function drawAxis(id){var a=document.getElementById(id||"axis");if(!a)return;a.innerHTML="";
+ [-30,-24,-18,-12,-6,0,6].forEach(function(m){var s=document.createElement("span");
+  s.style.left=pct(-m)+"%";s.textContent=(m===0?"Day 1":(m<0?m+"mo":"+"+m));if(m===0)s.className="k";a.appendChild(s);});}
+function track(it,id){
+ var wrap=document.createElement("div");wrap.className="tl";
+ var g=document.createElement("div");g.className="grid";
+ [-30,-24,-18,-12,-6,6].forEach(function(m){var l=document.createElement("div");l.className="gl";l.style.left=pct(-m)+"%";g.appendChild(l);});
+ var d1l=document.createElement("div");d1l.className="gl d1";d1l.style.left=pct(0)+"%";g.appendChild(d1l);
+ var nm=nowMB();if(nm<=B4&&nm>=-AF){var nl=document.createElement("div");nl.className="gl now";nl.style.left=pct(nm)+"%";g.appendChild(nl);}
+ wrap.appendChild(g);
+ var b=document.createElement("div"),L=pct(it.lead),R=pct(it.lead-it.dur);
+ b.className="barw b-"+it.risk+(it.g?" gate":"");
+ b.style.left=Math.max(0,L)+"%";b.style.width=Math.max(1.2,Math.min(100,R)-Math.max(0,L))+"%";
+ if(daysTo(startBy(it))<0&&stOf(id)!=="Done")b.classList.add("behind");
+ b.title=fmt(startBy(it))+" → "+fmt(endBy(it))+" · "+it.dur+" months"+(it.g?" · gate":"");
+ wrap.appendChild(b);return wrap;}
+
+function buildRows(){
+ var tb=document.getElementById("tbody");tb.innerHTML="";
+ var f=document.getElementById("filter").value,dm=document.getElementById("dom").value,srt=document.getElementById("sort").value;
+ var rows=flat().filter(function(r){
+  if(dm!=="all"&&r.k!==dm)return false;
+  var st=stOf(r.id),dt=daysTo(startBy(r.it));
+  if(f==="gate")return !!r.it.g;
+  if(f==="late")return dt<0&&st!=="Done";
+  if(f==="soon")return dt>=0&&dt<=90;
+  if(f==="H")return r.it.risk==="H";
+  if(f==="open")return st!=="Done";
+  return true;});
+ if(srt==="start")rows.sort(function(a,b){return b.it.lead-a.it.lead||a.it.dur-b.it.dur;});
+ else if(srt==="risk"){var o={H:0,M:1,L:2};rows.sort(function(a,b){return o[a.it.risk]-o[b.it.risk]||b.it.lead-a.it.lead;});}
+ var lastDom=null,n=0,grouped=(srt==="domain");
+ var perDom={};rows.forEach(function(r){perDom[r.k]=(perDom[r.k]||0)+1;});
+ rows.forEach(function(r){
+  n++;
+  if(grouped&&r.domName!==lastDom){lastDom=r.domName;
+   var shut=!!store.cg[r.k];
+   var h=document.createElement("tr");h.className="dhead"+(shut?" shut":"");h.dataset.k=r.k;h.tabIndex=0;
+   var c=document.createElement("td");c.colSpan=6;
+   c.innerHTML='<span class="car">&#9662;</span> <span class="dc">'+r.k+'</span>'+r.domName+
+     '<span class="gcount">'+perDom[r.k]+' items</span>';
+   h.appendChild(c);
+   function tog(){store.cg[r.k]=!store.cg[r.k];save();refresh();}
+   h.addEventListener("click",tog);
+   h.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();tog();}});
+   tb.appendChild(h);}
+  if(grouped&&store.cg[r.k])return;
+  var st=stOf(r.id),sb=startBy(r.it),late=daysTo(sb)<0&&st!=="Done";
+  var tr=document.createElement("tr");tr.tabIndex=0;if(st==="Done")tr.className="done";
+  var c0=document.createElement("td");c0.className="num";c0.textContent=n;tr.appendChild(c0);
+  var c1=document.createElement("td");c1.className="name";c1.title=r.it.t;
+  c1.innerHTML='<span class="dc">'+r.k+'</span>'+(r.it.g?'<span class="gatemark" title="Gate — other work waits on this">◆</span>':'');
+  c1.appendChild(document.createTextNode(r.it.t));tr.appendChild(c1);
+  var c2=document.createElement("td");c2.innerHTML='<span class="rk rk-'+r.it.risk+'" title="'+rw(r.it.risk)+' slip risk"></span>';tr.appendChild(c2);
+  var c3=document.createElement("td");c3.className="when"+(late?" isLate":"");c3.textContent=fmt(sb);tr.appendChild(c3);
+  var c4=document.createElement("td");c4.appendChild(track(r.it,r.id));tr.appendChild(c4);
+  var c5=document.createElement("td");
+  var btn=document.createElement("button");btn.className="st";btn.dataset.s=st;btn.textContent=st;
+  btn.addEventListener("click",function(ev){ev.stopPropagation();
+   store.status[r.id]=STATES[(STATES.indexOf(btn.dataset.s)+1)%STATES.length];save();refresh();});
+  c5.appendChild(btn);tr.appendChild(c5);
+  function jump(){openItem(r.id);}
+  tr.addEventListener("click",jump);
+  tr.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();jump();}});
+  tb.appendChild(tr);});
+ return rows;}
+
+/* ===== detail ===== */
+function buildDetail(){
+ var host=document.getElementById("domains");host.innerHTML="";
+ DOMAINS.forEach(function(dom){
+  var d=document.createElement("details");d.id="dom-"+dom.k;
+  d.appendChild(document.createElement("summary"));
+  var body=document.createElement("div");body.className="dom-body";
+  dom.items.forEach(function(it,i){
+   var id=idOf(dom.k,i);
+   var el=document.createElement("details");el.className="item";el.id="i-"+id;
+   var s=document.createElement("summary");
+   s.innerHTML='<span class="grow">'+it.t+'</span>'+(it.g?'<span class="chip gate">Gate</span>':'')+'<span class="chip">'+rw(it.risk)+'</span>';
+   el.appendChild(s);
+   var b=document.createElement("div");b.className="ibody";
+   b.innerHTML='<div class="grid3">'+
+    '<div class="fld"><div class="k">Depends on</div><div>'+it.dep+'</div></div>'+
+    '<div class="fld"><div class="k">Blocks</div><div>'+it.b+'</div></div>'+
+    '<div class="fld"><div class="k">Evidence</div><div>'+it.ev+'</div></div></div>'+
+    '<div class="fld trap"><div class="k">Trap</div><div>'+it.trap+'</div></div>'+
+    '<div class="fld fix"><div class="k">Fix</div><div>'+it.fix+'</div></div>'+
+    '<div class="fld met"><div class="k">Metric · layer 3</div><div>'+M[dom.k][i][0]+
+      ' <span class="tgt">'+M[dom.k][i][1]+'</span></div></div>'+
+    '<div class="dates" id="dt-'+id+'"></div>';
+   var ta=document.createElement("textarea");ta.placeholder="Owner, decision date, notes";ta.value=store.notes[id]||"";
+   ta.addEventListener("input",function(){store.notes[id]=ta.value;save();});
+   b.appendChild(ta);
+   var up=document.createElement("a");up.className="up";up.href="#top";up.textContent="↑ back to timeline";
+   up.addEventListener("click",function(){showPanel("p-timeline");});b.appendChild(up);
+   el.appendChild(b);body.appendChild(el);});
+  d.appendChild(body);host.appendChild(d);});}
+
+function refreshChrome(){
+ DOMAINS.forEach(function(dom){
+  var lateN=dom.items.filter(function(x,i){return daysTo(startBy(x))<0&&stOf(idOf(dom.k,i))!=="Done";}).length;
+  var gateN=dom.items.filter(function(x){return !!x.g;}).length;
+  document.querySelector("#dom-"+dom.k+" > summary").innerHTML=
+   '<span class="grow"><span class="dc">'+dom.k+'</span>'+dom.n+'</span>'+
+   (gateN?'<span class="chip gate">'+gateN+' gate</span>':'')+
+   (lateN?'<span class="chip late">'+lateN+' behind</span>':'')+
+   '<span class="chip count">'+dom.items.length+'</span>';
+  dom.items.forEach(function(it,i){
+   var el=document.getElementById("dt-"+idOf(dom.k,i));if(!el)return;
+   var sb=startBy(it),dt=daysTo(sb);
+   el.innerHTML="Start by <b>"+fmt(sb)+"</b> · runs "+it.dur+" months · complete by <b>"+fmt(endBy(it))+"</b>"+
+    (dt<0?" · <span style='color:#a06400;font-weight:600'>"+Math.abs(dt)+" days past start</span>":" · starts in "+dt+" days");});});}
+
+function showPanel(pid){
+ document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("hide",p.id!==pid);});
+ document.querySelectorAll("#tabs button").forEach(function(b){b.classList.toggle("on",b.dataset.p===pid);});}
+document.querySelectorAll("#tabs button").forEach(function(b){
+ b.addEventListener("click",function(){
+  if(b.classList.contains("on")){
+   document.getElementById(b.dataset.p).classList.add("hide");b.classList.remove("on");
+  } else {showPanel(b.dataset.p);}
+ });});
+function openItem(id){
+ showPanel("p-detail");
+ var el=document.getElementById("i-"+id);if(!el)return;
+ el.open=true;el.parentElement.parentElement.open=true;el.classList.add("flash");
+ if(el.scrollIntoView)el.scrollIntoView({behavior:"smooth",block:"center"});
+ setTimeout(function(){el.classList.remove("flash");},1800);}
+
+/* ===== stats ===== */
+function stats(rows){
+ var late=0,hi=0,done=0,gate=0,first=null;
+ rows.forEach(function(r){var st=stOf(r.id);
+  if(st==="Done")done++;if(r.it.risk==="H")hi++;if(r.it.g)gate++;
+  if(daysTo(startBy(r.it))<0&&st!=="Done")late++;
+  var sb=startBy(r.it);if(!first||sb<first)first=sb;});
+ document.getElementById("s-total").textContent=rows.length;
+ document.getElementById("s-gate").textContent=gate;
+ document.getElementById("s-late").textContent=late;
+ document.getElementById("s-hi").textContent=hi;
+ document.getElementById("s-done").textContent=done;
+ document.getElementById("s-first").textContent=first?fmt(first):"—";}
+
+/* ===== exports ===== */
+function dl(n,t,ty){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:ty}));a.download=n;a.click();
+ setTimeout(function(){URL.revokeObjectURL(a.href);},2000);}
+function rows(){return flat().map(function(r){return{
+ domain:r.domName,code:r.k,item:r.it.t,gate:r.it.g?"Yes":"No",risk:rw(r.it.risk),
+ startBy:startBy(r.it).toISOString().slice(0,10),durationMonths:r.it.dur,
+ completeBy:endBy(r.it).toISOString().slice(0,10),status:stOf(r.id),
+ dependsOn:r.it.dep,blocks:r.it.b,evidence:r.it.ev,trap:r.it.trap,fix:r.it.fix,
+ metricL3:M[r.k][r.i][0],target:M[r.k][r.i][1],
+ rollsUpToL2:DM[r.k][0],notes:store.notes[r.id]||""};});}
+
+/* ===== wire ===== */
+function refresh(){drawAxis("axis");drawAxis("axis2");renderCalendar();var r=buildRows();refreshChrome();stats(r);}
+var ds=document.getElementById("dom");
+DOMAINS.forEach(function(d){var o=document.createElement("option");o.value=d.k;o.textContent=d.k+" — "+d.n;ds.appendChild(o);});
+document.getElementById("d1").value=store.d1;
+document.getElementById("d1").addEventListener("change",function(){store.d1=this.value;save();refresh();});
+["filter","dom","sort"].forEach(function(i){document.getElementById(i).addEventListener("change",refresh);});
+document.getElementById("shutAll").addEventListener("click",function(){
+ DOMAINS.forEach(function(d){store.cg[d.k]=true;});save();
+ document.getElementById("sort").value="domain";refresh();});
+document.getElementById("openAll").addEventListener("click",function(){
+ store.cg={};save();refresh();});
+document.getElementById("json").addEventListener("click",function(){
+ dl("separation-dependencies.json",JSON.stringify({day1:document.getElementById("d1").value,items:rows()},null,2),"application/json");});
+document.getElementById("csv").addEventListener("click",function(){
+ var r=rows();if(!r.length)return;var k=Object.keys(r[0]);
+ var lines=[k.join(",")].concat(r.map(function(o){return k.map(function(x){
+  return '"'+String(o[x]).replace(/"/g,'""')+'"';}).join(",");}));
+ dl("separation-dependencies.csv",lines.join("\n"),"text/csv");});
+document.getElementById("reset").addEventListener("click",function(){
+ if(!confirm("Clear all statuses and notes in this browser?"))return;
+ store={status:{},notes:{},d1:document.getElementById("d1").value,cg:{}};save();refresh();
+ document.querySelectorAll("textarea").forEach(function(t){t.value="";});});
+function buildMetrics(){
+ var host=document.getElementById("metrics");host.innerHTML="";
+ var note=document.createElement("div");note.className="mnote";
+ note.innerHTML="Each layer answers a different question. The board asks whether the company will work; steering asks which domain is off; the workstream asks what to do this week; the evidence layer is the artefact an auditor or inspector will actually ask for — the <b>Evidence</b> field on every item above.";
+ host.appendChild(note);
+
+ var h0=document.createElement("div");h0.className="lyr";
+ h0.innerHTML="Layer 0 · reporting forums <span>who receives what, how often, and what they decide</span>";
+ host.appendChild(h0);
+ FORUMS.forEach(function(f){
+  var d=document.createElement("details");d.className="ref";
+  d.innerHTML='<summary><span class="grow">'+f.f+'</span><span class="chip">'+f.cad.split(",")[0]+'</span></summary>'+
+   '<div class="ibody"><div class="fld"><div class="k">Who is in the room</div><div>'+f.who+'</div></div>'+
+   '<div class="fld"><div class="k">What they receive</div><div>'+f.pack+'</div></div>'+
+   '<div class="fld"><div class="k">Cadence</div><div>'+f.cad+'</div></div>'+
+   '<div class="fld"><div class="k">What they decide</div><div>'+f.dec+'</div></div>'+
+   '<div class="fld trap"><div class="k">Trap</div><div>'+f.trap+'</div></div>'+
+   '<div class="fld fix"><div class="k">Fix</div><div>'+f.fix+'</div></div></div>';
+  host.appendChild(d);});
+
+ var h1=document.createElement("div");h1.className="lyr";h1.innerHTML="Layer 1 · board and audit committee <span>8 outcome metrics</span>";
+ host.appendChild(h1);
+ L1.forEach(function(m){
+  var d=document.createElement("details");d.className="ref";
+  d.innerHTML='<summary><span class="grow">'+m.t+'</span><span class="chip">'+m.c.split(",")[0]+'</span></summary>'+
+   '<div class="ibody"><div class="fld"><div class="k">Answers</div><div>'+m.q+'</div></div>'+
+   '<div class="fld"><div class="k">Definition</div><div>'+m.d+'</div></div>'+
+   '<div class="fld"><div class="k">Threshold</div><div>'+m.th+'</div></div>'+
+   '<div class="fld"><div class="k">Cadence</div><div>'+m.c+'</div></div>'+
+   '<div class="fld"><div class="k">Fed by</div><div class="feeds">'+m.f+'</div></div></div>';
+  host.appendChild(d);});
+
+ var h2=document.createElement("div");h2.className="lyr";h2.innerHTML="Layer 2 · executive steering <span>one roll-up per domain, opening to its layer 3 metrics</span>";
+ host.appendChild(h2);
+ DOMAINS.forEach(function(dom){
+  var d=document.createElement("details");d.className="ref";
+  var rowsHtml=dom.items.map(function(it,i){
+   return '<tr class="mrow" data-id="'+idOf(dom.k,i)+'" tabindex="0"><td>'+M[dom.k][i][0]+
+    '</td><td class="tgtcell">'+M[dom.k][i][1]+'</td></tr>';}).join("");
+  d.innerHTML='<summary><span class="grow"><span class="dc">'+dom.k+'</span>'+DM[dom.k][0]+
+   '</span><span class="chip count">'+dom.items.length+'</span></summary>'+
+   '<div class="ibody"><div class="fld"><div class="k">Definition</div><div>'+DM[dom.k][1]+'</div></div>'+
+   '<div class="fld"><div class="k">Layer 3 · workstream metrics</div></div>'+
+   '<table class="mtab"><tbody>'+rowsHtml+'</tbody></table></div>';
+  host.appendChild(d);});
+
+ var hc=document.createElement("div");hc.className="lyr";
+ hc.innerHTML="Assurance, rehearsal and reporting calendar <span>numbered against the same Day 1 scale</span>";
+ host.appendChild(hc);
+ var cal=document.createElement("div");cal.className="tbox";
+ cal.innerHTML='<table class="caltab"><thead><tr><th class="num">#</th><th style="width:40%">Event</th>'+
+  '<th style="width:1%">Owner</th><th style="width:1%">Window</th>'+
+  '<th class="tlh"><div class="axis" id="axis2"></div></th></tr></thead><tbody id="calbody"></tbody></table>';
+ host.appendChild(cal);
+
+ host.querySelectorAll(".mrow").forEach(function(tr){
+  function go(){openItem(tr.dataset.id);}
+  tr.addEventListener("click",go);
+  tr.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});});
+}
+function buildCrosswalk(){
+ var host=document.getElementById("cross");host.innerHTML="";
+ var n=document.createElement("div");n.className="mnote";
+ n.innerHTML="One control, six regimes. Each entry states the requirement each regime places on the same control, the evidence that satisfies all of them, and the timeline items that produce it — click any item chip to open it. The point is to run each control once and produce evidence once. Two regimes given different answers to the same question is the finding an examiner remembers.<br><br><b>Scope note:</b> devices placed on the EU market under the medical device regulation sit outside the cyber resilience act. The act still reaches the non-device digital estate — standalone software, companion apps and connected accessories that are not device-classified. Which regime applies to which product is a decision to make deliberately, not by default.";
+ host.appendChild(n);
+ CTRL.forEach(function(c){
+  var d=document.createElement("details");d.className="ref";
+  var chips=c.items.map(function(id){
+   var k=id.split("-")[0],i=+id.split("-")[1];
+   var dm=DOMAINS.filter(function(x){return x.k===k;})[0];
+   if(!dm||!dm.items[i])return "";
+   return '<span class="ichip" data-id="'+id+'" tabindex="0" title="'+dm.items[i].t+'">'+k+' · '+dm.items[i].t+'</span>';}).join("");
+  d.innerHTML='<summary><span class="grow">'+c.c+'</span><span class="chip count">'+c.items.length+' items</span></summary>'+
+   '<div class="ibody"><table class="xtab"><tbody>'+
+   '<tr><th>SOX</th><td>'+c.sox+'</td></tr>'+
+   '<tr><th>FDA</th><td>'+c.fda+'</td></tr>'+
+   '<tr><th>CMMC L2</th><td>'+c.cmmc+'</td></tr>'+
+   '<tr><th>EU CRA</th><td>'+c.cra+'</td></tr>'+
+   '<tr><th>GDPR</th><td>'+c.gdpr+'</td></tr>'+
+   '<tr><th>HIPAA</th><td>'+c.hipaa+'</td></tr>'+
+   '</tbody></table>'+
+   '<div class="fld" style="margin-top:10px"><div class="k">Evidence that satisfies all six</div><div>'+c.ev+'</div></div>'+
+   '<div class="fld"><div class="k">Produced by</div><div class="ichips">'+chips+'</div></div></div>';
+  host.appendChild(d);});
+ host.querySelectorAll(".ichip").forEach(function(el){
+  function go(e){e.stopPropagation();openItem(el.dataset.id);}
+  el.addEventListener("click",go);
+  el.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();go(e);}});});
+}
+function renderCalendar(){
+ var tb=document.getElementById("calbody");if(!tb)return;tb.innerHTML="";
+ EVENTS.forEach(function(e,i){
+  var sb=startBy(e),en=endBy(e),dt=daysTo(sb);
+  var tr=document.createElement("tr");
+  var c0=document.createElement("td");c0.className="num";c0.textContent=(i+1);tr.appendChild(c0);
+  var c1=document.createElement("td");
+  c1.innerHTML=(e.g?'<span class="gatemark">&#9670;</span>':'')+
+   '<span class="evt">'+e.t+'</span><span class="evo">'+e.out+'</span>';
+  tr.appendChild(c1);
+  var c2=document.createElement("td");c2.className="evown";c2.textContent=e.own;tr.appendChild(c2);
+  var c3=document.createElement("td");c3.className="when"+(dt<0?" isLate":"");
+  c3.textContent=fmt(sb)+" – "+fmt(en);tr.appendChild(c3);
+  var c4=document.createElement("td");c4.appendChild(track(e,"EV-"+i));tr.appendChild(c4);
+  tb.appendChild(tr);});
+}
+function buildRefs(){var host=document.getElementById("refs");host.innerHTML="";
+ REFS.forEach(function(r){var d=document.createElement("details");d.className="ref";
+  d.innerHTML='<summary><span class="grow">'+r.t+'</span></summary><div class="ibody">'+r.h+'</div>';host.appendChild(d);});}
+buildDetail();buildCrosswalk();buildMetrics();buildRefs();refresh();
+</script>
+</body>
+</html>
