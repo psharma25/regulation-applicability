@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M&amp;A — Security Program Trackers</title>
+<style>
+  :root{
+    --teal:#0E7C86;--teal-d:#0A5C64;--amber:#B5701A;--ink:#16282B;--muted:#5F7176;
+    --line:#E3E9E9;
+    --serif:Georgia,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:#fff;}
+  body{color:var(--ink);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:56px 24px;}
+  header{text-align:center;margin-bottom:34px;max-width:660px;}
+  h1{font-family:var(--serif);font-weight:700;font-size:34px;letter-spacing:-.4px;}
+  header p{margin-top:10px;color:var(--muted);font-size:14.5px;line-height:1.55;}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%;max-width:880px;}
+  @media(max-width:680px){.cards{grid-template-columns:1fr;}h1{font-size:26px;}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px 24px 22px;
+    text-decoration:none;color:var(--ink);position:relative;overflow:hidden;
+    transition:transform .16s,box-shadow .16s,border-color .16s;
+    box-shadow:0 1px 2px rgba(14,53,60,.05);display:flex;flex-direction:column;min-height:186px;}
+  .card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;}
+  .card.sep::before{background:var(--teal);}
+  .card.acq::before{background:var(--amber);}
+  .card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(14,53,60,.12);}
+  .card.sep:hover{border-color:var(--teal);}
+  .card.acq:hover{border-color:var(--amber);}
+  .num{font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:8px;}
+  .card.sep .num{color:var(--teal);} .card.acq .num{color:var(--amber);}
+  .t{font-family:var(--serif);font-size:21px;font-weight:700;line-height:1.25;letter-spacing:-.2px;}
+  .d{margin-top:8px;color:var(--muted);font-size:13.5px;line-height:1.5;flex:1;}
+  .go{margin-top:14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .card.sep .go{color:var(--teal-d);} .card.acq .go{color:var(--amber);}
+  .arr{font-size:17px;transition:transform .16s;}
+  .card:hover .arr{transform:translateX(4px);}
+  footer{margin-top:32px;color:var(--muted);font-size:12.5px;text-align:center;max-width:660px;line-height:1.55;}
+</style>
+</head>
+<body>
+  <header>
+    <h1>M&amp;A — Security Program Trackers</h1>
+    <p>Separation and integration tooling for regulated environments. Start with the checklist, move to the blueprint, then work the dependency timeline.</p>
+  </header>
+
+  <div class="cards">
+    <a class="card sep" href="spinoff-separation-tracker.html">
+      <span class="num">01</span>
+      <span class="t">SpinOff Checklist</span>
+      <span class="d">Workstream-by-workstream separation checklist. The starting inventory of what a spin-off has to cover.</span>
+      <span class="go">Open<span class="arr">&#8594;</span></span>
+    </a>
+
+    <a class="card sep" href="depuy-grc-separation-blueprint.html">
+      <span class="num">02</span>
+      <span class="t">GRC Separation Blueprint</span>
+      <span class="d">Governance, risk and compliance operating model for a medtech separation — structure, ownership and control design.</span>
+      <span class="go">Open<span class="arr">&#8594;</span></span>
+    </a>
+
+    <a class="card sep" href="separation-dependency-timeline.html">
+      <span class="num">03</span>
+      <span class="t">Separation Dependency Timeline</span>
+      <span class="d">123 items across 16 domains with start-by dates, gates, traps and fixes. Control crosswalk across SOX, FDA, CMMC Level 2, EU CRA, GDPR and HIPAA, plus a four-layer metric and reporting cascade.</span>
+      <span class="go">Open<span class="arr">&#8594;</span></span>
+    </a>
+
+    <a class="card acq" href="acquisition-integration-tracker.html">
+      <span class="num">04</span>
+      <span class="t">Acquisition Checklist</span>
+      <span class="d">Buy-side integration tracker — diligence through post-close security integration.</span>
+      <span class="go">Open<span class="arr">&#8594;</span></span>
+    </a>
+  </div>
+
+  <footer>Tracker state is stored locally in your browser. Dates and structures are planning assumptions, not confirmed programme facts.</footer>
+</body>
+</html>
