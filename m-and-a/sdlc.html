@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Secure SDLC · Editable Lifecycle Diagram</title>
+<style>
+ :root{--petrol:#1b4965;--petrol-dk:#123449;--petrol-lt:#5fa8d3;--mist:#cae9ff;--paper:#f6f8fa;
+  --line:#d8dee4;--ink:#1c2530;--soft:#5a6a78;--ctrl:#FFA500;--amber:#b45309;--red:#9b1c1c;
+  --green:#0f6e56;--purple:#534ab7;}
+ *{box-sizing:border-box}html,body{margin:0;padding:0}
+ body{font-family:'Inter','Calibri','Segoe UI',system-ui,sans-serif;background:var(--paper);color:var(--ink);font-size:14px;line-height:1.5}
+ header{background:var(--petrol);color:#fff;padding:16px 24px}
+ h1{margin:0;font-size:19px;font-weight:600}
+ .sub{margin:4px 0 0;font-size:12.5px;color:var(--mist);max-width:760px}
+ nav.tabs{background:var(--petrol-dk);padding:0 24px;display:flex;gap:2px;overflow-x:auto}
+ nav.tabs button{background:transparent;border:0;border-bottom:3px solid transparent;color:var(--mist);
+  padding:11px 15px;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap}
+ nav.tabs button[aria-selected="true"]{color:#fff;border-bottom-color:var(--ctrl);font-weight:600}
+ nav.tabs button:hover{color:#fff}
+ .bar{background:#fff;border-bottom:1px solid var(--line);padding:12px 24px;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+ .grp{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+ .grp>span.lbl{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--soft);margin-right:2px}
+ .chip{font-family:inherit;font-size:12px;padding:5px 11px;border-radius:14px;cursor:pointer;
+  border:1px solid var(--line);background:#fff;color:var(--soft);font-weight:500}
+ .chip:hover{border-color:var(--petrol-lt)}
+ .chip[aria-pressed="true"]{background:var(--mist);border-color:var(--petrol);color:var(--petrol);font-weight:600}
+ .btn{font-family:inherit;font-size:12.5px;padding:6px 12px;border-radius:5px;cursor:pointer;
+  border:1px solid var(--petrol);background:#fff;color:var(--petrol);font-weight:500}
+ .btn:hover{background:var(--mist)}
+ .btn.primary{background:var(--petrol);color:#fff}.btn.primary:hover{background:var(--petrol-dk)}
+ .btn.ghost{border-color:var(--line);color:var(--soft)}
+ .btn.danger{border-color:var(--red);color:var(--red)}.btn.danger:hover{background:#fdf0f0}
+ .spacer{flex:1}
+ main{padding:20px 24px 60px}
+ .track{margin-bottom:26px;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+ .track-hd{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+ .track-hd h2{margin:0;font-size:15px;color:var(--petrol);font-weight:600}
+ .track-hd .meta{font-size:12px;color:var(--soft);margin-left:auto}
+ .scroll{overflow-x:auto;padding:8px 0}
+ .scroll svg{display:block}
+ .hint{padding:0 16px 12px;font-size:12px;color:var(--soft)}
+ .editor{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--petrol);
+  padding:16px 24px;box-shadow:0 -6px 18px rgba(18,52,73,.10);max-height:56vh;overflow-y:auto}
+ .editor[hidden]{display:none}
+ .editor h3{margin:0 0 12px;font-size:14px;color:var(--petrol)}
+ .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+ .f label{display:block;font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--soft);margin-bottom:3px}
+ .f input,.f select,.f textarea{width:100%;font-family:inherit;font-size:13px;color:var(--ink);
+  border:1px solid var(--line);border-radius:5px;padding:7px 9px;background:#fff}
+ .f textarea{min-height:56px;resize:vertical}
+ .f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--petrol-lt);outline-offset:-1px}
+ .ed-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+ .empty{padding:36px;text-align:center;color:var(--soft)}
+ @media print{nav.tabs,.bar,.editor,.hint{display:none!important}body{background:#fff}.scroll{overflow:visible}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Secure SDLC — editable lifecycle diagram</h1>
+  <p class="sub">Three tracks, toggleable overlays, every step editable. Click any step to edit it; drag the canvas sideways to follow the flow. Changes persist in this browser and export as JSON or SVG.</p>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-track="all">All tracks</button>
+  <button role="tab" aria-selected="false" data-track="pre">Premarket</button>
+  <button role="tab" aria-selected="false" data-track="cicd">CI/CD</button>
+  <button role="tab" aria-selected="false" data-track="post">Postmarket</button>
+</nav>
+
+<div class="bar">
+  <div class="grp"><span class="lbl">Overlays</span>
+    <button class="chip" data-ov="gate" aria-pressed="true">Gates</button>
+    <button class="chip" data-ov="tools" aria-pressed="true">Tooling</button>
+    <button class="chip" data-ov="when" aria-pressed="true">Timing</button>
+    <button class="chip" data-ov="trap" aria-pressed="true">Traps</button>
+    <button class="chip" data-ov="raci" aria-pressed="false">RACI</button>
+    <button class="chip" data-ov="risk" aria-pressed="false">Risk</button>
+    <button class="chip" data-ov="est" aria-pressed="false">Effort</button>
+  </div>
+  <span class="spacer"></span>
+  <button class="btn ghost" id="addStep">Add step</button>
+  <button class="btn ghost" id="exportSvg">Export SVG</button>
+  <button class="btn ghost" id="printBtn">Print</button>
+  <button class="btn" id="importBtn">Import</button>
+  <button class="btn primary" id="exportJson">Save file</button>
+  <button class="btn danger" id="resetBtn">Reset</button>
+  <input type="file" id="fileIn" accept="application/json" hidden>
+</div>
+
+<main id="main"></main>
+
+<div class="editor" id="editor" hidden>
+  <h3 id="edTitle">Edit step</h3>
+  <div class="fields">
+    <div class="f"><label for="eTitle">Step name</label><input type="text" id="eTitle"></div>
+    <div class="f"><label for="eSub">One-line description</label><input type="text" id="eSub"></div>
+    <div class="f"><label for="eGate">Gate after this step</label><input type="text" id="eGate" placeholder="G4 — leave blank for none"></div>
+    <div class="f"><label for="eStatus">Status</label><select id="eStatus">
+      <option value="plan">Planned</option><option value="prog">In progress</option>
+      <option value="done">Complete</option><option value="issue">Issue or exception</option>
+      <option value="na">Not applicable</option></select></div>
+    <div class="f"><label for="eWhen">Timing — when it is needed</label><input type="text" id="eWhen"></div>
+    <div class="f"><label for="eEst">Effort (hours)</label><input type="number" id="eEst" min="0" step="1"></div>
+    <div class="f"><label for="eTools">Tooling (comma separated)</label><input type="text" id="eTools" placeholder="SAST, SCA, secret scanning"></div>
+    <div class="f"><label for="eRaci">RACI</label><input type="text" id="eRaci" placeholder="R Engineering · A PSO"></div>
+    <div class="f" style="grid-column:1/-1"><label for="eTrap">Trap — how this fails in practice</label><textarea id="eTrap"></textarea></div>
+    <div class="f" style="grid-column:1/-1"><label for="eRisk">Risk if skipped</label><textarea id="eRisk"></textarea></div>
+  </div>
+  <div class="ed-actions">
+    <button class="btn primary" id="edSave">Save step</button>
+    <button class="btn ghost" id="edLeft">← Move earlier</button>
+    <button class="btn ghost" id="edRight">Move later →</button>
+    <span class="spacer"></span>
+    <button class="btn danger" id="edDelete">Delete step</button>
+    <button class="btn ghost" id="edClose">Close</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var mem={},KEY="ssdlc-diagram-v1";
+var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return mem[k]||null;}},
+           set:function(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}};
+
+var TRACKS=[
+ {id:"pre",n:"Premarket",d:"Design controls from program foundation to submission. Gates are formal decision points with named approvers.",c:"#1b4965",fill:"#e8eff5"},
+ {id:"cicd",n:"CI/CD pipeline",d:"Runs underneath the whole lifecycle. The pipeline is part of the device supply chain — compromise here forges the evidence every gate depends on.",c:"#0f6e56",fill:"#dceee7"},
+ {id:"post",n:"Postmarket",d:"Obligations that begin at release and run to declared end of support. §524B(b)(2).",c:"#993c1d",fill:"#fbeeea"}
+];
+
+var DEFAULTS=[
+/* premarket */
+{tr:"pre",t:"Program foundation",s:"Procedure, standard, training, toolchain",gate:"G0",est:188,
+ when:"Once per organisation, before any project enters design control",
+ tools:["QMS procedure","Coding standard","Training LMS","Pipeline template"],
+ raci:"R PSO · A QMS owner · C Regulatory, Architecture",
+ trap:"The procedure is written for an ideal team and then quietly not followed. The evidence diverges from practice, and the divergence is what an auditor finds.",
+ risk:"Security activities performed inconsistently with no auditable record"},
+{tr:"pre",t:"Concept and planning",s:"Use context, management plan, resourcing",gate:"G1",est:64,
+ when:"At concept, one to two weeks before requirements start",
+ tools:["CMP template","Use context document"],
+ raci:"R Product · A PSO · C Regulatory, Field",
+ trap:"Postmarket commitments are written into the plan before anyone checks whether the organisation can meet them. The submission then binds you to a cadence you cannot run.",
+ risk:"Commitments made in the submission that cannot be met after release"},
+{tr:"pre",t:"Security requirements",s:"Testable, traceable, tied to intended use",gate:"G2",est:164,
+ when:"Before design starts — retrofitting requirements after design freeze is the expensive path",
+ tools:["ALM traceability","Requirement templates"],
+ raci:"R PSO · A Architecture · C Engineering, V&V",
+ trap:"Requirements written as intentions rather than testable statements. \u201cThe device shall be secure\u201d cannot be verified, so verification invents its own criteria later.",
+ risk:"Security capability implemented but unverifiable because no requirement anchors it"},
+{tr:"pre",t:"Threat model",s:"Data flows, trust boundaries, threats",gate:"",est:100,
+ when:"Draft at requirements, complete and independently reviewed before design freeze",
+ tools:["Threat modelling tool","Diagrams as code"],
+ raci:"R Architecture · A PSO · C Engineering, Risk Manager",
+ trap:"Built on assumed deployment context rather than actual, then never revisited when the architecture changes. A stale model is worse than none because it creates false confidence.",
+ risk:"Architectural threats discovered after design freeze when remediation is most expensive"},
+{tr:"pre",t:"Architecture and design",s:"Security views, controls, 14971 integration",gate:"G3",est:212,
+ when:"Complete before design freeze; controls assigned to every identified threat",
+ tools:["Diagrams as code","Risk register","14971 risk file"],
+ raci:"R Architecture · A Risk Manager · C PSO, Engineering",
+ trap:"Architecture views drawn once for the submission and never updated. Reviewers compare them to the device description and the mismatch generates questions across the whole file.",
+ risk:"Identified threat with no implemented control reaching release"},
+{tr:"pre",t:"Implementation",s:"Secure coding under continuous scanning",gate:"G4",est:152,
+ when:"Continuous through build; gates enforced on every pull request",
+ tools:["SAST","SCA","Secret scanning","Linters","CODEOWNERS"],
+ raci:"R Engineering · A PSO · C Architecture, V&V",
+ trap:"A gate is switched to advisory to unblock a sprint and never switched back. Everything after that point looks compliant and evidences nothing.",
+ risk:"Known-class implementation defect reaching the release build"},
+{tr:"pre",t:"Security testing",s:"Verification, fuzzing, penetration test",gate:"G5",est:260,
+ when:"Book the penetration test eight to twelve weeks ahead — scheduling plus remediation plus retest is the longest lead time in the premarket path",
+ tools:["DAST","Fuzzing","Penetration test","Requirement-tagged tests"],
+ raci:"R V&V · A PSO · C Engineering, Regulatory",
+ trap:"The test is booked when verification starts rather than when planning starts. Findings then arrive with no schedule left to remediate and retest, so they become accepted risk by default.",
+ risk:"Exploitable vulnerability present at release and found post-market by a third party"},
+{tr:"pre",t:"SBOM and VEX",s:"Generated from the built artifact",gate:"",est:24,
+ when:"Every build; the released SBOM must match the released hash",
+ tools:["CycloneDX or SPDX","VEX generator","Artifact signing"],
+ raci:"R DevOps · A PSO · C Regulatory",
+ trap:"Generated from the dependency manifest rather than from the build, so it describes code you did not ship. Postmarket monitoring then watches the wrong component set.",
+ risk:"Released SBOM does not match the shipped artifact"},
+{tr:"pre",t:"Residual risk acceptance",s:"Security risk accepted under 14971",gate:"",est:32,
+ when:"After all testing closes and before the submission package is assembled",
+ tools:["Risk register","14971 risk file"],
+ raci:"R Risk Manager · A QMS owner · C PSO, Regulatory",
+ trap:"Security risk is accepted in a separate forum from safety risk, producing two inconsistent positions on the same device. The reviewer finds both.",
+ risk:"Residual risk accepted on incomplete information"},
+{tr:"pre",t:"Submission package",s:"§524B cybersecurity documentation",gate:"G6",est:144,
+ when:"Assemble four to six weeks before submission; not exception-eligible",
+ tools:["eSTAR","Traceability report","Evidence index"],
+ raci:"R Regulatory · A PSO · C Architecture, V&V, Risk Manager",
+ trap:"Assembled by copying content out of the systems of record. Anything retyped drifts from the evidence behind it, and the drift is what generates deficiency questions.",
+ risk:"Refuse-to-accept or a major deficiency letter on cybersecurity content"},
+/* ci/cd */
+{tr:"cicd",t:"Source control baseline",s:"Branch protection and review routing",gate:"",est:24,
+ when:"Before the first commit on a new product",
+ tools:["Branch rulesets","CODEOWNERS","Required reviews"],
+ raci:"R DevOps · A PSO · C Engineering",
+ trap:"Workflow files are editable without review. That is a control bypass for every gate downstream — change the pipeline and you change what the evidence says.",
+ risk:"Build process altered without review, invalidating gate evidence"},
+{tr:"cicd",t:"Secret prevention",s:"Push protection before scanning",gate:"",est:8,
+ when:"At repository creation, before any code lands",
+ tools:["Push protection","Secret scanning","Pre-commit hooks"],
+ raci:"R DevOps · A PSO · C Engineering",
+ trap:"Scanning enabled without push protection. You then find leaks instead of preventing them, and every find means rotating a live credential under time pressure.",
+ risk:"Credential or signing key exposed in source, compromising update integrity"},
+{tr:"cicd",t:"Build isolation",s:"Ephemeral, clean runners",gate:"",est:40,
+ when:"Pipeline setup, before the first release build",
+ tools:["Hosted or ephemeral runners","Runner groups"],
+ raci:"R DevOps · A PSO · C Engineering",
+ trap:"A persistent self-hosted runner lets one poisoned build contaminate the next. Nothing in the build output reveals it happened.",
+ risk:"Build environment compromise propagating into a released device image"},
+{tr:"cicd",t:"Dependency control",s:"Digest pinning and allow list",gate:"",est:72,
+ when:"Continuous, with a scheduled review — pinning freezes patches as well as attacks",
+ tools:["SCA","Digest pinning","Actions allow list"],
+ raci:"R DevOps · A PSO · C Engineering, Architecture",
+ trap:"Pinning to a commit digest also freezes upstream security fixes. Without a review cadence the build quietly ages into a vulnerable state that no scan flags as new.",
+ risk:"Mutable upstream dependency repointed to malicious code inside the build"},
+{tr:"cicd",t:"Static analysis gate",s:"SAST blocking on new findings",gate:"",est:24,
+ when:"Every pull request, as a required status check",
+ tools:["SAST","Language linters","Crypto rule set"],
+ raci:"R DevOps · A PSO · C Engineering",
+ trap:"Configured to fail on total findings rather than new ones. On any existing codebase the gate is unpassable from day one, so someone disables it and it never returns.",
+ risk:"Known-class implementation defect reaching the release build"},
+{tr:"cicd",t:"Test and verification",s:"Requirement-tagged automated tests",gate:"",est:60,
+ when:"Every pull request; tags drive the traceability report",
+ tools:["Unit and integration tests","Requirement tagging"],
+ raci:"R Engineering · A V&V · C PSO",
+ trap:"Tests are not tagged to requirements, so traceability gets rebuilt by hand at submission time — the most error-prone work in the whole package.",
+ risk:"Security control regresses silently between releases"},
+{tr:"cicd",t:"Container and IaC scanning",s:"At build and before promotion",gate:"",est:24,
+ when:"Both at build and again before each promotion to production",
+ tools:["Image scanning","IaC scanning"],
+ raci:"R DevOps · A PSO · C Engineering",
+ trap:"Scanned at build only. A base image that passed last month fails today, and nothing re-checks it before it ships.",
+ risk:"Vulnerable base image or misconfigured infrastructure deployed"},
+{tr:"cicd",t:"SBOM generation",s:"Build artifact tied to the release hash",gate:"",est:24,
+ when:"Every build, emitted as a signed artifact",
+ tools:["CycloneDX","Artifact store"],
+ raci:"R DevOps · A PSO · C Regulatory",
+ trap:"Produced after the fact by a separate job rather than as an output of the build that made the artifact. The two then describe different things.",
+ risk:"Vulnerability monitoring watches components you did not ship"},
+{tr:"cicd",t:"Signing and provenance",s:"Keys the build cannot exfiltrate",gate:"",est:100,
+ when:"At the release build; key custody defined before first use",
+ tools:["Signing service","SLSA provenance","KMS or HSM"],
+ raci:"R DevOps · A CISO · C PSO, Architecture, Legal",
+ trap:"The signing key is reachable by the build itself. Compromise then forges updates the device will accept, and recovery means replacing a trust anchor across the installed base.",
+ risk:"Unauthorised software accepted by a device as a legitimate update"},
+{tr:"cicd",t:"Gated promotion",s:"Environments with required reviewers",gate:"G4",est:40,
+ when:"Before any promotion to production or to a released device",
+ tools:["Deployment environments","Required reviewers"],
+ raci:"R DevOps · A Architecture · C V&V, PSO",
+ trap:"Administrator bypass is left open. The gate exists, the evidence looks correct, and anyone sufficiently senior can walk around it without a trace.",
+ risk:"Unverified build reaching production or a released device"},
+{tr:"cicd",t:"Evidence emission",s:"Pipeline writes its own gate records",gate:"",est:60,
+ when:"Every gate run, tied to the build hash",
+ tools:["DHF integration","Risk register API"],
+ raci:"R DevOps · A QMS owner · C PSO, Regulatory",
+ trap:"Gate evidence typed into a template weeks later. It diverges from what the pipeline actually did, and the manual assembly step is where most submission effort disappears.",
+ risk:"Gate evidence diverging from actual pipeline behaviour"},
+{tr:"cicd",t:"Pipeline audit logging",s:"Retained beyond platform limits",gate:"",est:24,
+ when:"Continuous; retention must match device record obligations",
+ tools:["Log streaming","External archive"],
+ raci:"R DevOps · A QMS owner · C PSO, CISO",
+ trap:"Platform retention is shorter than device record retention. The build and approval history is gone precisely when an investigation needs it, and it cannot be recreated.",
+ risk:"Build and approval history unavailable when an investigation requires it"},
+/* postmarket */
+{tr:"post",t:"Disclosure intake",s:"Published path with an acknowledgement SLA",gate:"G7",est:60,
+ when:"Live on the day of release, not when the first report arrives",
+ tools:["security.txt","Intake form","PSIRT queue"],
+ raci:"R PSO · A CISO · C Legal, Regulatory, Field",
+ trap:"The intake path is published but nobody watches the queue. The researcher waits, gets silence, and discloses publicly — which is a communications event, not a security one.",
+ risk:"Public disclosure because no usable intake path was operating"},
+{tr:"post",t:"Vulnerability monitoring",s:"Every released SBOM, every supported version",gate:"",est:40,
+ when:"Continuous, from release to declared end of support",
+ tools:["SBOM feed monitoring","NVD and KEV feeds"],
+ raci:"R DevOps · A PSO · C Engineering, Field",
+ trap:"Monitoring the current version only, while the installed base runs five older ones. The fleet is exposed and the dashboard is green.",
+ risk:"New vulnerability in a shipped component unnoticed across the fleet"},
+{tr:"post",t:"Triage and safety impact",s:"Exploitability and patient harm, not just CVSS",gate:"",est:6,
+ when:"Within the SLA committed in the submission",
+ tools:["CVSS enrichment","Exploit intelligence","14971 method"],
+ raci:"R PSO · A Risk Manager · C Architecture, Field",
+ trap:"CVSS is treated as the decision rather than an input. A medium-scored issue on an unauthenticated clinical path outranks a high-scored one nothing can reach.",
+ risk:"Exploitable vulnerability with safety impact treated on a routine timeline"},
+{tr:"post",t:"Risk file update",s:"Register and 14971 kept in step",gate:"",est:40,
+ when:"On every material finding and on the periodic refresh",
+ tools:["Risk register","14971 risk file"],
+ raci:"R Risk Manager · A PSO · C Architecture, Regulatory",
+ trap:"The security register is updated and the 14971 file is not. Two positions on the same device drift apart until an audit puts them side by side.",
+ risk:"Risk position drifting from reality across a multi-year service life"},
+{tr:"post",t:"Patch development",s:"Full pipeline re-run, not a hotfix path",gate:"",est:80,
+ when:"Per the remediation SLA stated in the submission",
+ tools:["Full CI/CD pipeline","Regression suite"],
+ raci:"R Engineering · A PSO · C V&V, Field, Regulatory",
+ trap:"An urgent patch bypasses the normal gates because it is urgent. The fix ships with none of the evidence the original release required.",
+ risk:"Committed remediation timeline missed, or patch shipped without evidence"},
+{tr:"post",t:"Field deployment",s:"Confirm installed, not just released",gate:"",est:60,
+ when:"After patch release; track acceptance rate over time",
+ tools:["Fleet telemetry","Service records"],
+ raci:"R Field · A PSO · C Engineering, Product",
+ trap:"Delivery is counted as remediation. Customers defer the update, the installed base stays vulnerable, and you cannot prove otherwise because acceptance was never tracked.",
+ risk:"Installed base remains exposed with no evidence of deployment status"},
+{tr:"post",t:"Complaint and reportability",s:"Security events into the quality system",gate:"",est:32,
+ when:"Within the regulatory clock once a reportable event is recognised",
+ tools:["Complaint system","21 CFR 803 assessment"],
+ raci:"R Field · A QMS owner · C PSO, Regulatory, Risk Manager",
+ trap:"The event is handled entirely by engineering and never routed to complaint handling, so the reportability assessment never happens and the clock runs unnoticed.",
+ risk:"Reportable security event not recognised within the required timeframe"},
+{tr:"post",t:"Refresh and end of support",s:"Periodic reassessment, published horizon",gate:"",est:64,
+ when:"Annual, on material change, and ahead of each end-of-support date",
+ tools:["Threat model","Support matrix","Customer notice"],
+ raci:"R Product · A PSO · C Field, Legal, Regulatory",
+ trap:"End of support is never formally declared, so the obligation runs indefinitely on a product nobody is funded to maintain.",
+ risk:"Unsupported devices in clinical use with no patch path"}
+];
+
+var state={view:"all",ov:{gate:1,tools:1,when:1,trap:1,raci:0,risk:0,est:0},steps:null,sel:null};
+(function(){var raw=store.get(KEY);
+ if(raw){try{var p=JSON.parse(raw);state.steps=p.steps||null;if(p.ov)state.ov=p.ov;}catch(e){}}
+ if(!state.steps){state.steps=DEFAULTS.map(function(d,i){
+  var o={};for(var k in d)o[k]=d[k];o.id="N"+(i+1);o.status="plan";return o;});}
+})();
+function save(){store.set(KEY,JSON.stringify({steps:state.steps,ov:state.ov}));}
+function byTrack(tr){return state.steps.filter(function(s){return s.tr===tr;});}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function wrap(txt,max){
+ var w=String(txt||"").split(/\s+/),lines=[],cur="";
+ w.forEach(function(x){var t=cur?cur+" "+x:x;if(t.length>max&&cur){lines.push(cur);cur=x;}else cur=t;});
+ if(cur)lines.push(cur);return lines;}
+
+var SFILL={plan:null,prog:"#fff6e5",done:"#eef8f0",issue:"#fdf0f0",na:"#f1f3f5"};
+var SSTROKE={plan:null,prog:"#b45309",done:"#2e7d32",issue:"#9b1c1c",na:"#8b94a0"};
+var SLBL={plan:"",prog:"In progress",done:"Complete",issue:"Issue / exception",na:"Not applicable"};
+
+var W=250,GAP=64,PADX=34,TOPY=54;
+
+function buildSvg(tr){
+ var t=TRACKS.filter(function(x){return x.id===tr;})[0];
+ var list=byTrack(tr);
+ if(!list.length)return '<div class="empty">No steps in this track. Use <b>Add step</b> to create one.</div>';
+ var ov=state.ov;
+
+ var blocks=list.map(function(s){
+  var b={s:s,secs:[]},y=0;
+  b.titleLines=wrap(s.t,26);
+  b.subLines=s.s?wrap(s.s,32):[];
+  y=12+b.titleLines.length*17+(b.subLines.length?4+b.subLines.length*15:0)+8;
+  if(ov.tools&&s.tools&&s.tools.length){
+   b.toolRows=[];var row=[],wid=0;
+   s.tools.forEach(function(tool){var cw=tool.length*6.1+16;
+    if(wid+cw>W-24&&row.length){b.toolRows.push(row);row=[];wid=0;}
+    row.push(tool);wid+=cw+6;});
+   if(row.length)b.toolRows.push(row);
+   b.toolsY=y;y+=b.toolRows.length*22+6;}
+  if(ov.raci&&s.raci){b.raciLines=wrap(s.raci,36);b.raciY=y;y+=b.raciLines.length*15+6;}
+  if(ov.est&&s.est){b.estY=y;y+=19;}
+  if(ov.risk&&s.risk){b.riskLines=wrap(s.risk,34);b.riskY=y;y+=6+b.riskLines.length*15+4;}
+  b.h=y+6;
+  b.whenLines=(ov.when&&s.when)?wrap(s.when,38):[];
+  b.trapLines=(ov.trap&&s.trap)?wrap(s.trap,38):[];
+  return b;});
+
+ var boxH=Math.max.apply(null,blocks.map(function(b){return b.h;}));
+ var whenH=Math.max.apply(null,blocks.map(function(b){return b.whenLines.length;}))*15;
+ var whenBlock=whenH?whenH+14:0;
+ var trapH=Math.max.apply(null,blocks.map(function(b){return b.trapLines.length;}))*15;
+ var trapBlock=trapH?trapH+22:0;
+ var boxY=TOPY+whenBlock;
+ var svgW=PADX*2+list.length*W+(list.length-1)*GAP;
+ var svgH=boxY+boxH+trapBlock+34;
+
+ var o=['<svg xmlns="http://www.w3.org/2000/svg" width="'+svgW+'" height="'+svgH+'" viewBox="0 0 '+svgW+' '+svgH+
+  '" font-family="Inter, Calibri, \'Segoe UI\', sans-serif" role="img"><title>'+esc(t.n)+' track</title>',
+  '<defs><marker id="ar'+tr+'" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'+
+  '<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>',
+  '<rect width="'+svgW+'" height="'+svgH+'" fill="#ffffff"/>'];
+
+ blocks.forEach(function(b,i){
+  var s=b.s,x=PADX+i*(W+GAP);
+  if(i<list.length-1){
+   o.push('<line x1="'+(x+W+8)+'" y1="'+(boxY+26)+'" x2="'+(x+W+GAP-10)+'" y2="'+(boxY+26)+
+    '" stroke="'+t.c+'" stroke-width="1.5" marker-end="url(#ar'+tr+')"/>');}
+  if(ov.gate&&s.gate){
+   var gx=x+W+GAP/2;
+   o.push('<line x1="'+gx+'" y1="'+(TOPY-30)+'" x2="'+gx+'" y2="'+(boxY+boxH+trapBlock)+
+    '" stroke="#b45309" stroke-width="1" stroke-dasharray="6 5"/>');
+   o.push('<circle cx="'+gx+'" cy="'+(TOPY-30)+'" r="15" fill="#b45309"/>');
+   o.push('<text x="'+gx+'" y="'+(TOPY-25)+'" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">'+esc(s.gate)+'</text>');}
+
+  if(b.whenLines.length){
+   o.push('<rect x="'+x+'" y="'+(TOPY-6)+'" width="'+W+'" height="'+(b.whenLines.length*15+12)+
+    '" rx="5" fill="#fff6e5" stroke="#e0b464" stroke-width="0.8"/>');
+   b.whenLines.forEach(function(l,n){
+    o.push('<text x="'+(x+10)+'" y="'+(TOPY+10+n*15)+'" font-size="11.5" fill="#7a4a00">'+esc(l)+'</text>');});}
+
+  var fill=SFILL[s.status]||t.fill, stroke=SSTROKE[s.status]||t.c;
+  o.push('<g class="nd" data-id="'+s.id+'" style="cursor:pointer">');
+  o.push('<rect x="'+x+'" y="'+boxY+'" width="'+W+'" height="'+boxH+'" rx="8" fill="'+fill+
+   '" stroke="'+stroke+'" stroke-width="1.2"/>');
+  var ty=boxY+22;
+  b.titleLines.forEach(function(l,n){
+   o.push('<text x="'+(x+12)+'" y="'+(ty+n*17)+'" font-size="13.5" font-weight="600" fill="'+t.c+'">'+esc(l)+'</text>');});
+  var sy=ty+b.titleLines.length*17;
+  b.subLines.forEach(function(l,n){
+   o.push('<text x="'+(x+12)+'" y="'+(sy+4+n*15)+'" font-size="12" fill="#5a6a78">'+esc(l)+'</text>');});
+  if(b.toolRows){
+   b.toolRows.forEach(function(row,r){var cx=x+12;
+    row.forEach(function(tool){var cw=tool.length*6.1+16;
+     o.push('<rect x="'+cx+'" y="'+(boxY+b.toolsY+r*22)+'" width="'+cw+'" height="17" rx="8" fill="#ffffff" stroke="'+t.c+'" stroke-width="0.7"/>');
+     o.push('<text x="'+(cx+cw/2)+'" y="'+(boxY+b.toolsY+12+r*22)+'" font-size="10.5" fill="'+t.c+'" text-anchor="middle">'+esc(tool)+'</text>');
+     cx+=cw+6;});});}
+  if(b.raciLines){b.raciLines.forEach(function(l,n){
+   o.push('<text x="'+(x+12)+'" y="'+(boxY+b.raciY+11+n*15)+'" font-size="11" fill="#534ab7">'+esc(l)+'</text>');});}
+  if(b.estY!=null){
+   o.push('<text x="'+(x+12)+'" y="'+(boxY+b.estY+12)+'" font-size="11.5" font-weight="600" fill="'+t.c+'">'+
+    (s.est>=8?(s.est/8)+' day'+(s.est/8>1?'s':''):s.est+' h')+' of focused work</text>');}
+  if(b.riskLines){
+   o.push('<line x1="'+(x+12)+'" y1="'+(boxY+b.riskY)+'" x2="'+(x+W-12)+'" y2="'+(boxY+b.riskY)+'" stroke="#e2c9c9" stroke-width="0.8"/>');
+   b.riskLines.forEach(function(l,n){
+    o.push('<text x="'+(x+12)+'" y="'+(boxY+b.riskY+16+n*15)+'" font-size="11" fill="#9b1c1c">'+esc(l)+'</text>');});}
+  if(s.status!=="plan"){
+   o.push('<text x="'+(x+W-12)+'" y="'+(boxY+boxH-9)+'" font-size="10.5" font-weight="600" fill="'+stroke+
+    '" text-anchor="end">'+esc(SLBL[s.status])+'</text>');}
+  o.push('</g>');
+
+  if(b.trapLines.length){
+   var trY=boxY+boxH+14;
+   o.push('<rect x="'+x+'" y="'+trY+'" width="'+W+'" height="'+(b.trapLines.length*15+14)+
+    '" rx="5" fill="#fdf0f0" stroke="#c98b8b" stroke-width="0.8"/>');
+   b.trapLines.forEach(function(l,n){
+    o.push('<text x="'+(x+10)+'" y="'+(trY+16+n*15)+'" font-size="11" fill="#9b1c1c">'+esc(l)+'</text>');});}
+ });
+ o.push('</svg>');
+ return o.join("");}
+
+function render(){
+ var host=document.getElementById("main"),show=state.view==="all"?["pre","cicd","post"]:[state.view];
+ host.innerHTML=show.map(function(tr){
+  var t=TRACKS.filter(function(x){return x.id===tr;})[0],list=byTrack(tr);
+  var hrs=list.reduce(function(a,s){return a+(+s.est||0);},0);
+  var gates=list.filter(function(s){return s.gate;}).length;
+  return '<div class="track"><div class="track-hd"><h2>'+esc(t.n)+'</h2>'+
+   '<span class="meta">'+list.length+' steps · '+gates+' gates · '+(hrs/8).toFixed(0)+' days of effort</span></div>'+
+   '<div class="hint" style="padding-top:10px">'+esc(t.d)+'</div>'+
+   '<div class="scroll" data-track="'+tr+'">'+buildSvg(tr)+'</div>'+
+   '<div class="hint">Click any step to edit it. Scroll sideways to follow the flow.</div></div>';
+ }).join("");
+ document.querySelectorAll(".nd").forEach(function(g){
+  g.addEventListener("click",function(){openEd(g.getAttribute("data-id"));});});}
+
+/* editor */
+var ed=document.getElementById("editor");
+function openEd(id){
+ var s=state.steps.filter(function(x){return x.id===id;})[0];if(!s)return;
+ state.sel=id;
+ document.getElementById("edTitle").textContent="Edit step — "+s.t;
+ document.getElementById("eTitle").value=s.t||"";
+ document.getElementById("eSub").value=s.s||"";
+ document.getElementById("eGate").value=s.gate||"";
+ document.getElementById("eStatus").value=s.status||"plan";
+ document.getElementById("eWhen").value=s.when||"";
+ document.getElementById("eEst").value=s.est||0;
+ document.getElementById("eTools").value=(s.tools||[]).join(", ");
+ document.getElementById("eRaci").value=s.raci||"";
+ document.getElementById("eTrap").value=s.trap||"";
+ document.getElementById("eRisk").value=s.risk||"";
+ ed.hidden=false;}
+function cur(){return state.steps.filter(function(x){return x.id===state.sel;})[0];}
+document.getElementById("edSave").addEventListener("click",function(){
+ var s=cur();if(!s)return;
+ s.t=document.getElementById("eTitle").value.trim()||"Untitled step";
+ s.s=document.getElementById("eSub").value.trim();
+ s.gate=document.getElementById("eGate").value.trim();
+ s.status=document.getElementById("eStatus").value;
+ s.when=document.getElementById("eWhen").value.trim();
+ s.est=parseInt(document.getElementById("eEst").value,10)||0;
+ s.tools=document.getElementById("eTools").value.split(",").map(function(x){return x.trim();}).filter(Boolean);
+ s.raci=document.getElementById("eRaci").value.trim();
+ s.trap=document.getElementById("eTrap").value.trim();
+ s.risk=document.getElementById("eRisk").value.trim();
+ save();render();document.getElementById("edTitle").textContent="Edit step — "+s.t;});
+function move(dir){
+ var s=cur();if(!s)return;
+ var sib=state.steps.filter(function(x){return x.tr===s.tr;});
+ var i=sib.indexOf(s),j=i+dir;if(j<0||j>=sib.length)return;
+ var a=state.steps.indexOf(sib[i]),b=state.steps.indexOf(sib[j]);
+ state.steps[a]=sib[j];state.steps[b]=sib[i];save();render();}
+document.getElementById("edLeft").addEventListener("click",function(){move(-1);});
+document.getElementById("edRight").addEventListener("click",function(){move(1);});
+document.getElementById("edDelete").addEventListener("click",function(){
+ var s=cur();if(!s)return;
+ if(!confirm("Delete \u201c"+s.t+"\u201d? This cannot be undone."))return;
+ state.steps=state.steps.filter(function(x){return x.id!==s.id;});
+ state.sel=null;ed.hidden=true;save();render();});
+document.getElementById("edClose").addEventListener("click",function(){ed.hidden=true;state.sel=null;});
+
+document.getElementById("addStep").addEventListener("click",function(){
+ var tr=state.view==="all"?"pre":state.view;
+ var id="N"+(Date.now()%1000000);
+ state.steps.push({id:id,tr:tr,t:"New step",s:"",gate:"",status:"plan",when:"",est:0,tools:[],raci:"",trap:"",risk:""});
+ save();render();openEd(id);
+ var el=document.querySelector('[data-track="'+tr+'"]');if(el)el.scrollLeft=el.scrollWidth;});
+
+document.querySelectorAll("nav.tabs button").forEach(function(b){
+ b.addEventListener("click",function(){
+  document.querySelectorAll("nav.tabs button").forEach(function(x){x.setAttribute("aria-selected",x===b?"true":"false");});
+  state.view=b.getAttribute("data-track");render();});});
+document.querySelectorAll("[data-ov]").forEach(function(b){
+ b.setAttribute("aria-pressed",state.ov[b.getAttribute("data-ov")]?"true":"false");
+ b.addEventListener("click",function(){
+  var k=b.getAttribute("data-ov");state.ov[k]=state.ov[k]?0:1;
+  b.setAttribute("aria-pressed",state.ov[k]?"true":"false");save();render();});});
+
+function download(n,t,ty){var b=new Blob([t],{type:ty}),u=URL.createObjectURL(b),a=document.createElement("a");
+ a.href=u;a.download=n;document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(u);},1500);}
+function today(){return new Date().toISOString().slice(0,10);}
+document.getElementById("exportJson").addEventListener("click",function(){
+ download("sdlc-diagram-"+today()+".json",JSON.stringify({steps:state.steps,ov:state.ov},null,2),"application/json");});
+document.getElementById("exportSvg").addEventListener("click",function(){
+ var show=state.view==="all"?["pre","cicd","post"]:[state.view];
+ show.forEach(function(tr){
+  var el=document.querySelector('[data-track="'+tr+'"] svg');if(!el)return;
+  download("sdlc-"+tr+"-"+today()+".svg",'<?xml version="1.0" encoding="UTF-8"?>\n'+el.outerHTML,"image/svg+xml");});});
+document.getElementById("printBtn").addEventListener("click",function(){window.print();});
+document.getElementById("importBtn").addEventListener("click",function(){document.getElementById("fileIn").click();});
+document.getElementById("fileIn").addEventListener("change",function(e){
+ var f=e.target.files[0];if(!f)return;var r=new FileReader();
+ r.onload=function(){try{var p=JSON.parse(r.result);
+  if(!p||!Array.isArray(p.steps))throw new Error("shape");
+  state.steps=p.steps;if(p.ov)state.ov=p.ov;
+  document.querySelectorAll("[data-ov]").forEach(function(b){
+   b.setAttribute("aria-pressed",state.ov[b.getAttribute("data-ov")]?"true":"false");});
+  save();render();}catch(err){alert("That file could not be read. Choose a JSON file saved from this diagram.");}
+  e.target.value="";};
+ r.readAsText(f);});
+document.getElementById("resetBtn").addEventListener("click",function(){
+ if(!confirm("Reset every step back to the supplied content? Your edits will be lost."))return;
+ state.steps=DEFAULTS.map(function(d,i){var o={};for(var k in d)o[k]=d[k];o.id="N"+(i+1);o.status="plan";return o;});
+ state.sel=null;ed.hidden=true;save();render();});
+
+render();
+})();
+</script>
+</body>
+</html>
